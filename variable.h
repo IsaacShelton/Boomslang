@@ -1,10 +1,10 @@
 /**
     ============ variable.h ============
-    Code for Base Compiling Functions
+    Code for Variable Compiling
 
     This file should NOT be included
-    anywhere besides from init.h at
-    the compiling stage.
+    anywhere besides from init.h when
+    variable is found.
 
     This Header does NOT contain a
     header guard so include with
