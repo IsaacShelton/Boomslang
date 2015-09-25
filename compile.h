@@ -20,6 +20,44 @@ while(compile_code!="" and compile_code!=compile_prev){
     compile_code = string_kill_all_whitespace(compile_code);
     compile_prev = compile_code;
 
+    //Is is a line-comment?
+    if(compile_code.substr(0,2)=="//"){
+        compile_code = string_delete_amount(compile_code,2);
+        compile_code = string_delete_until(compile_code,"\n");
+    }
+
+    //Is is a multi-line-comment?
+    if(compile_code.substr(0,2)=="/#"){
+        compile_code = string_delete_amount(compile_code,2);
+        compile_code = string_delete_until(compile_code,"#");
+        compile_code = string_delete_amount(compile_code,1);
+    }
+
+    //Is is a multi-line-comment?
+    if(compile_code.substr(0,2)=="/{"){
+        int balance = 0;
+        compile_code = string_delete_amount(compile_code,2);
+
+        while(!( balance==0 and compile_code.substr(0,1)=="}" )){
+            if(compile_code.substr(0,1)=="{"){
+                balance+=1;
+                write(compile_code.substr(0,1),true);
+                compile_code = string_delete_amount(compile_code,1);
+            }
+            else
+            if(compile_code.substr(0,1)=="}"){
+                balance-=1;
+                write(compile_code.substr(0,1),true);
+                compile_code = string_delete_amount(compile_code,1);
+            }else{
+                write(compile_code.substr(0,1),true);
+                compile_code = string_delete_amount(compile_code,1);
+            }
+        }
+
+        compile_code = string_delete_amount(compile_code,1);
+    }
+
     //Is it a action?
     if( ve_actions.exists(string_get_until(compile_code," ")) ){
         error_debug("Found " + string_get_until(compile_code," ") + " to be a action.");
@@ -35,10 +73,19 @@ while(compile_code!="" and compile_code!=compile_prev){
     }
 
     //Is it a function?
-    if( is_identifier(string_get_until_or(compile_code," (")) and function_handler.exists(string_get_until_or(compile_code," ("),S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
-        error_debug("Found " + string_get_until_or(compile_code," (") + " to be a function.");
+    if( is_identifier(string_get_until_or(compile_code,"(")) ){
+        error_debug("Found " + string_get_until_or(compile_code,"(") + " to be a function.");
 
-        compile_code = string_delete_until_or(compile_code," (");
+        string function_name = string_get_until_or(compile_code,"(");
+        compile_code = string_delete_until_or(compile_code,"(");
+
+        if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
+
+        } else {
+            error_fatal("The Function '" + function_name + "' does not exists.");
+            pend();
+            return EXIT_FAILURE;
+        }
 
         compile_code = string_kill_whitespace(compile_code);
         continue;
