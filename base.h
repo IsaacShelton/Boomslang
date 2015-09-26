@@ -41,7 +41,7 @@ public:
 
         if(code_prev==code){
             error_fatal("Internal Error when Parsing Function Arguments.");
-            error_debug("Remaining code:\n" + compile_code + "\n-----------------------");
+            error_debug("Remaining code:\n" + code + "\n-----------------------");
             pend();
             return EXIT_FAILURE;
         }
@@ -110,7 +110,7 @@ public:
     }
 
     //Writes and removes the value in variable expressions
-    int harvest_from_variable_value(string& code,string type, bool write_to_main){
+    int harvest_from_variable_value(string& code, string type, bool write_to_main){
         /*
             code - code
             type - variable type
@@ -127,7 +127,31 @@ public:
             code_prev = code;
             code = string_kill_whitespace(code);
 
-            if(this->arg_type(code)==ARGTYPE_STRING){
+            if(string_get_until(code," ")=="new"){
+                //Create new object
+
+                code = string_delete_until(code," ");
+
+                code = string_kill_whitespace(code);
+
+                string variable_class = string_get_until_or(code," ;\n");
+
+                if(!class_handler.exists(variable_class)){
+                    error_fatal("Undeclared Template '" + variable_class + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                } else if(type!=variable_class){
+                    error_fatal("Template '" + variable_class + "' is Incompatible with Template '" + type +"'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                code = string_delete_until_or(code," ;\n");
+                write(" BOOMSLANGCORE_create<" + resource(variable_class) + ">() ",write_to_main);
+
+                code = string_kill_whitespace(code);
+            }
+            else if(this->arg_type(code)==ARGTYPE_STRING){
                 ///TODO String Handling code in code_parser.harvest_from_variable_value()
 
                 write("BOOMSLANGCORE_create_string(\"" + harvest_string(code) + "\")",write_to_main);

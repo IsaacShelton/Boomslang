@@ -138,7 +138,7 @@ if(compile_code.substr(0,1)=="="){
             ve_main_code += resource(variable_name) + "=";
 
             //Handle Value
-            if(code_parser.harvest_from_variable_value(compile_code,variable_type,true)==-1){
+            if(code_parser.harvest_from_variable_value(compile_code,variable_type,true)==EXIT_FAILURE){
                return EXIT_FAILURE;
             }
 

@@ -246,6 +246,13 @@ bool is_identifier(string what){
     }
 }
 
+bool is_indent(string what){
+    if(what.substr(0,1)=="\t" or what.substr(0,4)=="    ")
+        return true;
+    else
+        return false;
+}
+
 bool rawvalue_exists(string what){
     if (what=="") return false;
 
