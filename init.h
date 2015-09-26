@@ -35,6 +35,8 @@ ve_keywords.add("object");
 class_handler.add("String");
 class_handler.add("Number");
 
+variable_handler.add("null","",SCOPETYPE_GLOBAL,I_NULL);
+
 function_handler.add("output","null","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
 function_handler.add("output","null","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
 function_handler.add("input","null","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
