@@ -89,8 +89,6 @@ public:
             return EXIT_FAILURE;
         }
 
-        write(";",write_to_main);
-
         return EXIT_SUCCESS;
     }
 

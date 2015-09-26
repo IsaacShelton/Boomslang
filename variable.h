@@ -24,13 +24,14 @@ compile_code = string_kill_whitespace(compile_code);
 if(compile_code.substr(0,1)=="."){
     error_debug("Found " + variable_name + " to contain a method.");
     string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
-    string prev_return_type = "";
+    string prev_return_type = return_type;
     ve_main_code += resource(variable_name);
 
     while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
         if(compile_code.substr(0,1)==","){
             if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                write(";\n",true);
                 return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ),SCOPETYPE_TEMPLATE)].type;
                 ve_main_code += resource(variable_name);
                 if(code_parser.parse_function_from(compile_code,true,true,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ))==-1){
@@ -67,17 +68,9 @@ if(compile_code.substr(0,1)=="."){
 
     compile_code = string_kill_whitespace(compile_code);
 
-    if(compile_code.substr(0,1)=="\n"){
-        compile_code = string_delete_amount(compile_code,1);
-    }
+    code_parser.chop(compile_code);
 
-    compile_code = string_kill_whitespace(compile_code);
-
-    if(compile_code.substr(0,1)==";"){
-        compile_code = string_delete_amount(compile_code,1);
-    }
-
-    ve_main_code += "\n";
+    ve_main_code += ";\n";
 }
 
 if(compile_code.substr(0,1)=="="){

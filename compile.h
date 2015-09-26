@@ -100,7 +100,7 @@ while(compile_code!="" and compile_code!=compile_prev){
     if( rawvalue_exists(compile_code) ){
         error_debug("Found raw value exists");
 
-        if(compile_code.substr(0,1)=="\""){
+        if(compile_code.substr(0,1)=="\""){//String
             //String
 
             string rawstring = harvest_string(compile_code);
@@ -118,6 +118,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
                 if(compile_code.substr(0,1)==","){
+                    write(";",true);
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("String"),SCOPETYPE_TEMPLATE)].type;
                     ve_main_code += "BOOMSLANGCORE_create_string(\"" + rawstring + "\")";
                     if(code_parser.parse_function_from(compile_code,true,true,class_handler.find("String"))==-1){
@@ -149,17 +150,10 @@ while(compile_code!="" and compile_code!=compile_prev){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            if(compile_code.substr(0,1)=="\n"){
-                compile_code = string_delete_amount(compile_code,1);
-            }
+            code_parser.chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
-
-            if(compile_code.substr(0,1)==";"){
-                compile_code = string_delete_amount(compile_code,1);
-            }
-
-            compile_code = string_kill_whitespace(compile_code);
+            write(";\n",true);
         } else if(compile_code.substr(0,1)=="0"
         or compile_code.substr(0,1)=="1"
         or compile_code.substr(0,1)=="2"
@@ -169,7 +163,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         or compile_code.substr(0,1)=="6"
         or compile_code.substr(0,1)=="7"
         or compile_code.substr(0,1)=="8"
-        or compile_code.substr(0,1)=="9"){
+        or compile_code.substr(0,1)=="9"){//Number
             //Decimal
 
             string rawdecimal = harvest_decimal(compile_code);
@@ -181,6 +175,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
                 if(compile_code.substr(0,1)==","){
+                    write(";\n",true);
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("Decimal"),SCOPETYPE_TEMPLATE)].type;
                     ve_main_code += "BOOMSLANGCORE_create_number(" + rawdecimal + ")";
                     if(code_parser.parse_function_from(compile_code,true,true,class_handler.find("Decimal"))==-1){
@@ -212,22 +207,16 @@ while(compile_code!="" and compile_code!=compile_prev){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            if(compile_code.substr(0,1)=="\n"){
-                compile_code = string_delete_amount(compile_code,1);
-            }
+            code_parser.chop(compile_code);
 
-            compile_code = string_kill_whitespace(compile_code);
-
-            if(compile_code.substr(0,1)==";"){
-                compile_code = string_delete_amount(compile_code,1);
-            }
-
-            compile_code = string_kill_whitespace(compile_code);
+            compile_code = string_kill_all_whitespace(compile_code);
+            write(";\n",true);
         }
 
-        compile_code = string_kill_all_whitespace(compile_code);
-        continue;
+            compile_code = string_kill_whitespace(compile_code);
     }
+
+    compile_code = string_kill_all_whitespace(compile_code);
 }
 
 //Internal Error?
