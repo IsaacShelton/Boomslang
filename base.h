@@ -110,11 +110,11 @@ public:
     }
 
     //Writes and removes the value in variable expressions
-    int harvest_from_variable_value(string& code, string type, bool write_to_main){
+    int harvest_from_variable_value(string& code, string &type, int write_to_main){
         /*
             code - code
-            type - variable type
-            write_to_main - write to main
+            type - variable type, will return type if S_NULL is specified
+            write_to_main - write to main, if I_NULL don't write.
 
             Example:
             "Hello " + "World"\n
@@ -122,12 +122,84 @@ public:
 
         string code_prev;
         int balance = 0;
+        bool accept_value = true;
 
         while( ((code.substr(0,1)!="\n" and code.substr(0,1)!=";") or balance!=0) and (code_prev!=code) ){
             code_prev = code;
             code = string_kill_whitespace(code);
 
-            if(string_get_until(code," ")=="new"){
+            if (code.substr(0,1)=="+"){
+                if(accept_value==true){
+                    error_fatal("Expected an value before '+'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+                accept_value = true;
+
+                code = string_delete_amount(code,1);
+                write("+",write_to_main);
+            }
+            else if (code.substr(0,1)=="-"){
+                if(accept_value==true){
+                    error_fatal("Expected an value before '-'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+                accept_value = true;
+
+                code = string_delete_amount(code,1);
+                write("-",write_to_main);
+            }
+            else if (code.substr(0,1)=="*"){
+                if(accept_value==true){
+                    error_fatal("Expected an value before '*'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+                accept_value = true;
+
+                code = string_delete_amount(code,1);
+                write("*",write_to_main);
+            }
+            else if (code.substr(0,1)=="/"){
+                if(accept_value==true){
+                    error_fatal("Expected an value before '/'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                code = string_delete_amount(code,1);
+                write("/",write_to_main);
+            }
+            else if (code.substr(0,1)=="("){
+                if(accept_value==false){
+                    error_fatal("Expected an operator before '('");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                balance += 1;
+                code = string_delete_amount(code,1);
+                write("(",write_to_main);
+            }
+            else if (code.substr(0,1)==")"){
+                if(accept_value==true){
+                    error_fatal("Expected an operator before ')'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                balance -= 1;
+                code = string_delete_amount(code,1);
+                write(")",write_to_main);
+            }
+            else if(string_get_until(code," ")=="new"){
+                if(accept_value==false){
+                    error_fatal("Expected an operator before 'new'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+                accept_value = false;
                 //Create new object
 
                 code = string_delete_until(code," ");
@@ -152,20 +224,64 @@ public:
                 code = string_kill_whitespace(code);
             }
             else if(this->arg_type(code)==ARGTYPE_STRING){
-                ///TODO String Handling code in code_parser.harvest_from_variable_value()
+
+                if(accept_value==false){
+                    error_fatal("Expected an operator before String");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+                accept_value = false;
+
+                if(type==S_NULL){
+                    type = "String";
+                }
+                else if(type!="String"){
+                    error_fatal("Incompatible Templates '" + type + "' and 'String'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
 
                 write("BOOMSLANGCORE_create_string(\"" + harvest_string(code) + "\")",write_to_main);
             }
             else if(this->arg_type(code)==ARGTYPE_NUMBER){
-                ///TODO FINISH Number Handling code in code_parser.harvest_from_variable_value()
+
+                if(accept_value==false){
+                    error_fatal("Expected an operator before Number");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+                accept_value = false;
+
+                if(type==S_NULL){
+                    type = "Number";
+                }
+                else if(type!="Number"){
+                    error_fatal("Incompatible Templates '" + type + "' and 'String'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
 
                 write("BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")",write_to_main);
             }
             else if(this->arg_type(code)==ARGTYPE_VARIABLE){
                 ///TODO Variable Handling code in code_parser.harvest_from_variable_value()
+
+                if(accept_value==false){
+                    error_fatal("Expected an operator before variable");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+                accept_value = false;
             }
             else if(this->arg_type(code)==ARGTYPE_FUNCTION){
                 ///TODO Function Handling code in code_parser.harvest_from_variable_value()
+
+                if(accept_value==false){
+                    error_fatal("Expected an operator before Function");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+                accept_value = false;
             }
 
             code = string_kill_whitespace(code);
@@ -176,6 +292,83 @@ public:
             pend();
             return EXIT_FAILURE;
         }
+
+        return EXIT_SUCCESS;
+    }
+
+    //Gets the value type in variable expressions
+    int harvest_from_variable_value_type(string code, string &type){
+        /*
+            code - code
+            type - variable type return
+
+            Example:
+            "Hello " + "World"\n
+        */
+
+
+        code = string_kill_whitespace(code);
+
+            if (code.substr(0,1)=="+"){
+                error_fatal("Expected an value before '+'");
+                pend();
+                return EXIT_FAILURE;
+            }
+            else if (code.substr(0,1)=="-"){
+                error_fatal("Expected an value before '-'");
+                pend();
+                return EXIT_FAILURE;
+            }
+            else if (code.substr(0,1)=="*"){
+                error_fatal("Expected an value before '*'");
+                pend();
+                return EXIT_FAILURE;
+            }
+            else if (code.substr(0,1)=="/"){
+                error_fatal("Expected an value before '/'");
+                pend();
+                return EXIT_FAILURE;
+            }
+            else if (code.substr(0,1)=="("){
+                code = string_delete_amount(code,1);
+            }
+            else if (code.substr(0,1)==")"){
+                code = string_delete_amount(code,1);
+            }
+            else if(string_get_until(code," ")=="new"){
+                //Create new object
+
+                code = string_delete_until(code," ");
+
+                code = string_kill_whitespace(code);
+
+                string variable_class = string_get_until_or(code," ;\n");
+
+                if(!class_handler.exists(variable_class)){
+                    error_fatal("Undeclared Template '" + variable_class + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                code = string_delete_until_or(code," ;\n");
+                type = variable_class;
+
+                code = string_kill_whitespace(code);
+            }
+            else if(this->arg_type(code)==ARGTYPE_STRING){
+                type = "String";
+            }
+            else if(this->arg_type(code)==ARGTYPE_NUMBER){
+                type = "Number";
+            }
+            else if(this->arg_type(code)==ARGTYPE_VARIABLE){
+                ///TODO Variable Handling code in code_parser.harvest_from_variable_value_type()
+            }
+            else if(this->arg_type(code)==ARGTYPE_FUNCTION){
+                ///TODO Function Handling code in code_parser.harvest_from_variable_value_type()
+            }
+
+            code = string_kill_whitespace(code);
 
         return EXIT_SUCCESS;
     }

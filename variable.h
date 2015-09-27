@@ -81,53 +81,23 @@ if(compile_code.substr(0,1)=="="){
 
     if(!variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){//Not Declared Yet
         string variable_type = S_NULL;
-
-    if(string_get_until(compile_code," ")=="new"){
-        //Create new object
-
-        compile_code = string_delete_until(compile_code," ");
-
         compile_code = string_kill_whitespace(compile_code);
 
-        string variable_class = string_get_until_or(compile_code," ;\n");
-
-        if(!class_handler.exists(variable_class)){
-            error_fatal("Undeclared Template '" + variable_class + "'");
-            pend();
+        //Get Value Type
+        if(code_parser.harvest_from_variable_value_type(compile_code,variable_type)==EXIT_FAILURE){
             return EXIT_FAILURE;
         }
 
-        compile_code = string_delete_until_or(compile_code," ;\n");
-        ve_main_code += resource(variable_class) + " " + resource(variable_name) + "=BOOMSLANGCORE_create<" + resource(variable_class) + ">();\n";
+        ve_main_code += resource(variable_type) + " " + resource(variable_name) + "=";
+
+        //Handle Value
+        if(code_parser.harvest_from_variable_value(compile_code,variable_type,true)==EXIT_FAILURE){
+            return EXIT_FAILURE;
+        }
 
         code_parser.chop(compile_code);
 
-        variable_handler.add(variable_name,variable_class,I_NULL,SCOPETYPE_MAIN);
-
-    } else if(code_parser.arg_type(compile_code)==ARGTYPE_STRING){
-        variable_type = "String";
-
-        ve_main_code += resource(variable_type) + " " + resource(variable_name) + "=BOOMSLANGCORE_create_string(\"" + harvest_string(compile_code) + "\");";
-        variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN);
-
-        code_parser.chop(compile_code);
-
-        ve_main_code += "\n";
-    } else if(code_parser.arg_type(compile_code)==ARGTYPE_NUMBER){
-        variable_type = "Number";
-
-        ve_main_code += resource(variable_type) + " " + resource(variable_name) + "=BOOMSLANGCORE_create_number(" + harvest_decimal(compile_code) + ");";
-        variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN);
-
-        code_parser.chop(compile_code);
-
-        ve_main_code += "\n";
-    } else if(code_parser.arg_type(compile_code)==ARGTYPE_FUNCTION){
-        ///TODO Function Handling in: variable -> equals -> new -> ARGTYPE_FUNCTION
-    }
-    else if(code_parser.arg_type(compile_code)==ARGTYPE_VARIABLE){
-        ///TODO Variable Handling in: variable -> equals -> new -> ARGTYPE_VARIABLE
-    }
+        ve_main_code += ";";
     }
     else {//Is Declared
         if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){//Does the variable exist?

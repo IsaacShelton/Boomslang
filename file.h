@@ -128,9 +128,9 @@ string filename_change_ext(string filename, string ext_without_dot){
     return file_no_ext + "." + ext_without_dot;
 }
 
-void write(string code, bool write_to_main){
-    if(write_to_main)
+void write(string code, int write_to_main){
+    if(write_to_main==1)
         ve_main_code += code;
-    else
+    else if(write_to_main==false)
         file_write << code;
 }
