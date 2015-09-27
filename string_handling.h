@@ -332,7 +332,9 @@ string harvest_decimal(string& code){
           or code.substr(0,2)==".6"
           or code.substr(0,2)==".7"
           or code.substr(0,2)==".8"
-          or code.substr(0,2)==".9"){
+          or code.substr(0,2)==".9"
+          or (code.substr(0,1)=="-" and str=="" and (code.substr(1,1)=="0" or code.substr(1,1)=="1" or code.substr(1,1)=="2" or code.substr(1,1)=="3" or code.substr(1,1)=="4"
+                or code.substr(1,1)=="5" or code.substr(1,1)=="6" or code.substr(1,1)=="7" or code.substr(1,1)=="8" or code.substr(1,1)=="9"))){
         str += code.substr(0,1);
         code = string_delete_amount(code,1);
     }

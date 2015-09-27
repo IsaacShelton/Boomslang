@@ -140,15 +140,31 @@ public:
                 write("+",write_to_main);
             }
             else if (code.substr(0,1)=="-"){
-                if(accept_value==true){
+                if (accept_value==true and (code.substr(1,1)=="0" or code.substr(1,1)=="1" or code.substr(1,1)=="2" or code.substr(1,1)=="3" or code.substr(1,1)=="4"
+                or code.substr(1,1)=="5" or code.substr(1,1)=="6" or code.substr(1,1)=="7" or code.substr(1,1)=="8" or code.substr(1,1)=="9")){
+                    //Negative Number
+
+                    accept_value = false;
+
+                    if(type!="Number"){
+                        error_fatal("Incompatible Templates '" + type + "' and 'Number'");
+                        pend();
+                        return EXIT_FAILURE;
+                    }
+
+                    write("BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")",write_to_main);
+                }
+                else if(accept_value==true){
                     error_fatal("Expected an value before '-'");
                     pend();
                     return EXIT_FAILURE;
                 }
-                accept_value = true;
+                else {
+                    accept_value = true;
 
-                code = string_delete_amount(code,1);
-                write("-",write_to_main);
+                    code = string_delete_amount(code,1);
+                    write("-",write_to_main);
+                }
             }
             else if (code.substr(0,1)=="*"){
                 if(accept_value==true){
@@ -256,7 +272,7 @@ public:
                     type = "Number";
                 }
                 else if(type!="Number"){
-                    error_fatal("Incompatible Templates '" + type + "' and 'String'");
+                    error_fatal("Incompatible Templates '" + type + "' and 'Number'");
                     pend();
                     return EXIT_FAILURE;
                 }
@@ -315,9 +331,14 @@ public:
                 return EXIT_FAILURE;
             }
             else if (code.substr(0,1)=="-"){
-                error_fatal("Expected an value before '-'");
-                pend();
-                return EXIT_FAILURE;
+                if (code.substr(1,1)!="0" and code.substr(1,1)!="1" and code.substr(1,1)!="2" and code.substr(1,1)!="3" and code.substr(1,1)!="4"
+                and code.substr(1,1)!="5" and code.substr(1,1)!="6" and code.substr(1,1)!="7" and code.substr(1,1)!="8" and code.substr(1,1)!="9"){
+                    error_fatal("Expected an value before '-'");
+                    pend();
+                    return EXIT_FAILURE;
+                } else {
+                    type = "Number";
+                }
             }
             else if (code.substr(0,1)=="*"){
                 error_fatal("Expected an value before '*'");
@@ -387,7 +408,9 @@ public:
         or code.substr(0,1)=="6"
         or code.substr(0,1)=="7"
         or code.substr(0,1)=="8"
-        or code.substr(0,1)=="9"){
+        or code.substr(0,1)=="9"
+        or (code.substr(1,1)=="-" and (code.substr(1,1)=="0" or code.substr(1,1)=="1" or code.substr(1,1)=="2" or code.substr(1,1)=="3" or code.substr(1,1)=="4"
+            or code.substr(1,1)=="5" or code.substr(1,1)=="6" or code.substr(1,1)=="7" or code.substr(1,1)=="8" or code.substr(1,1)=="9"))){
             return ARGTYPE_NUMBER;
         }
         else if(function_handler.exists(string_get_until(code," ("),S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){

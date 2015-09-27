@@ -98,6 +98,7 @@ if(compile_code.substr(0,1)=="="){
         code_parser.chop(compile_code);
 
         ve_main_code += ";";
+        variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN);
     }
     else {//Is Declared
         if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){//Does the variable exist?
