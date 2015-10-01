@@ -142,7 +142,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                         } else {
                             error_fatal("You Can't Call Functions of null");
                             pend();
-                            return EXIT_FAILURE;updating?
+                            return EXIT_FAILURE;
                         }
                     }
                 }
