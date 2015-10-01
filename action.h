@@ -153,4 +153,3 @@ if(action=="register_class_function"){
     function_handler.add(string_delete_amount(string_delete_until(function_name,"."),1),function_return_type,function_args,class_handler.find(string_get_until(function_name,".")),SCOPETYPE_TEMPLATE);
 }
 
-exit;
