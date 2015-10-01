@@ -253,41 +253,61 @@ bool is_indent(string what){
         return false;
 }
 
-bool rawvalue_exists(string what){
-    if (what=="") return false;
+bool rawvalue_exists(string code){
+    if (code=="") return false;
 
-    if (what.substr(0,1)=="\""){
+    /*
+        code - code
+        type - variable type return
+
+        Example:
+        "Hello " + "World"\n
+    */
+
+
+    code = string_kill_whitespace(code);
+
+    if (code.substr(0,1)=="+"){
+        return false;
+    }
+    else if (code.substr(0,1)=="-"){
+        if (code.substr(1,1)!="0" and code.substr(1,1)!="1" and code.substr(1,1)!="2" and code.substr(1,1)!="3" and code.substr(1,1)!="4"
+        and code.substr(1,1)!="5" and code.substr(1,1)!="6" and code.substr(1,1)!="7" and code.substr(1,1)!="8" and code.substr(1,1)!="9"){
+            return false;
+        } else {
+            return true;
+        }
+    }
+    else if (code.substr(0,1)=="*"){
+        return false;
+    }
+    else if (code.substr(0,1)=="/"){
+        return false;
+    }
+    else if (code.substr(0,1)=="("){
         return true;
     }
-    if (what.substr(0,1)=="0"){
+    else if (code.substr(0,1)==")"){
         return true;
     }
-    if (what.substr(0,1)=="1"){
+    else if(string_get_until(code," ")=="new"){
+        //Create new object
+
         return true;
     }
-    if (what.substr(0,1)=="2"){
+    else if(code_parser.arg_type(code)==ARGTYPE_STRING){
         return true;
     }
-    if (what.substr(0,1)=="3"){
+    else if(code_parser.arg_type(code)==ARGTYPE_NUMBER){
         return true;
     }
-    if (what.substr(0,1)=="4"){
-        return true;
+    else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){
+        ///TODO Variable Handling code in rawvalue_exists()
+        return false;
     }
-    if (what.substr(0,1)=="5"){
-        return true;
-    }
-    if (what.substr(0,1)=="6"){
-        return true;
-    }
-    if (what.substr(0,1)=="7"){
-        return true;
-    }
-    if (what.substr(0,1)=="8"){
-        return true;
-    }
-    if (what.substr(0,1)=="9"){
-        return true;
+    else if(code_parser.arg_type(code)==ARGTYPE_FUNCTION){
+        ///TODO Function Handling code in rawvalue_exists()
+        return false;
     }
 
     return false;
