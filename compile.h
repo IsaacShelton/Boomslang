@@ -33,7 +33,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         compile_code = string_delete_amount(compile_code,1);
     }
 
-    //Is is a multi-line-comment?
+    //Is is raw C++?
     if(compile_code.substr(0,2)=="/{"){
         int balance = 0;
         compile_code = string_delete_amount(compile_code,2);
