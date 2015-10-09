@@ -82,7 +82,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
 
         } else {
-            error_fatal("The Function '" + function_name + "' does not exists.");
+            error_fatal("The Function '" + function_name + "' does not exist.");
             pend();
             return EXIT_FAILURE;
         }
