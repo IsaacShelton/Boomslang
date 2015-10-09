@@ -368,8 +368,13 @@ int harvest_raw_expression(string& code, string& exp, string& type){
     /*
         code - code to harvest raw expression from
             example: ("Hello" + " World")blah blah blah
+
+        exp - returns expression
+
         type - returns type of the expression
             return example: String
+
+        returns success or failure
     */
 
     exp = "(";
@@ -546,8 +551,6 @@ int harvest_raw_expression(string& code, string& exp, string& type){
             exp += "BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")";
         }
         else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){
-            ///TODO Variable Handling code in code_parser.harvest_from_variable_value()
-
             if(accept_value==false){
                 error_fatal("Expected an operator before variable");
                 pend();
@@ -603,7 +606,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                                 return EXIT_FAILURE;
                             }
                         }
-                    }
+                    }\
                 }
 
                 code = string_kill_whitespace(code);

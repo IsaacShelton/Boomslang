@@ -279,14 +279,70 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
             write("BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")",write_to_main);
         }
         else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){
-            ///TODO Variable Handling code in code_parser.harvest_from_variable_value()
-
             if(accept_value==false){
                 error_fatal("Expected an operator before variable");
                 pend();
                 return EXIT_FAILURE;
             }
             accept_value = false;
+
+            string variable_name = string_get_until_or(code," =+-/*.)");
+
+            code = string_delete_until_or(code," =+-/*.)");
+
+            code = string_kill_whitespace(code);
+
+            write(resource(variable_name),write_to_main);
+
+            if(code.substr(0,1)=="."){
+                string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+                string prev_return_type = return_type;
+
+                while(code.substr(0,1)=="." or code.substr(0,1)==","){
+
+                    if(code.substr(0,1)==","){
+                        if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                            write(";\n",write_to_main);
+                            return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ),SCOPETYPE_TEMPLATE)].type;
+                            write(resource(variable_name),write_to_main);
+                            if(code_parser.parse_function_from(code,true,true,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ))==-1){
+                                return EXIT_FAILURE;
+                            }
+                            prev_return_type = return_type;
+                        } else {
+                            error_fatal("Undeclared Variable " + variable_name + ".");
+                            pend();
+                            return EXIT_FAILURE;
+                        }
+                    }
+
+                    if(code.substr(0,1)=="."){
+                        if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="null"){
+                            return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                            if(code_parser.parse_function_from(code,true,true,class_handler.find(prev_return_type))==-1){
+                                return EXIT_FAILURE;
+                            }
+                            prev_return_type = return_type;
+                            } else {
+                            if(prev_return_type!="null"){
+                                error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(code,1)," (") + "' of template '" + prev_return_type + "'.");
+                                pend();
+                                return EXIT_FAILURE;
+                            } else {
+                                error_fatal("You Can't Call Functions of null");
+                                pend();
+                                return EXIT_FAILURE;
+                            }
+                        }
+                    }
+                }
+
+                code = string_kill_whitespace(code);
+
+                code_parser.chop(code);
+
+                write(";\n",write_to_main);
+            }
         }
         else if(code_parser.arg_type(code)==ARGTYPE_FUNCTION){
             ///TODO Function Handling code in code_parser.harvest_from_variable_value()
