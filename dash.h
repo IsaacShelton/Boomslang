@@ -29,7 +29,7 @@ while(i<arg_count){
     }
     else
         if (dash_argument=="-wait"){
-        ///Wait after compile is finished
+        //Wait after compile is finished
 
         waitafter = true;
     }
