@@ -100,7 +100,65 @@ while(compile_code!="" and compile_code!=compile_prev){
     if( rawvalue_exists(compile_code) ){
         error_debug("Found raw value exists");
 
-        if(compile_code.substr(0,1)=="\""){//String
+        if(compile_code.substr(0,1)=="("){//Expression
+            string raw_expression_type = S_NULL;
+            string raw_expression;
+
+            if (harvest_raw_expression(compile_code,raw_expression,raw_expression_type)==EXIT_FAILURE)
+                return EXIT_FAILURE;
+
+            ve_main_code += raw_expression;
+            compile_code = string_kill_whitespace(compile_code);
+            string prev_return_type = raw_expression_type;
+            string return_type = "";
+
+            if(compile_code.substr(0,1)!="."){
+                error_fatal("Expected '.' before '" + compile_code.substr(0,1) + "' after expression.");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
+
+                if(compile_code.substr(0,1)==","){
+                    write(";",true);
+                    return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(raw_expression_type),SCOPETYPE_TEMPLATE)].type;
+                    ve_main_code += raw_expression;
+                    if(code_parser.parse_function_from(compile_code,true,true,class_handler.find(raw_expression_type))==-1){
+                        return EXIT_FAILURE;
+                    }
+                    prev_return_type = return_type;
+                }
+
+                if(compile_code.substr(0,1)=="."){
+                    if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="null"){
+                        return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                        if(code_parser.parse_function_from(compile_code,true,true,class_handler.find(prev_return_type))==-1){
+                            return EXIT_FAILURE;
+                        }
+                        prev_return_type = return_type;
+                    } else {
+                        if(prev_return_type!="null"){
+                            error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
+                            pend();
+                            return EXIT_FAILURE;
+                        } else {
+                            error_fatal("You Can't Call Functions of null");
+                            pend();
+                            return EXIT_FAILURE;
+                        }
+                    }
+                }
+            }
+
+            compile_code = string_kill_whitespace(compile_code);
+
+            code_parser.chop(compile_code);
+
+            compile_code = string_kill_whitespace(compile_code);
+            write(";\n",true);
+        }
+        else if(compile_code.substr(0,1)=="\""){//String
             //String
 
             string rawstring = harvest_string(compile_code);
@@ -154,15 +212,7 @@ while(compile_code!="" and compile_code!=compile_prev){
 
             compile_code = string_kill_whitespace(compile_code);
             write(";\n",true);
-        } else if(compile_code.substr(0,1)=="0"
-        or compile_code.substr(0,1)=="1"
-        or compile_code.substr(0,1)=="2"
-        or compile_code.substr(0,1)=="3"
-        or compile_code.substr(0,1)=="4"
-        or compile_code.substr(0,1)=="5"
-        or compile_code.substr(0,1)=="6"
-        or compile_code.substr(0,1)=="7"
-        or compile_code.substr(0,1)=="8"
+        } else if(compile_code.substr(0,1)=="0" or compile_code.substr(0,1)=="1" or compile_code.substr(0,1)=="2" or compile_code.substr(0,1)=="3" or compile_code.substr(0,1)=="4" or compile_code.substr(0,1)=="5" or compile_code.substr(0,1)=="6" or compile_code.substr(0,1)=="7" or compile_code.substr(0,1)=="8"
         or compile_code.substr(0,1)=="9"){//Number
             //Decimal
 

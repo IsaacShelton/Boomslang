@@ -128,7 +128,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
 
         if (code.substr(0,1)=="+"){
             if(accept_value==true){
-                error_fatal("Expected an value before '+'");
+                error_fatal("Expected a value before '+'");
                 pend();
                 return EXIT_FAILURE;
             }
@@ -153,7 +153,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                 write("BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")",write_to_main);
             }
             else if(accept_value==true){
-                error_fatal("Expected an value before '-'");
+                error_fatal("Expected a value before '-'");
                 pend();
                 return EXIT_FAILURE;
             }
@@ -166,7 +166,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
         }
         else if (code.substr(0,1)=="*"){
             if(accept_value==true){
-                error_fatal("Expected an value before '*'");
+                error_fatal("Expected a value before '*'");
                 pend();
                 return EXIT_FAILURE;
             }
@@ -177,7 +177,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
         }
         else if (code.substr(0,1)=="/"){
             if(accept_value==true){
-                error_fatal("Expected an value before '/'");
+                error_fatal("Expected a value before '/'");
                 pend();
                 return EXIT_FAILURE;
             }
@@ -325,14 +325,14 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
     code = string_kill_whitespace(code);
 
         if (code.substr(0,1)=="+"){
-            error_fatal("Expected an value before '+'");
+            error_fatal("Expected a value before '+'");
             pend();
             return EXIT_FAILURE;
         }
         else if (code.substr(0,1)=="-"){
             if (code.substr(1,1)!="0" and code.substr(1,1)!="1" and code.substr(1,1)!="2" and code.substr(1,1)!="3" and code.substr(1,1)!="4"
             and code.substr(1,1)!="5" and code.substr(1,1)!="6" and code.substr(1,1)!="7" and code.substr(1,1)!="8" and code.substr(1,1)!="9"){
-                error_fatal("Expected an value before '-'");
+                error_fatal("Expected a value before '-'");
                 pend();
                 return EXIT_FAILURE;
             } else {
@@ -340,12 +340,12 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
             }
         }
         else if (code.substr(0,1)=="*"){
-            error_fatal("Expected an value before '*'");
+            error_fatal("Expected a value before '*'");
             pend();
             return EXIT_FAILURE;
         }
         else if (code.substr(0,1)=="/"){
-            error_fatal("Expected an value before '/'");
+            error_fatal("Expected a value before '/'");
             pend();
             return EXIT_FAILURE;
         }
@@ -362,7 +362,7 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
 
             code = string_kill_whitespace(code);
 
-            string variable_class = string_get_until_or(code," ;\n");
+            string variable_class = string_get_until_or(code," ;\n+-*/)");
 
             if(!class_handler.exists(variable_class)){
                 error_fatal("Undeclared Template '" + variable_class + "'");
@@ -370,7 +370,7 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
                 return EXIT_FAILURE;
             }
 
-            code = string_delete_until_or(code," ;\n");
+            code = string_delete_until_or(code," ;\n+-*/)");
             type = variable_class;
 
             code = string_kill_whitespace(code);
@@ -381,11 +381,23 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
         else if(code_parser.arg_type(code)==ARGTYPE_NUMBER){
             type = "Number";
         }
-        else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){
-            ///TODO Variable Handling code in code_parser.harvest_from_variable_value_type()
+        else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){//Variable
+            string variable_name = string_get_until_or(code," =+-/*.)");
+
+            if(!variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                error_fatal("Undeclared variable '" + variable_name + "'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_until_or(code," =+-/*.)");
+
+            code = string_kill_whitespace(code);
+
+            //Could add more functionality
         }
         else if(code_parser.arg_type(code)==ARGTYPE_FUNCTION){
-            ///TODO Function Handling code in code_parser.harvest_from_variable_value_type()
+            ///TODO Function Handling code in harvest_rawvalue_value()
         }
 
         code = string_kill_whitespace(code);

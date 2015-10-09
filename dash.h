@@ -28,6 +28,12 @@ while(i<arg_count){
         return EXIT_SUCCESS;
     }
     else
+        if (dash_argument=="-wait"){
+        ///Show help
+
+        waitafter = true;
+    }
+    else
     if (dash_argument=="-console"){
         console = true;
     }

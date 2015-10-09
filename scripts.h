@@ -63,4 +63,8 @@ void error_suggest(string error){
 
 void pend(){
     cout << endl << "Errors: " + to_string(errors) + " Warnings: " + to_string(warnings) << endl;
+    if (waitafter){
+        string blankstring;
+        getline(cin,blankstring);
+    }
 }

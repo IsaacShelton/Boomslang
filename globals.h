@@ -64,6 +64,7 @@ string ve_main_code = "";
 string ve_scope = "BOOMSLANG";
 string ve_context = S_NULL;
 
+bool waitafter = false;
 string compile_flags = "";
 string compile_code = "";
 ifstream file_read;

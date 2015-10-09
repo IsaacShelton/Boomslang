@@ -14,6 +14,8 @@ using namespace std;
 
 ///Declarations
 void error_show(string a);
+void error_fatal(string a);
+void pend();
 
 bool string_contains(string parent_string, string sub_string){
     if (parent_string.find(sub_string)==string::npos)
@@ -360,4 +362,279 @@ string harvest_decimal(string& code){
     }
 
     return str;
+}
+
+int harvest_raw_expression(string& code, string& exp, string& type){
+    /*
+        code - code to harvest raw expression from
+            example: ("Hello" + " World")blah blah blah
+        type - returns type of the expression
+            return example: String
+    */
+
+    exp = "(";
+    string code_prev;
+    int balance = 0;
+    bool accept_value = true;
+
+    while(compile_code.substr(0,1)=="("){
+
+        compile_code = string_delete_amount(compile_code,1);
+        balance += 1;
+    }
+
+    if(code_parser.harvest_from_variable_value_type(code,type)==EXIT_FAILURE)
+        return EXIT_FAILURE;
+
+    code = string_kill_whitespace(code);
+
+
+    while( ((code.substr(0,1)!=")") or balance!=1) and (code_prev!=code) ){
+        code_prev = code;
+        code = string_kill_whitespace(code);
+
+        if (code.substr(0,1)=="+"){
+            if(accept_value==true){
+                error_fatal("Expected a value before '+'");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = true;
+
+            code = string_delete_amount(code,1);
+            exp += "+";
+        }
+        else if (code.substr(0,1)=="-"){
+            if (accept_value==true and (code.substr(1,1)=="0" or code.substr(1,1)=="1" or code.substr(1,1)=="2" or code.substr(1,1)=="3" or code.substr(1,1)=="4"
+            or code.substr(1,1)=="5" or code.substr(1,1)=="6" or code.substr(1,1)=="7" or code.substr(1,1)=="8" or code.substr(1,1)=="9")){
+                //Negative Number
+
+                accept_value = false;
+
+                if(type!="Number"){
+                    error_fatal("Incompatible Templates '" + type + "' and 'Number'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                exp += "BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")";
+            }
+            else if(accept_value==true){
+                error_fatal("Expected a value before '-'");
+                pend();
+                return EXIT_FAILURE;
+            }
+            else {
+                accept_value = true;
+
+                code = string_delete_amount(code,1);
+                exp += "-";
+            }
+        }
+        else if (code.substr(0,1)=="*"){
+            if(accept_value==true){
+                error_fatal("Expected a value before '*'");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = true;
+
+            code = string_delete_amount(code,1);
+            exp += "*";
+        }
+        else if (code.substr(0,1)=="/"){
+            if(accept_value==true){
+                error_fatal("Expected a value before '/'");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = true;
+
+            code = string_delete_amount(code,1);
+            exp += "/";
+        }
+        else if (code.substr(0,1)=="("){
+            if(accept_value==false){
+                error_fatal("Expected an operator before '('");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            balance += 1;
+            code = string_delete_amount(code,1);
+            exp += "(";
+        }
+        else if (code.substr(0,1)==")"){
+            if(accept_value==true){
+                error_fatal("Expected an operator before ')'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            balance -= 1;
+            code = string_delete_amount(code,1);
+            exp += ")";
+        }
+        else if(string_get_until(code," ")=="new"){
+            if(accept_value==false){
+                error_fatal("Expected an operator before 'new'");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = false;
+            //Create new object
+
+            code = string_delete_until(code," ");
+
+            code = string_kill_whitespace(code);
+
+            string variable_class = string_get_until_or(code," ;\n+-*/)");
+
+            if(!class_handler.exists(variable_class)){
+                error_fatal("Undeclared Template '" + variable_class + "'");
+                pend();
+                return EXIT_FAILURE;
+            } else if(type!=variable_class){
+                error_fatal("Template '" + variable_class + "' is Incompatible with Template '" + type +"'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_until_or(code," ;\n+-*/)");
+            exp += " BOOMSLANGCORE_create<" + resource(variable_class) + ">() ";
+
+            code = string_kill_whitespace(code);
+        }
+        else if(code_parser.arg_type(code)==ARGTYPE_STRING){
+
+            if(accept_value==false){
+                error_fatal("Expected an operator before String");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = false;
+
+            if(type==S_NULL){
+                type = "String";
+            }
+            else if(type!="String"){
+                error_fatal("Incompatible Templates '" + type + "' and 'String'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            exp += "BOOMSLANGCORE_create_string(\"" + harvest_string(code) + "\")";
+        }
+        else if(code_parser.arg_type(code)==ARGTYPE_NUMBER){
+
+            if(accept_value==false){
+                error_fatal("Expected an operator before Number");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = false;
+
+            if(type==S_NULL){
+                type = "Number";
+            }
+            else if(type!="Number"){
+                error_fatal("Incompatible Templates '" + type + "' and 'Number'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            exp += "BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")";
+        }
+        else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){
+            ///TODO Variable Handling code in code_parser.harvest_from_variable_value()
+
+            if(accept_value==false){
+                error_fatal("Expected an operator before variable");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = false;
+
+            string variable_name = string_get_until_or(code," =+-/*.)");
+
+            code = string_delete_until_or(code," =+-/*.)");
+
+            code = string_kill_whitespace(code);
+
+            exp += resource(variable_name);
+
+            if(code.substr(0,1)=="."){
+                string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+                string prev_return_type = return_type;
+
+                while(code.substr(0,1)=="." or code.substr(0,1)==","){
+
+                    if(code.substr(0,1)==","){
+                        if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                            exp += ";\n";
+                            return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ),SCOPETYPE_TEMPLATE)].type;
+                            exp += resource(variable_name);
+                            if(code_parser.parse_function_from(code,true,true,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ))==-1){
+                                return EXIT_FAILURE;
+                            }
+                            prev_return_type = return_type;
+                        } else {
+                            error_fatal("Undeclared Variable " + variable_name + ".");
+                            pend();
+                            return EXIT_FAILURE;
+                        }
+                    }
+
+                    if(code.substr(0,1)=="."){
+                        if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="null"){
+                            return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                            if(code_parser.parse_function_from(code,true,true,class_handler.find(prev_return_type))==-1){
+                                return EXIT_FAILURE;
+                            }
+                            prev_return_type = return_type;
+                            } else {
+                            if(prev_return_type!="null"){
+                                error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(code,1)," (") + "' of template '" + prev_return_type + "'.");
+                                pend();
+                                return EXIT_FAILURE;
+                            } else {
+                                error_fatal("You Can't Call Functions of null");
+                                pend();
+                                return EXIT_FAILURE;
+                            }
+                        }
+                    }
+                }
+
+                code = string_kill_whitespace(code);
+
+                code_parser.chop(code);
+
+                exp += ";\n";
+            }
+        }
+        else if(code_parser.arg_type(code)==ARGTYPE_FUNCTION){
+            ///TODO Function Handling code in code_parser.harvest_from_variable_value()
+
+            if(accept_value==false){
+                error_fatal("Expected an operator before Function");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = false;
+        }
+
+        code = string_kill_whitespace(code);
+    }
+
+    if(code_prev==code){
+        error_fatal("Internal Variable Value Error");
+        pend();
+        return EXIT_FAILURE;
+    }
+
+    code = string_delete_amount(code,1);
+    exp += ")";
+
+    return EXIT_SUCCESS;
 }
