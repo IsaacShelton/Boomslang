@@ -354,11 +354,10 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
 
             string function_name = string_get_until_or(code,"(");
 
-            if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+            if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
                 error_fatal("Undeclared function '" + function_name + "'");
                 return EXIT_FAILURE;
             }
-
 
             code = string_delete_until_or(code,"(");
             write(resource(function_name) + "(",write_to_main);
@@ -500,12 +499,12 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
         else if(code_parser.arg_type(code)==ARGTYPE_FUNCTION){
             string function_name = string_get_until_or(code,"(");
 
-            if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+            if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
                 error_fatal("Undeclared function '" + function_name + "'");
                 return EXIT_FAILURE;
             }
 
-            type = function_handler.functions[function_handler.find(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+            type = function_handler.functions[function_handler.find(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type;
 
             if(type == "null"){
                 error_fatal("Couldn't use type null");

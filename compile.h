@@ -80,7 +80,56 @@ while(compile_code!="" and compile_code!=compile_prev){
         compile_code = string_delete_until_or(compile_code,"(");
 
         if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
+            if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
+                error_fatal("Undeclared function '" + function_name + "'");
+                return EXIT_FAILURE;
+            }
 
+            write(resource(function_name) + "(",true);
+
+            string function_code_prev;
+            string argument_type;
+
+            compile_code = string_delete_amount(compile_code,1);
+            compile_code = string_kill_all_whitespace(compile_code);
+            bool first = true;
+
+            while(compile_code.substr(0,1)!=")" and function_code_prev!=compile_code){
+                compile_code = string_kill_whitespace(compile_code);
+                function_code_prev = compile_code;
+
+                if(compile_code.substr(0,1)=="," and !first){
+                    write(",",true);
+                    compile_code = string_delete_amount(compile_code,1);
+                }
+
+                first = false;
+
+                //Get Value Type
+                if(code_parser.harvest_from_variable_value_type(compile_code,argument_type)==EXIT_FAILURE){
+                    error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                //Handle Value
+                if(code_parser.harvest_from_variable_value(compile_code,argument_type,true,",)")==EXIT_FAILURE){
+                    return EXIT_FAILURE;
+                }
+
+                compile_code = string_kill_whitespace(compile_code);
+            }
+
+            write(");\n",true);
+
+            if(function_code_prev==compile_code){
+                error_fatal("Internal Function Error");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            compile_code = string_delete_amount(compile_code,1);
+            code_parser.chop(compile_code);
         } else {
             error_fatal("The Function '" + function_name + "' does not exist.");
             pend();
