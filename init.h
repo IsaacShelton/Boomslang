@@ -44,7 +44,7 @@ function_handler.add("input","null","",class_handler.find("Number"),SCOPETYPE_TE
 function_handler.add("print","null","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
 function_handler.add("print","null","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
 function_handler.add("wait","null","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
-function_handler.add("call","null","",I_NULL,SCOPETYPE_MAIN);
+function_handler.add("call","String","",I_NULL,SCOPETYPE_MAIN);
 
 file_read.open(file_read_name.c_str());
 file_write.open(file_write_name.c_str());

@@ -108,7 +108,7 @@ void CodeParser::chop(string& code){
 }
 
 //Writes and removes the value in variable expressions
-int CodeParser::harvest_from_variable_value(string& code, string &type, int write_to_main){
+int CodeParser::harvest_from_variable_value(string& code, string &type, int write_to_main, string additional_characters){
     /*
         code - code
         type - variable type, will return type if S_NULL is specified
@@ -122,7 +122,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
     int balance = 0;
     bool accept_value = true;
 
-    while( ((code.substr(0,1)!="\n" and code.substr(0,1)!=";") or balance!=0) and (code_prev!=code) ){
+    while( ((code.substr(0,1)!="\n" and code.substr(0,1)!=";" and !string_contains(additional_characters,code.substr(0,1))) or balance!=0) and (code_prev!=code) ){
         code_prev = code;
         code = string_kill_whitespace(code);
 
@@ -359,34 +359,41 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                 return EXIT_FAILURE;
             }
 
+
             code = string_delete_until_or(code,"(");
-            write(function_name + "(",write_to_main)
+            write(resource(function_name) + "(",write_to_main);
+
             string function_code_prev;
+            string argument_type;
+
             code = string_delete_amount(code,1);
-            code = string_kill_all_whitespace();
+            code = string_kill_all_whitespace(code);
             bool first = true;
 
             while(code.substr(0,1)!=")" and function_code_prev!=code){
-                code = string_kill_whitespace();
+                code = string_kill_whitespace(code);
                 function_code_prev = code;
 
                 if(code.substr(0,1)=="," and !first){
-                    write(",",write_to_main)
+                    write(",",write_to_main);
                     code = string_delete_amount(code,1);
                 }
 
                 first = false;
 
                 //Get Value Type
-                if(code_parser.harvest_from_variable_value_type(compile_code,variable_type)==EXIT_FAILURE){
+                if(code_parser.harvest_from_variable_value_type(code,argument_type)==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
 
-                write(resource(variable_type) + " " + resource(variable_name) + "=",write_to_main);
+                //Handle Value
+                if(code_parser.harvest_from_variable_value(code,argument_type,write_to_main,",)")==EXIT_FAILURE){
+                    return EXIT_FAILURE;
+                }
 
-                code = string_kill_whitespace();
+                code = string_kill_whitespace(code);
             }
 
             write(")",write_to_main);
@@ -398,7 +405,6 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
             }
 
             code = string_delete_amount(code,1);
-            code_parser.chop(code);
         }
 
         code = string_kill_whitespace(code);
@@ -500,6 +506,11 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
             }
 
             type = function_handler.functions[function_handler.find(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+
+            if(type == "null"){
+                error_fatal("Couldn't use type null");
+                return EXIT_FAILURE;
+            }
         }
         else {
             return EXIT_FAILURE;
