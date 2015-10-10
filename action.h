@@ -22,6 +22,16 @@ if(action=="import"){
     import_boomslang(package_to_import);
 }
 
+if(action=="register_class"){
+    string class_to_add = string_get_until_or(compile_code,"\n; ");
+    compile_code = string_delete_until_or(compile_code,"\n; ");
+
+    compile_code = string_kill_all_whitespace(compile_code);
+    code_parser.chop(compile_code);
+
+    class_handler.add(class_to_add);
+}
+
 if(action=="native_include"){
     string header_to_include = string_get_until_or(compile_code,";\n");
 
@@ -31,6 +41,36 @@ if(action=="native_include"){
         file_write << "#include \"" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + header_to_include + "\"" << endl;
     } else {
         error_show("Couldn't find Native Header '" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + header_to_include + "'");
+    }
+
+    compile_code = string_delete_until_or(compile_code,";\n");
+    compile_code = string_delete_amount(compile_code,1);
+}
+
+if(action=="native_library"){
+    string header_to_include = string_get_until_or(compile_code,";\n");
+
+    header_to_include = delete_backslash(header_to_include);
+
+    if(file_exists("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + header_to_include)){
+        linker_flags += " \"" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + header_to_include + "\" ";
+    } else {
+        error_show("Couldn't find Native Header '" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + header_to_include + "'");
+    }
+
+    compile_code = string_delete_until_or(compile_code,";\n");
+    compile_code = string_delete_amount(compile_code,1);
+}
+
+if(action=="native_standard_library"){
+    string header_to_include = string_get_until_or(compile_code,";\n");
+
+    header_to_include = delete_backslash(header_to_include);
+
+    if(file_exists("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\lib\\" + header_to_include)){
+        linker_flags += " \"" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\lib\\" + header_to_include + "\" ";
+    } else {
+        error_show("Couldn't find Native Header '" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\lib\\" + header_to_include + "'");
     }
 
     compile_code = string_delete_until_or(compile_code,";\n");

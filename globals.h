@@ -66,6 +66,7 @@ string ve_context = S_NULL;
 
 bool waitafter = false;
 string compile_flags = "";
+string linker_flags = "";
 string compile_code = "";
 ifstream file_read;
 ofstream file_write;

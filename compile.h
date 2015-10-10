@@ -326,4 +326,4 @@ if (compile_code==compile_prev and compile_code!=""){
     return EXIT_FAILURE;
 }
 
-file_write << "int main(){\n" + ve_main_code + "\nreturn 0;\n}";
+file_write << "int main(int argument_count, char** argument){\n" + ve_main_code + "\nreturn 0;\n}";
