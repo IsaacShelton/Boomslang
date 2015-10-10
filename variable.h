@@ -35,9 +35,11 @@ if(compile_code.substr(0,1)=="."){
                 write(";\n",true);
                 return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ),SCOPETYPE_TEMPLATE)].type;
                 ve_main_code += resource(variable_name);
+
                 if(code_parser.parse_function_from(compile_code,true,true,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ))==-1){
                     return EXIT_FAILURE;
                 }
+
                 prev_return_type = return_type;
             } else {
                 error_fatal("Undeclared Variable " + variable_name + ".");

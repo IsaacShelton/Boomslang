@@ -120,8 +120,6 @@ while(compile_code!="" and compile_code!=compile_prev){
                 compile_code = string_kill_whitespace(compile_code);
             }
 
-            write(");\n",true);
-
             if(function_code_prev==compile_code){
                 error_fatal("Internal Function Error");
                 pend();

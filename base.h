@@ -16,39 +16,53 @@ using namespace std;
 //Parses Function Arguments, example input: ("hello world",10)
 //Returns code with semicolon and newline attached.
 int CodeParser::parse_args(string& code, bool write_to_main){
-    code = string_kill_whitespace(code);
 
     if(code.substr(0,1)!="("){
-        error_fatal("Expected '(' before '" + code.substr(0,1) + "' when Parsing Function Arguments.");
+        error_fatal("Expected '(' before '" + code.substr(0,1) + "' when parsing function arguments");
+    }
+
+    write("(",write_to_main);
+    code = string_delete_amount(code,1);
+    code = string_kill_all_whitespace(code);
+    bool first = write_to_main;
+    string function_code_prev;
+    string argument_type;
+
+    while(code.substr(0,1)!=")" and function_code_prev!=code){
+        code = string_kill_whitespace(code);
+        function_code_prev = code;
+
+        if(code.substr(0,1)=="," and !first){
+            write(",",write_to_main);
+            code = string_delete_amount(code,1);
+        }
+
+        first = false;
+
+        //Get Value Type
+        if(code_parser.harvest_from_variable_value_type(code,argument_type)==EXIT_FAILURE){
+            error_fatal("Couldn't Determine Type for Function Argument");
+            pend();
+            return EXIT_FAILURE;
+        }
+
+        //Handle Value
+        if(code_parser.harvest_from_variable_value(code,argument_type,write_to_main,",)")==EXIT_FAILURE){
+            return EXIT_FAILURE;
+        }
+
+        code = string_kill_whitespace(code);
+    }
+
+    write(");\n",write_to_main);
+
+    if(function_code_prev==code){
+        error_fatal("Internal Function Error");
         pend();
         return EXIT_FAILURE;
     }
 
     code = string_delete_amount(code,1);
-    write("(",write_to_main);
-
-    int balance = 0;
-    string code_prev;
-    while( (code.substr(0,1)!=")" and balance!=0) and code!="" and (code_prev!=code)){
-        code = string_kill_whitespace(code);
-
-        code_prev = code;
-
-        code = string_kill_whitespace(code);
-    }
-
-    if(code_prev==code){
-        error_fatal("Internal Error when Parsing Function Arguments.");
-        error_debug("Remaining code:\n" + code + "\n-----------------------");
-        pend();
-        return EXIT_FAILURE;
-    }
-
-    if(code.substr(0,1)==")"){
-        code = string_delete_amount(code,1);
-        write(")",write_to_main);
-    }
-
     return EXIT_SUCCESS;
 }
 
