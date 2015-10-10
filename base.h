@@ -286,9 +286,9 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
             }
             accept_value = false;
 
-            string variable_name = string_get_until_or(code," =+-/*.)");
+            string variable_name = string_get_until_or(code," =+-/*.)\n");
 
-            code = string_delete_until_or(code," =+-/*.)");
+            code = string_delete_until_or(code," =+-/*.)\n");
 
             code = string_kill_whitespace(code);
 
@@ -345,14 +345,60 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
             }
         }
         else if(code_parser.arg_type(code)==ARGTYPE_FUNCTION){
-            ///TODO Function Handling code in code_parser.harvest_from_variable_value()
-
             if(accept_value==false){
                 error_fatal("Expected an operator before Function");
                 pend();
                 return EXIT_FAILURE;
             }
             accept_value = false;
+
+            string function_name = string_get_until_or(code,"(");
+
+            if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                error_fatal("Undeclared function '" + function_name + "'");
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_until_or(code,"(");
+            write(function_name + "(",write_to_main)
+            string function_code_prev;
+            code = string_delete_amount(code,1);
+            code = string_kill_all_whitespace();
+            bool first = true;
+
+            while(code.substr(0,1)!=")" and function_code_prev!=code){
+                code = string_kill_whitespace();
+                function_code_prev = code;
+
+                if(code.substr(0,1)=="," and !first){
+                    write(",",write_to_main)
+                    code = string_delete_amount(code,1);
+                }
+
+                first = false;
+
+                //Get Value Type
+                if(code_parser.harvest_from_variable_value_type(compile_code,variable_type)==EXIT_FAILURE){
+                    error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                write(resource(variable_type) + " " + resource(variable_name) + "=",write_to_main);
+
+                code = string_kill_whitespace();
+            }
+
+            write(")",write_to_main);
+
+            if(function_code_prev==code){
+                error_fatal("Internal Function Error");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_amount(code,1);
+            code_parser.chop(code);
         }
 
         code = string_kill_whitespace(code);
@@ -382,14 +428,12 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
 
         if (code.substr(0,1)=="+"){
             error_fatal("Expected a value before '+'");
-            pend();
             return EXIT_FAILURE;
         }
         else if (code.substr(0,1)=="-"){
             if (code.substr(1,1)!="0" and code.substr(1,1)!="1" and code.substr(1,1)!="2" and code.substr(1,1)!="3" and code.substr(1,1)!="4"
             and code.substr(1,1)!="5" and code.substr(1,1)!="6" and code.substr(1,1)!="7" and code.substr(1,1)!="8" and code.substr(1,1)!="9"){
                 error_fatal("Expected a value before '-'");
-                pend();
                 return EXIT_FAILURE;
             } else {
                 type = "Number";
@@ -397,12 +441,10 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
         }
         else if (code.substr(0,1)=="*"){
             error_fatal("Expected a value before '*'");
-            pend();
             return EXIT_FAILURE;
         }
         else if (code.substr(0,1)=="/"){
             error_fatal("Expected a value before '/'");
-            pend();
             return EXIT_FAILURE;
         }
         else if (code.substr(0,1)=="("){
@@ -438,22 +480,29 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
             type = "Number";
         }
         else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){//Variable
-            string variable_name = string_get_until_or(code," =+-/*.)");
+            string variable_name = string_get_until_or(code," =+-/*.)\n");
 
             if(!variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
                 error_fatal("Undeclared variable '" + variable_name + "'");
-                pend();
                 return EXIT_FAILURE;
             }
 
-            code = string_delete_until_or(code," =+-/*.)");
-
-            code = string_kill_whitespace(code);
+            type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
 
             //Could add more functionality
         }
         else if(code_parser.arg_type(code)==ARGTYPE_FUNCTION){
-            ///TODO Function Handling code in harvest_rawvalue_value()
+            string function_name = string_get_until_or(code,"(");
+
+            if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                error_fatal("Undeclared function '" + function_name + "'");
+                return EXIT_FAILURE;
+            }
+
+            type = function_handler.functions[function_handler.find(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+        }
+        else {
+            return EXIT_FAILURE;
         }
 
         code = string_kill_whitespace(code);
@@ -463,24 +512,17 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
 
 //Function to Determine what data type is at the beginning of the string
 int CodeParser::arg_type(string code){
-    if(code.substr(0,1)=="\""){
+    if(code.substr(0,1)=="\""){//String
         return ARGTYPE_STRING;
-    } else if(code.substr(0,1)=="-"
-    or code.substr(0,1)=="0"
-    or code.substr(0,1)=="1"
-    or code.substr(0,1)=="2"
-    or code.substr(0,1)=="3"
-    or code.substr(0,1)=="4"
-    or code.substr(0,1)=="5"
-    or code.substr(0,1)=="6"
-    or code.substr(0,1)=="7"
-    or code.substr(0,1)=="8"
-    or code.substr(0,1)=="9"
+    }
+    else if(code.substr(0,1)=="-" or code.substr(0,1)=="0" or code.substr(0,1)=="1" or code.substr(0,1)=="2" or code.substr(0,1)=="3" or code.substr(0,1)=="4" or code.substr(0,1)=="5"
+    or code.substr(0,1)=="6" or code.substr(0,1)=="7" or code.substr(0,1)=="8" or code.substr(0,1)=="9"
     or (code.substr(1,1)=="-" and (code.substr(1,1)=="0" or code.substr(1,1)=="1" or code.substr(1,1)=="2" or code.substr(1,1)=="3" or code.substr(1,1)=="4"
-        or code.substr(1,1)=="5" or code.substr(1,1)=="6" or code.substr(1,1)=="7" or code.substr(1,1)=="8" or code.substr(1,1)=="9"))){
+    or code.substr(1,1)=="5" or code.substr(1,1)=="6" or code.substr(1,1)=="7" or code.substr(1,1)=="8" or code.substr(1,1)=="9"))){
+        //Number
         return ARGTYPE_NUMBER;
     }
-    else if(function_handler.exists(string_get_until(code," ("),S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
+    else if(is_identifier(string_get_until_or(compile_code,"("))){
         return ARGTYPE_FUNCTION;
     } else {
         return ARGTYPE_VARIABLE;

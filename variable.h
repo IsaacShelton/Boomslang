@@ -19,12 +19,13 @@ string variable_name = string_get_until_or(compile_code," =+-/*.");
 
 compile_code = string_delete_until_or(compile_code," =+-/*.");
 
-compile_code = string_kill_whitespace(compile_code);
+compile_code = string_kill_all_whitespace(compile_code);
 
 if(compile_code.substr(0,1)=="."){
     error_debug("Found " + variable_name + " to contain a method.");
     string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
     string prev_return_type = return_type;
+
     ve_main_code += resource(variable_name);
 
     while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
@@ -81,10 +82,12 @@ if(compile_code.substr(0,1)=="="){
 
     if(!variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){//Not Declared Yet
         string variable_type = S_NULL;
-        compile_code = string_kill_whitespace(compile_code);
+        compile_code = string_kill_all_whitespace(compile_code);
 
         //Get Value Type
         if(code_parser.harvest_from_variable_value_type(compile_code,variable_type)==EXIT_FAILURE){
+            error_fatal("Couldn't Determine Type for Variable '" + variable_name + "'");
+            pend();
             return EXIT_FAILURE;
         }
 
@@ -97,10 +100,10 @@ if(compile_code.substr(0,1)=="="){
 
         code_parser.chop(compile_code);
 
-        ve_main_code += ";";
+        ve_main_code += ";\n";
         variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN);
     }
-    else {//Is Declared
+    else {//Might be Declared
         if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){//Does the variable exist?
             //The variable exists, so far okay
             string variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
@@ -115,7 +118,7 @@ if(compile_code.substr(0,1)=="="){
 
             code_parser.chop(compile_code);
 
-            ve_main_code += ";";
+            ve_main_code += ";\n";
         }
         else {//The variable does not exist
             error_fatal("Undeclared variable '" + variable_name + "'.");
