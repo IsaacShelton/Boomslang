@@ -128,6 +128,16 @@ string string_kill_all_whitespace(string str){
     return string_delete_amount(str,n);
 }
 
+string string_kill_newline(string str){
+    int n = 0;
+
+    while(!(str.substr(n,1)!="\n")){
+        n++;
+    }
+
+    return string_delete_amount(str,n);
+}
+
 string resource(string a){
     return "BOOMSLANG_" + string_replace_all(string_replace_all(a,":","::BOOMSLANG_"),".",".BOOMSLANG_");
 }
@@ -422,7 +432,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                     return EXIT_FAILURE;
                 }
 
-                exp += "BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")";
+                exp += "BOOMSLANG_Number(" + harvest_decimal(code) + ")";
             }
             else if(accept_value==true){
                 error_fatal("Expected a value before '-'");
@@ -528,7 +538,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                 return EXIT_FAILURE;
             }
 
-            exp += "BOOMSLANGCORE_create_string(\"" + harvest_string(code) + "\")";
+            exp += "BOOMSLANG_String(\"" + harvest_string(code) + "\")";
         }
         else if(code_parser.arg_type(code)==ARGTYPE_NUMBER){
 
@@ -548,7 +558,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                 return EXIT_FAILURE;
             }
 
-            exp += "BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")";
+            exp += "BOOMSLANG_Number(" + harvest_decimal(code) + ")";
         }
         else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){
             if(accept_value==false){

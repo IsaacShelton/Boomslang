@@ -106,19 +106,19 @@ int CodeParser::parse_function_from(string& code, bool write_to_main, bool check
 
 //Takes string and removes semicolon and newline if needed
 void CodeParser::chop(string& code){
-    code = string_kill_whitespace(code);
+    string potential_code = string_kill_whitespace(code);
 
-    if(code.substr(0,1)=="\n"){
-        code = string_delete_amount(code,1);
+    if(potential_code.substr(0,1)=="\n"){
+        potential_code = string_delete_amount(potential_code,1);
     }
 
-    code = string_kill_whitespace(code);
+    potential_code = string_kill_whitespace(code);
 
-    if(code.substr(0,1)==";"){
-        code = string_delete_amount(code,1);
+    if(potential_code.substr(0,1)==";"){
+        potential_code  = string_kill_whitespace(code);
+        potential_code = string_delete_amount(code,1);
+        code = potential_code;
     }
-
-    code = string_kill_whitespace(code);
 }
 
 //Writes and removes the value in variable expressions
@@ -164,7 +164,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                     return EXIT_FAILURE;
                 }
 
-                write("BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")",write_to_main);
+                write("BOOMSLANG_Number(" + harvest_decimal(code) + ")",write_to_main);
             }
             else if(accept_value==true){
                 error_fatal("Expected a value before '-'");
@@ -270,7 +270,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                 return EXIT_FAILURE;
             }
 
-            write("BOOMSLANGCORE_create_string(\"" + harvest_string(code) + "\")",write_to_main);
+            write("BOOMSLANG_String(\"" + harvest_string(code) + "\")",write_to_main);
         }
         else if(code_parser.arg_type(code)==ARGTYPE_NUMBER){
 
@@ -290,7 +290,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                 return EXIT_FAILURE;
             }
 
-            write("BOOMSLANGCORE_create_number(" + harvest_decimal(code) + ")",write_to_main);
+            write("BOOMSLANG_Number(" + harvest_decimal(code) + ")",write_to_main);
         }
         else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){
             if(accept_value==false){

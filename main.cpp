@@ -66,21 +66,23 @@ public:
     string type = "";
     int parent_id = -1;
     int parent_type = -1;
+    unsigned int indent = 0;
 
-    Variable(string new_name, string new_type, int new_parent_id, int new_parent_type){
+    Variable(string new_name, string new_type, int new_parent_id, int new_parent_type, unsigned int new_indent = 0){
         name = new_name;
         type = new_type;
         parent_id = new_parent_id;
         parent_type = new_parent_type;
+        indent = new_indent;
     }
 };
 
 class VariableHandler{
 public:
     vector<Variable> variables;
-    void add(string name, string type, int parent_id, int parent_type);
-    bool exists(string var_name, string var_type, int var_parent_id, int var_parent_type);
-    bool exists_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables);
+    void add(string name, string type, int parent_id, int parent_type, unsigned int indent = 0);
+    bool exists(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent = 0);
+    bool exists_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables, unsigned int var_indent = 0);
     int find(string var_name, string var_type, int var_parent_id, int var_parent_type);
     int find_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables);
 }variable_handler;

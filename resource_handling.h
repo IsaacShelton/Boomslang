@@ -17,13 +17,13 @@ using namespace std;
 //Variables
 
 
-void VariableHandler::add(string name, string type, int parent_id, int parent_type){
-    Variable* ptr_var = (new Variable(name,type,parent_id,parent_type));
+void VariableHandler::add(string name, string type, int parent_id, int parent_type, unsigned int indent){
+    Variable* ptr_var = (new Variable(name,type,parent_id,parent_type,indent));
     variables.push_back( *ptr_var );
     delete ptr_var;
 }
 
-bool VariableHandler::exists(string var_name, string var_type, int var_parent_id, int var_parent_type){
+bool VariableHandler::exists(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent){
     bool name_null = (var_name==" ");//" " == null
     bool type_null = (var_type==" ");//" " == null
     bool parent_id_null = (var_parent_id==-1);
@@ -35,13 +35,14 @@ bool VariableHandler::exists(string var_name, string var_type, int var_parent_id
             and (variables[i].type == var_type or type_null)
             and (variables[i].parent_id == var_parent_id or parent_id_null)
             and (variables[i].parent_type == var_parent_type or parent_type_null)
+            and (variables[i].indent <= var_indent)
         ) return true;
     }
 
     return false;
 }
 
-bool VariableHandler::exists_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables){
+bool VariableHandler::exists_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables, unsigned int var_indent){
     bool name_null = (var_name==" ");//" " == null
     bool type_null = (var_type==" ");//" " == null
     bool parent_id_null = (var_parent_id==-1);
@@ -53,6 +54,7 @@ bool VariableHandler::exists_in(string var_name, string var_type, int var_parent
             and (your_variables[i].type == var_type or type_null)
             and (your_variables[i].parent_id == var_parent_id or parent_id_null)
             and (your_variables[i].parent_type == var_parent_type or parent_type_null)
+            and (your_variables[i].indent <= var_indent)
         ) return true;
     }
 

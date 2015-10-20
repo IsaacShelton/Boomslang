@@ -52,6 +52,7 @@ string file_read_name = "";
 string file_write_name = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\prenative.cpp";
 int ve_apptype = APPTYPE_WINDOWS;
 bool console = false;
+unsigned int indentation = 0;
 
 Container ve_actions;
 

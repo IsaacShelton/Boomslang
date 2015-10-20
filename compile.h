@@ -17,6 +17,45 @@ string compile_prev = "";
 
 ///Main Compile Loop
 while(compile_code!="" and compile_code!=compile_prev){
+    compile_code = string_kill_newline(compile_code);
+    int new_indentation = 0;
+
+    //Get Indents
+    while(is_indent(compile_code)){
+        //Record Indent
+        new_indentation++;
+
+        //Remove indent
+        if(compile_code.substr(0,4)=="    "){
+            compile_code = string_delete_amount(compile_code,4);
+        }
+        else if(compile_code.substr(0,1)=="\t"){
+            compile_code = string_delete_amount(compile_code,1);
+        }
+        else {
+            error_fatal("Encountered an unexpected error while parsing block.");
+            pend();
+            return EXIT_FAILURE;
+        }
+    }
+
+    //Check for blocks
+    if(new_indentation > indentation){
+        while(new_indentation > indentation){
+            indentation++;
+            write("{\n",true);
+        }
+    }
+    else if(indentation > new_indentation){
+        while(indentation > new_indentation){
+            indentation--;
+            write("}\n",true);
+        }
+    }
+
+    if(compile_code=="") continue;
+
+    //Prepare for command
     compile_code = string_kill_all_whitespace(compile_code);
     compile_prev = compile_code;
 
@@ -49,7 +88,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 balance-=1;
                 write(compile_code.substr(0,1),true);
                 compile_code = string_delete_amount(compile_code,1);
-            }else{
+            } else {
                 write(compile_code.substr(0,1),true);
                 compile_code = string_delete_amount(compile_code,1);
             }
@@ -67,8 +106,6 @@ while(compile_code!="" and compile_code!=compile_prev){
         compile_code = string_kill_whitespace(compile_code);
 
         #include "action.h"
-
-        compile_code = string_kill_whitespace(compile_code);
         continue;
     }
 
@@ -133,8 +170,6 @@ while(compile_code!="" and compile_code!=compile_prev){
             pend();
             return EXIT_FAILURE;
         }
-
-        compile_code = string_kill_whitespace(compile_code);
         continue;
     }
 
@@ -209,7 +244,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             //String
 
             string rawstring = harvest_string(compile_code);
-            ve_main_code += "BOOMSLANGCORE_create_string(\"" + rawstring + "\")";
+            ve_main_code += "BOOMSLANG_String(\"" + rawstring + "\")";
             compile_code = string_kill_whitespace(compile_code);
             string prev_return_type = "String";
             string return_type = "";
@@ -225,7 +260,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 if(compile_code.substr(0,1)==","){
                     write(";",true);
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("String"),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += "BOOMSLANGCORE_create_string(\"" + rawstring + "\")";
+                    ve_main_code += "BOOMSLANG_String(\"" + rawstring + "\")";
                     if(code_parser.parse_function_from(compile_code,true,true,class_handler.find("String"))==-1){
                         return EXIT_FAILURE;
                     }
@@ -264,7 +299,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             //Decimal
 
             string rawdecimal = harvest_decimal(compile_code);
-            ve_main_code += "BOOMSLANGCORE_create_number(" + rawdecimal + ")";
+            ve_main_code += "BOOMSLANG_Number(" + rawdecimal + ")";
             compile_code = string_kill_whitespace(compile_code);
             string return_type = "Decimal";
             string prev_return_type = "";
@@ -274,7 +309,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 if(compile_code.substr(0,1)==","){
                     write(";\n",true);
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("Decimal"),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += "BOOMSLANGCORE_create_number(" + rawdecimal + ")";
+                    ve_main_code += "BOOMSLANG_Number(" + rawdecimal + ")";
                     if(code_parser.parse_function_from(compile_code,true,true,class_handler.find("Decimal"))==-1){
                         return EXIT_FAILURE;
                     }
@@ -309,17 +344,20 @@ while(compile_code!="" and compile_code!=compile_prev){
             compile_code = string_kill_all_whitespace(compile_code);
             write(";\n",true);
         }
-
-            compile_code = string_kill_whitespace(compile_code);
     }
-
-    compile_code = string_kill_all_whitespace(compile_code);
 }
 
 //Internal Error?
 if (compile_code==compile_prev and compile_code!=""){
     error_fatal("Internal Error");
     error_debug("Remaining code:\n" + compile_code + "\n-----------------------");
+    pend();
+    return EXIT_FAILURE;
+}
+
+//Block Error? (This error should never occur)
+if(indentation!=0){
+    error_fatal("Unbalanced Blocks");
     pend();
     return EXIT_FAILURE;
 }
