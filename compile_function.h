@@ -13,7 +13,7 @@
 
 using namespace std;
 
-string return_type = "";
+string return_type = "none";
 string write_buffer = "";
 indentation = 1;
 write_to = &write_buffer;
@@ -125,11 +125,7 @@ while(compile_code!=compile_prev and indentation>0){
         string function_name = string_get_until_or(compile_code,"(");
         compile_code = string_delete_until_or(compile_code,"(");
 
-        if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
-            if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
-                error_fatal("Undeclared function '" + function_name + "'");
-                return EXIT_FAILURE;
-            }
+        if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_FUNCTION) ){
 
             write_buffer += resource(function_name) + "(";
 
@@ -372,5 +368,3 @@ if(indentation!=0){
     pend();
     return EXIT_FAILURE;
 }
-
-file_write << write_buffer;

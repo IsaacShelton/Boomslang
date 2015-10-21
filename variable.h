@@ -24,7 +24,7 @@ compile_code = string_kill_all_whitespace(compile_code);
 if(compile_code.substr(0,1)=="."){
     error_debug("Found " + variable_name + " to contain a method.");
 
-    if(!variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){
+    if(!variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation) and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,I_NULL),SCOPETYPE_FUNCTION)){
         error_fatal("Undeclared Variable '" + variable_name + "'");
         pend();
         return EXIT_FAILURE;

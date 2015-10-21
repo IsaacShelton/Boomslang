@@ -32,6 +32,7 @@ using namespace std;
 class CodeParser{
 public:
     int parse_args(string& code);
+    int parse_declaration_args(string& code, string method_name);
     int parse_function_from(string& code, bool check_semicolon, int class_id);
     void chop(string& code);
     int harvest_from_variable_value(string& code, string &type, string additional_characters);

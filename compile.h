@@ -14,6 +14,7 @@
 using namespace std;
 
 string compile_prev = "";
+string method_name;
 
 ///Main Compile Loop
 while(compile_code!="" and compile_code!=compile_prev){
@@ -103,9 +104,11 @@ while(compile_code!="" and compile_code!=compile_prev){
             //Function Declaration
             compile_code = string_delete_amount(compile_code,2);
             compile_code = string_kill_whitespace(compile_code);
+            string buffer;
 
             string method_name = string_get_until_or(compile_code," (");
             compile_code = string_delete_until_or(compile_code," (");
+            function_handler.add(method_name,S_NULL,"",I_NULL,SCOPETYPE_GLOBAL);
 
             //Expect opening parenthesis
             if(compile_code.substr(0,1)!="("){
@@ -114,10 +117,18 @@ while(compile_code!="" and compile_code!=compile_prev){
                 return EXIT_FAILURE;
             }
 
-            write_to = &ve_main_code;
-            code_parser.parse_args(compile_code);
+            write_to = &buffer;
+            if(code_parser.parse_declaration_args(compile_code,method_name)==EXIT_FAILURE){
+                return EXIT_FAILURE;
+            }
 
             #include "compile_function.h"
+
+            if(return_type!="none"){
+                file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" << write_buffer << "}\n";
+            } else {
+                file_write << "void " + resource(method_name) + buffer + "{\n" << write_buffer << "}\n";
+            }
         }
     }
 
@@ -141,11 +152,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         compile_code = string_delete_until_or(compile_code,"(");
 
         if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
-            if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
-                error_fatal("Undeclared method '" + function_name + "'");
-                return EXIT_FAILURE;
-            }
-
+            write_to = &ve_main_code;
             write(resource(function_name) + "(",true);
 
             string function_code_prev;
@@ -189,6 +196,8 @@ while(compile_code!="" and compile_code!=compile_prev){
 
             compile_code = string_delete_amount(compile_code,1);
             code_parser.chop(compile_code);
+
+            ve_main_code += ");\n";
         } else {
             error_fatal("The Method '" + function_name + "' does not exist.");
             pend();

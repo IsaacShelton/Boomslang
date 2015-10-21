@@ -19,6 +19,8 @@ int CodeParser::parse_args(string& code){
 
     if(code.substr(0,1)!="("){
         error_fatal("Expected '(' before '" + code.substr(0,1) + "' when parsing method arguments");
+        pend();
+        return EXIT_FAILURE;
     }
 
     *write_to += "(";
@@ -66,10 +68,12 @@ int CodeParser::parse_args(string& code){
     return EXIT_SUCCESS;
 }
 
-int CodeParser::parse_declaration_args(string& code){
+int CodeParser::parse_declaration_args(string& code, string method_name){
 
     if(code.substr(0,1)!="("){
         error_fatal("Expected '(' before '" + code.substr(0,1) + "' when parsing method declaration arguments");
+        pend();
+        return EXIT_FAILURE;
     }
 
     *write_to += "(";
@@ -88,10 +92,12 @@ int CodeParser::parse_declaration_args(string& code){
             code = string_delete_amount(code,1);
         }
 
+        code = string_kill_whitespace(code);
+
         first = false;
 
         //Get Variable
-        parameter_name = string_get_until_or(code," =");
+        string parameter_name = string_get_until_or(code," =");
         code = string_delete_until_or(code," =");
         code = string_kill_whitespace(code);
 
@@ -101,12 +107,17 @@ int CodeParser::parse_declaration_args(string& code){
             return EXIT_FAILURE;
         }
 
+        code = string_delete_amount(code,1);
+
         //Get Value Type
         if(code_parser.harvest_from_variable_value_type(code,argument_type)==EXIT_FAILURE){
             error_fatal("Couldn't Determine Type for Method Argument Declaration");
             pend();
             return EXIT_FAILURE;
         }
+
+        *write_to += resource(argument_type) + " " + resource(parameter_name) + " = ";
+        variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
 
         //Handle Value
         if(code_parser.harvest_from_variable_value(code,argument_type,",)")==EXIT_FAILURE){
@@ -187,8 +198,7 @@ void CodeParser::chop(string& code){
 int CodeParser::harvest_from_variable_value(string& code, string &type, string additional_characters){
     /*
         code - code
-        type - variable type, will return type if S_NULL is specified
-        write_to_main - write to main, if I_NULL don't write.
+        type - variable type
 
         Example:
         "Hello " + "World"\n
@@ -284,7 +294,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, string a
             code = string_delete_amount(code,1);
             *write_to += ")";
         }
-        else if(string_get_until(code," ")=="new"){
+        else if(string_get_until_or(code," ")=="new"){
             if(accept_value==false){
                 error_fatal("Expected an operator before 'new'");
                 pend();
@@ -293,11 +303,11 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, string a
             accept_value = false;
             //Create new object
 
-            code = string_delete_until(code," ");
+            code = string_delete_until_or(code," ");
 
             code = string_kill_whitespace(code);
 
-            string variable_class = string_get_until_or(code," ;\n");
+            string variable_class = string_get_until_or(code," ;\n+-*/),");
 
             if(!class_handler.exists(variable_class)){
                 error_fatal("Undeclared Template '" + variable_class + "'");
@@ -309,9 +319,8 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, string a
                 return EXIT_FAILURE;
             }
 
-            code = string_delete_until_or(code," ;\n");
+            code = string_delete_until_or(code," ;\n+-*/),");
             *write_to += " BOOMSLANGCORE_create<" + resource(variable_class) + ">() ";
-
             code = string_kill_whitespace(code);
         }
         else if(code_parser.arg_type(code)==ARGTYPE_STRING){
@@ -460,8 +469,6 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, string a
                 //Get Value Type
                 if(code_parser.harvest_from_variable_value_type(code,argument_type)==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
-                    pend();
-                    return EXIT_FAILURE;
                 }
 
                 //Handle Value
@@ -539,14 +546,14 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
         else if (code.substr(0,1)==")"){
             code = string_delete_amount(code,1);
         }
-        else if(string_get_until(code," ")=="new"){
+        else if(string_get_until_or(code," ")=="new"){
             //Create new object
 
-            code = string_delete_until(code," ");
+            code = string_delete_until_or(code," ");
 
             code = string_kill_whitespace(code);
 
-            string variable_class = string_get_until_or(code," ;\n+-*/)");
+            string variable_class = string_get_until_or(code," ;\n+-*/),");
 
             if(!class_handler.exists(variable_class)){
                 error_fatal("Undeclared Template '" + variable_class + "'");
@@ -554,7 +561,7 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
                 return EXIT_FAILURE;
             }
 
-            code = string_delete_until_or(code," ;\n+-*/)");
+            code = string_delete_until_or(code," ;\n+-*/),");
             type = variable_class;
 
             code = string_kill_whitespace(code);
