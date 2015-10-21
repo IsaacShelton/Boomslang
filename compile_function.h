@@ -21,7 +21,7 @@ write_to = &write_buffer;
 ///Function Code Compile Loop
 while(compile_code!=compile_prev and indentation>0){
     compile_code = string_kill_newline(compile_code);
-    int new_indentation = 0;
+    unsigned int new_indentation = 0;
 
     //Get Indents
     while(is_indent(compile_code)){

@@ -18,7 +18,7 @@ using namespace std;
 int CodeParser::parse_args(string& code){
 
     if(code.substr(0,1)!="("){
-        error_fatal("Expected '(' before '" + code.substr(0,1) + "' when parsing function arguments");
+        error_fatal("Expected '(' before '" + code.substr(0,1) + "' when parsing method arguments");
     }
 
     *write_to += "(";
@@ -41,7 +41,7 @@ int CodeParser::parse_args(string& code){
 
         //Get Value Type
         if(code_parser.harvest_from_variable_value_type(code,argument_type)==EXIT_FAILURE){
-            error_fatal("Couldn't Determine Type for Function Argument");
+            error_fatal("Couldn't Determine Type for Method Argument");
             pend();
             return EXIT_FAILURE;
         }
@@ -57,7 +57,69 @@ int CodeParser::parse_args(string& code){
     *write_to += ")";
 
     if(function_code_prev==code){
-        error_fatal("Internal Function Error");
+        error_fatal("Internal Method Error");
+        pend();
+        return EXIT_FAILURE;
+    }
+
+    code = string_delete_amount(code,1);
+    return EXIT_SUCCESS;
+}
+
+int CodeParser::parse_declaration_args(string& code){
+
+    if(code.substr(0,1)!="("){
+        error_fatal("Expected '(' before '" + code.substr(0,1) + "' when parsing method declaration arguments");
+    }
+
+    *write_to += "(";
+    code = string_delete_amount(code,1);
+    code = string_kill_all_whitespace(code);
+    bool first = true;
+    string function_code_prev;
+    string argument_type;
+
+    while(code.substr(0,1)!=")" and function_code_prev!=code){
+        code = string_kill_whitespace(code);
+        function_code_prev = code;
+
+        if(code.substr(0,1)=="," and !first){
+            *write_to += ",";
+            code = string_delete_amount(code,1);
+        }
+
+        first = false;
+
+        //Get Variable
+        parameter_name = string_get_until_or(code," =");
+        code = string_delete_until_or(code," =");
+        code = string_kill_whitespace(code);
+
+        if(code.substr(0,1)!="="){
+            error_fatal("Expected '=' before '" + code.substr(0,1) + "' in Method Argument Declaration");
+            pend();
+            return EXIT_FAILURE;
+        }
+
+        //Get Value Type
+        if(code_parser.harvest_from_variable_value_type(code,argument_type)==EXIT_FAILURE){
+            error_fatal("Couldn't Determine Type for Method Argument Declaration");
+            pend();
+            return EXIT_FAILURE;
+        }
+
+        //Handle Value
+        if(code_parser.harvest_from_variable_value(code,argument_type,",)")==EXIT_FAILURE){
+            return EXIT_FAILURE;
+        }
+
+        code = string_kill_whitespace(code);
+    }
+
+    *write_to += ")";
+
+    if(function_code_prev==code){
+        error_fatal("Internal Method Declaration Error");
         pend();
         return EXIT_FAILURE;
     }
@@ -370,6 +432,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, string a
 
             if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
                 error_fatal("Undeclared function '" + function_name + "'");
+                pend();
                 return EXIT_FAILURE;
             }
 
@@ -447,12 +510,14 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
 
         if (code.substr(0,1)=="+"){
             error_fatal("Expected a value before '+'");
+            pend();
             return EXIT_FAILURE;
         }
         else if (code.substr(0,1)=="-"){
             if (code.substr(1,1)!="0" and code.substr(1,1)!="1" and code.substr(1,1)!="2" and code.substr(1,1)!="3" and code.substr(1,1)!="4"
             and code.substr(1,1)!="5" and code.substr(1,1)!="6" and code.substr(1,1)!="7" and code.substr(1,1)!="8" and code.substr(1,1)!="9"){
                 error_fatal("Expected a value before '-'");
+                pend();
                 return EXIT_FAILURE;
             } else {
                 type = "Number";
@@ -460,10 +525,12 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
         }
         else if (code.substr(0,1)=="*"){
             error_fatal("Expected a value before '*'");
+            pend();
             return EXIT_FAILURE;
         }
         else if (code.substr(0,1)=="/"){
             error_fatal("Expected a value before '/'");
+            pend();
             return EXIT_FAILURE;
         }
         else if (code.substr(0,1)=="("){
@@ -503,6 +570,7 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
 
             if(!variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
                 error_fatal("Undeclared variable '" + variable_name + "'");
+                pend();
                 return EXIT_FAILURE;
             }
 
@@ -515,6 +583,7 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
 
             if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
                 error_fatal("Undeclared function '" + function_name + "'");
+                pend();
                 return EXIT_FAILURE;
             }
 
@@ -522,6 +591,7 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
 
             if(type == "none"){
                 error_fatal("Couldn't use type none");
+                pend();
                 return EXIT_FAILURE;
             }
         }

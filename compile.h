@@ -104,11 +104,18 @@ while(compile_code!="" and compile_code!=compile_prev){
             compile_code = string_delete_amount(compile_code,2);
             compile_code = string_kill_whitespace(compile_code);
 
+            string method_name = string_get_until_or(compile_code," (");
+            compile_code = string_delete_until_or(compile_code," (");
+
+            //Expect opening parenthesis
             if(compile_code.substr(0,1)!="("){
-                eroor_fatal("Expected '(' before '" + compile_code.substr(0,1) + "' in Method Argument Declaration");
+                error_fatal("Expected '(' before '" + compile_code.substr(0,1) + "' in Method Argument Declaration");
                 pend();
                 return EXIT_FAILURE;
             }
+
+            write_to = &ve_main_code;
+            code_parser.parse_args(compile_code);
 
             #include "compile_function.h"
         }
