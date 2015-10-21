@@ -102,6 +102,14 @@ while(compile_code!="" and compile_code!=compile_prev){
         if(string_get_until_or(compile_code," \n")=="on"){
             //Function Declaration
             compile_code = string_delete_amount(compile_code,2);
+            compile_code = string_kill_whitespace(compile_code);
+
+            if(compile_code.substr(0,1)!="("){
+                eroor_fatal("Expected '(' before '" + compile_code.substr(0,1) + "' in Method Argument Declaration");
+                pend();
+                return EXIT_FAILURE;
+            }
+
             #include "compile_function.h"
         }
     }
@@ -118,7 +126,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         continue;
     }
 
-    //Is it a function?
+    //Is it a method?
     if( is_identifier(string_get_until_or(compile_code,"(")) ){
         error_debug("Found " + string_get_until_or(compile_code,"(") + " to be a function.");
 
