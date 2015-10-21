@@ -16,9 +16,9 @@ using namespace std;
 error_debug("Found " + string_get_until_or(compile_code," =+-/*.") + " to be a variable.");
 
 string variable_name = string_get_until_or(compile_code," =+-/*.");
+string variable_buffer;
 
 compile_code = string_delete_until_or(compile_code," =+-/*.");
-
 compile_code = string_kill_all_whitespace(compile_code);
 
 if(compile_code.substr(0,1)=="."){
@@ -33,17 +33,17 @@ if(compile_code.substr(0,1)=="."){
     string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
     string prev_return_type = return_type;
 
-    ve_main_code += resource(variable_name);
+    *write_to += resource(variable_name);
 
     while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
         if(compile_code.substr(0,1)==","){
             if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){
-                write(";\n",true);
+                *write_to += ";\n";
                 return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ),SCOPETYPE_TEMPLATE)].type;
-                ve_main_code += resource(variable_name);
+                *write_to += resource(variable_name);
 
-                if(code_parser.parse_function_from(compile_code,true,true,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ))==-1){
+                if(code_parser.parse_function_from(compile_code,true,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ))==-1){
                     return EXIT_FAILURE;
                 }
 
@@ -56,19 +56,20 @@ if(compile_code.substr(0,1)=="."){
         }
 
         if(compile_code.substr(0,1)=="."){
-            if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="null"){
+            if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                 return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                if(code_parser.parse_function_from(compile_code,true,true,class_handler.find(prev_return_type))==-1){
+
+                if(code_parser.parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
                     return EXIT_FAILURE;
                 }
                 prev_return_type = return_type;
                 } else {
-                if(prev_return_type!="null"){
+                if(prev_return_type!="none"){
                     error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
                     pend();
                     return EXIT_FAILURE;
                 } else {
-                    error_fatal("You Can't Call Functions of null");
+                    error_fatal("You Can't Call Functions of none");
                     pend();
                     return EXIT_FAILURE;
                 }
@@ -79,6 +80,7 @@ if(compile_code.substr(0,1)=="."){
     compile_code = string_kill_whitespace(compile_code);
 
     code_parser.chop(compile_code);
+    *write_to += ";\n";
 }
 
 if(compile_code.substr(0,1)=="="){
@@ -98,16 +100,16 @@ if(compile_code.substr(0,1)=="="){
             return EXIT_FAILURE;
         }
 
-        ve_main_code += resource(variable_type) + " " + resource(variable_name) + "=";
+        *write_to += resource(variable_type) + " " + resource(variable_name) + "=";
 
         //Handle Value
-        if(code_parser.harvest_from_variable_value(compile_code,variable_type,true,"")==EXIT_FAILURE){
+        if(code_parser.harvest_from_variable_value(compile_code,variable_type,"")==EXIT_FAILURE){
             return EXIT_FAILURE;
         }
 
         code_parser.chop(compile_code);
 
-        ve_main_code += ";\n";
+        *write_to += ";\n";
         variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
     }
     else {//Might be Declared
@@ -116,16 +118,16 @@ if(compile_code.substr(0,1)=="="){
             string variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
             compile_code = string_kill_whitespace(compile_code);
 
-            ve_main_code += resource(variable_name) + "=";
+            *write_to += resource(variable_name) + "=";
 
             //Handle Value
-            if(code_parser.harvest_from_variable_value(compile_code,variable_type,true,"")==EXIT_FAILURE){
+            if(code_parser.harvest_from_variable_value(compile_code,variable_type,"")==EXIT_FAILURE){
                return EXIT_FAILURE;
             }
 
             code_parser.chop(compile_code);
 
-            ve_main_code += ";\n";
+            *write_to += ";\n";
         }
         else {//The variable does not exist
             error_fatal("Undeclared variable '" + variable_name + "'.");

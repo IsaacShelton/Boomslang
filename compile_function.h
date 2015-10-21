@@ -1,10 +1,10 @@
 /**
-    ============ compile.h ============
-    Code for Compiling Boomslang
+    ============ compile_function.h ============
+    Code for Compiling Boomslang in a Function
 
     This file should NOT be included
-    anywhere besides from init.h at
-    compiling.
+    anywhere besides from compile.h at
+    function compiling.
 
     This Header does NOT contain a
     header guard so include with
@@ -13,10 +13,13 @@
 
 using namespace std;
 
-string compile_prev = "";
+string return_type = "";
+string write_buffer = "";
+indentation = 1;
+write_to = &write_buffer;
 
-///Main Compile Loop
-while(compile_code!="" and compile_code!=compile_prev){
+///Function Code Compile Loop
+while(compile_code!=compile_prev and indentation>0){
     compile_code = string_kill_newline(compile_code);
     int new_indentation = 0;
 
@@ -43,17 +46,23 @@ while(compile_code!="" and compile_code!=compile_prev){
     if(new_indentation > indentation){
         while(new_indentation > indentation){
             indentation++;
-            write("{\n",true);
+            write_buffer += "{\n";
         }
     }
     else if(indentation > new_indentation){
+        if(new_indentation<1){
+            indentation = new_indentation;
+            continue;
+        }
+
         while(indentation > new_indentation){
             indentation--;
-            write("}\n",true);
+            write_buffer += "}\n";
         }
     }
 
     if(compile_code=="") continue;
+    if(indentation<1) continue;
 
     //Prepare for command
     compile_code = string_kill_all_whitespace(compile_code);
@@ -80,30 +89,21 @@ while(compile_code!="" and compile_code!=compile_prev){
         while(!( balance==0 and compile_code.substr(0,1)=="}" )){
             if(compile_code.substr(0,1)=="{"){
                 balance+=1;
-                write(compile_code.substr(0,1),true);
+                write_buffer += compile_code.substr(0,1);
                 compile_code = string_delete_amount(compile_code,1);
             }
             else
             if(compile_code.substr(0,1)=="}"){
                 balance-=1;
-                write(compile_code.substr(0,1),true);
+                write_buffer += compile_code.substr(0,1);
                 compile_code = string_delete_amount(compile_code,1);
             } else {
-                write(compile_code.substr(0,1),true);
+                write_buffer += compile_code.substr(0,1);
                 compile_code = string_delete_amount(compile_code,1);
             }
         }
 
         compile_code = string_delete_amount(compile_code,1);
-    }
-
-    //Is it a keyword?
-    if(ve_keywords.exists(string_get_until_or(compile_code," \n"))){
-        if(string_get_until_or(compile_code," \n")=="on"){
-            //Function Declaration
-            compile_code = string_delete_amount(compile_code,2);
-            #include "compile_function.h"
-        }
     }
 
     //Is it a action?
@@ -127,11 +127,11 @@ while(compile_code!="" and compile_code!=compile_prev){
 
         if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
             if(!function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
-                error_fatal("Undeclared method '" + function_name + "'");
+                error_fatal("Undeclared function '" + function_name + "'");
                 return EXIT_FAILURE;
             }
 
-            write(resource(function_name) + "(",true);
+            write_buffer += resource(function_name) + "(";
 
             string function_code_prev;
             string argument_type;
@@ -145,7 +145,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 function_code_prev = compile_code;
 
                 if(compile_code.substr(0,1)=="," and !first){
-                    write(",",true);
+                    write_buffer += ",";
                     compile_code = string_delete_amount(compile_code,1);
                 }
 
@@ -153,7 +153,7 @@ while(compile_code!="" and compile_code!=compile_prev){
 
                 //Get Value Type
                 if(code_parser.harvest_from_variable_value_type(compile_code,argument_type)==EXIT_FAILURE){
-                    error_fatal("Couldn't Determine Type for Argument in Method '" + function_name + "'");
+                    error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
@@ -175,7 +175,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             compile_code = string_delete_amount(compile_code,1);
             code_parser.chop(compile_code);
         } else {
-            error_fatal("The Method '" + function_name + "' does not exist.");
+            error_fatal("The Function '" + function_name + "' does not exist.");
             pend();
             return EXIT_FAILURE;
         }
@@ -184,13 +184,14 @@ while(compile_code!="" and compile_code!=compile_prev){
 
     //Is it a variable?
     if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
-        write_to = &ve_main_code;
+        write_to = &write_buffer;
         #include "variable.h"
     }
 
     //Is it a value?
     if( rawvalue_exists(compile_code) ){
         error_debug("Found raw value exists");
+
 
         if(compile_code.substr(0,1)=="("){//Expression
             string raw_expression_type = S_NULL;
@@ -199,7 +200,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             if (harvest_raw_expression(compile_code,raw_expression,raw_expression_type)==EXIT_FAILURE)
                 return EXIT_FAILURE;
 
-            ve_main_code += raw_expression;
+            write_buffer += raw_expression;
             compile_code = string_kill_whitespace(compile_code);
             string prev_return_type = raw_expression_type;
             string return_type = "";
@@ -213,9 +214,9 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
                 if(compile_code.substr(0,1)==","){
-                    write(";",true);
+                    write_buffer += ";";
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(raw_expression_type),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += raw_expression;
+                    write_buffer += raw_expression;
                     if(code_parser.parse_function_from(compile_code,true,class_handler.find(raw_expression_type))==-1){
                         return EXIT_FAILURE;
                     }
@@ -231,11 +232,11 @@ while(compile_code!="" and compile_code!=compile_prev){
                         prev_return_type = return_type;
                     } else {
                         if(prev_return_type!="none"){
-                            error_fatal("Undeclared Method '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
+                            error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
                             pend();
                             return EXIT_FAILURE;
                         } else {
-                            error_fatal("You Can't Call Methods of none");
+                            error_fatal("You Can't Call Functions of none");
                             pend();
                             return EXIT_FAILURE;
                         }
@@ -248,13 +249,13 @@ while(compile_code!="" and compile_code!=compile_prev){
             code_parser.chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
-            write(";\n",true);
+            write_buffer += ";\n";
         }
         else if(compile_code.substr(0,1)=="\""){//String
             //String
 
             string rawstring = harvest_string(compile_code);
-            ve_main_code += "BOOMSLANG_String(\"" + rawstring + "\")";
+            write_buffer += "BOOMSLANG_String(\"" + rawstring + "\")";
             compile_code = string_kill_whitespace(compile_code);
             string prev_return_type = "String";
             string return_type = "";
@@ -268,9 +269,9 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
                 if(compile_code.substr(0,1)==","){
-                    write(";",true);
+                    write_buffer += ";";
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("String"),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += "BOOMSLANG_String(\"" + rawstring + "\")";
+                    write_buffer += "BOOMSLANG_String(\"" + rawstring + "\")";
                     if(code_parser.parse_function_from(compile_code,true,class_handler.find("String"))==-1){
                         return EXIT_FAILURE;
                     }
@@ -290,7 +291,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                             pend();
                             return EXIT_FAILURE;
                         } else {
-                            error_fatal("none does not have Methods");
+                            error_fatal("You Can't Call Functions of none");
                             pend();
                             return EXIT_FAILURE;
                         }
@@ -303,13 +304,13 @@ while(compile_code!="" and compile_code!=compile_prev){
             code_parser.chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
-            write(";\n",true);
+            write_buffer += ";\n";
         } else if(compile_code.substr(0,1)=="0" or compile_code.substr(0,1)=="1" or compile_code.substr(0,1)=="2" or compile_code.substr(0,1)=="3" or compile_code.substr(0,1)=="4" or compile_code.substr(0,1)=="5" or compile_code.substr(0,1)=="6" or compile_code.substr(0,1)=="7" or compile_code.substr(0,1)=="8"
         or compile_code.substr(0,1)=="9"){//Number
             //Decimal
 
             string rawdecimal = harvest_decimal(compile_code);
-            ve_main_code += "BOOMSLANG_Number(" + rawdecimal + ")";
+            write_buffer += "BOOMSLANG_Number(" + rawdecimal + ")";
             compile_code = string_kill_whitespace(compile_code);
             string return_type = "Decimal";
             string prev_return_type = "";
@@ -317,9 +318,9 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
                 if(compile_code.substr(0,1)==","){
-                    write(";\n",true);
+                    write_buffer += ";\n";
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("Decimal"),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += "BOOMSLANG_Number(" + rawdecimal + ")";
+                    write_buffer += "BOOMSLANG_Number(" + rawdecimal + ")";
                     if(code_parser.parse_function_from(compile_code,true,class_handler.find("Decimal"))==-1){
                         return EXIT_FAILURE;
                     }
@@ -352,7 +353,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             code_parser.chop(compile_code);
 
             compile_code = string_kill_all_whitespace(compile_code);
-            write(";\n",true);
+            write_buffer += ";\n";
         }
     }
 }
@@ -372,4 +373,4 @@ if(indentation!=0){
     return EXIT_FAILURE;
 }
 
-file_write << "int main(int argument_count, char** argument){\n" + ve_main_code + "\nreturn 0;\n}";
+file_write << write_buffer;

@@ -15,16 +15,16 @@ using namespace std;
 //Code parsing Object
 //Parses Function Arguments, example input: ("hello world",10)
 //Returns code with semicolon and newline attached.
-int CodeParser::parse_args(string& code, bool write_to_main){
+int CodeParser::parse_args(string& code){
 
     if(code.substr(0,1)!="("){
         error_fatal("Expected '(' before '" + code.substr(0,1) + "' when parsing function arguments");
     }
 
-    write("(",write_to_main);
+    *write_to += "(";
     code = string_delete_amount(code,1);
     code = string_kill_all_whitespace(code);
-    bool first = write_to_main;
+    bool first = true;
     string function_code_prev;
     string argument_type;
 
@@ -33,7 +33,7 @@ int CodeParser::parse_args(string& code, bool write_to_main){
         function_code_prev = code;
 
         if(code.substr(0,1)=="," and !first){
-            write(",",write_to_main);
+            *write_to += ",";
             code = string_delete_amount(code,1);
         }
 
@@ -47,14 +47,14 @@ int CodeParser::parse_args(string& code, bool write_to_main){
         }
 
         //Handle Value
-        if(code_parser.harvest_from_variable_value(code,argument_type,write_to_main,",)")==EXIT_FAILURE){
+        if(code_parser.harvest_from_variable_value(code,argument_type,",)")==EXIT_FAILURE){
             return EXIT_FAILURE;
         }
 
         code = string_kill_whitespace(code);
     }
 
-    write(");\n",write_to_main);
+    *write_to += ")";
 
     if(function_code_prev==code){
         error_fatal("Internal Function Error");
@@ -67,7 +67,7 @@ int CodeParser::parse_args(string& code, bool write_to_main){
 }
 
 //Parses Function that begins with a dot ".show()" for example
-int CodeParser::parse_function_from(string& code, bool write_to_main, bool check_semicolon, int class_id){
+int CodeParser::parse_function_from(string& code, bool check_semicolon, int class_id){
     code = string_kill_whitespace(code);
 
     if(code.substr(0,1)!="." and code.substr(0,1)!=","){
@@ -95,9 +95,9 @@ int CodeParser::parse_function_from(string& code, bool write_to_main, bool check
         return EXIT_FAILURE;
     }
 
-    write("." + resource(function_name),write_to_main);
+    *write_to += "." + resource(function_name);
 
-    if(code_parser.parse_args(code,write_to_main)==-1){
+    if(code_parser.parse_args(code)==-1){
         return EXIT_FAILURE;
     }
 
@@ -122,7 +122,7 @@ void CodeParser::chop(string& code){
 }
 
 //Writes and removes the value in variable expressions
-int CodeParser::harvest_from_variable_value(string& code, string &type, int write_to_main, string additional_characters){
+int CodeParser::harvest_from_variable_value(string& code, string &type, string additional_characters){
     /*
         code - code
         type - variable type, will return type if S_NULL is specified
@@ -149,7 +149,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
             accept_value = true;
 
             code = string_delete_amount(code,1);
-            write("+",write_to_main);
+            *write_to += "+";
         }
         else if (code.substr(0,1)=="-"){
             if (accept_value==true and (code.substr(1,1)=="0" or code.substr(1,1)=="1" or code.substr(1,1)=="2" or code.substr(1,1)=="3" or code.substr(1,1)=="4"
@@ -164,7 +164,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                     return EXIT_FAILURE;
                 }
 
-                write("BOOMSLANG_Number(" + harvest_decimal(code) + ")",write_to_main);
+                *write_to += "BOOMSLANG_Number(" + harvest_decimal(code) + ")";
             }
             else if(accept_value==true){
                 error_fatal("Expected a value before '-'");
@@ -175,7 +175,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                 accept_value = true;
 
                 code = string_delete_amount(code,1);
-                write("-",write_to_main);
+                *write_to += "-";
             }
         }
         else if (code.substr(0,1)=="*"){
@@ -187,7 +187,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
             accept_value = true;
 
             code = string_delete_amount(code,1);
-            write("*",write_to_main);
+            *write_to += "*";
         }
         else if (code.substr(0,1)=="/"){
             if(accept_value==true){
@@ -198,7 +198,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
             accept_value = true;
 
             code = string_delete_amount(code,1);
-            write("/",write_to_main);
+            *write_to += "/";
         }
         else if (code.substr(0,1)=="("){
             if(accept_value==false){
@@ -209,7 +209,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
 
             balance += 1;
             code = string_delete_amount(code,1);
-            write("(",write_to_main);
+            *write_to += "(";
         }
         else if (code.substr(0,1)==")"){
             if(accept_value==true){
@@ -220,7 +220,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
 
             balance -= 1;
             code = string_delete_amount(code,1);
-            write(")",write_to_main);
+            *write_to += ")";
         }
         else if(string_get_until(code," ")=="new"){
             if(accept_value==false){
@@ -248,7 +248,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
             }
 
             code = string_delete_until_or(code," ;\n");
-            write(" BOOMSLANGCORE_create<" + resource(variable_class) + ">() ",write_to_main);
+            *write_to += " BOOMSLANGCORE_create<" + resource(variable_class) + ">() ";
 
             code = string_kill_whitespace(code);
         }
@@ -270,7 +270,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                 return EXIT_FAILURE;
             }
 
-            write("BOOMSLANG_String(\"" + harvest_string(code) + "\")",write_to_main);
+            *write_to += "BOOMSLANG_String(\"" + harvest_string(code) + "\")";
         }
         else if(code_parser.arg_type(code)==ARGTYPE_NUMBER){
 
@@ -290,7 +290,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                 return EXIT_FAILURE;
             }
 
-            write("BOOMSLANG_Number(" + harvest_decimal(code) + ")",write_to_main);
+            *write_to += "BOOMSLANG_Number(" + harvest_decimal(code) + ")";
         }
         else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){
             if(accept_value==false){
@@ -306,7 +306,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
 
             code = string_kill_whitespace(code);
 
-            write(resource(variable_name),write_to_main);
+            *write_to += resource(variable_name);
 
             if(code.substr(0,1)=="."){
                 string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
@@ -316,10 +316,10 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
 
                     if(code.substr(0,1)==","){
                         if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
-                            write(";\n",write_to_main);
+                            *write_to += ";\n";
                             return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ),SCOPETYPE_TEMPLATE)].type;
-                            write(resource(variable_name),write_to_main);
-                            if(code_parser.parse_function_from(code,true,true,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ))==-1){
+                            *write_to += resource(variable_name);
+                            if(code_parser.parse_function_from(code,true,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ))==-1){
                                 return EXIT_FAILURE;
                             }
                             prev_return_type = return_type;
@@ -331,19 +331,19 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                     }
 
                     if(code.substr(0,1)=="."){
-                        if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="null"){
+                        if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                             return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                            if(code_parser.parse_function_from(code,true,true,class_handler.find(prev_return_type))==-1){
+                            if(code_parser.parse_function_from(code,true,class_handler.find(prev_return_type))==-1){
                                 return EXIT_FAILURE;
                             }
                             prev_return_type = return_type;
                             } else {
-                            if(prev_return_type!="null"){
+                            if(prev_return_type!="none"){
                                 error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(code,1)," (") + "' of template '" + prev_return_type + "'.");
                                 pend();
                                 return EXIT_FAILURE;
                             } else {
-                                error_fatal("You Can't Call Functions of null");
+                                error_fatal("You Can't Call Functions of none");
                                 pend();
                                 return EXIT_FAILURE;
                             }
@@ -355,7 +355,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
 
                 code_parser.chop(code);
 
-                write(";\n",write_to_main);
+                *write_to += ";\n";
             }
         }
         else if(code_parser.arg_type(code)==ARGTYPE_FUNCTION){
@@ -374,7 +374,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
             }
 
             code = string_delete_until_or(code,"(");
-            write(resource(function_name) + "(",write_to_main);
+            *write_to += resource(function_name) + "(";
 
             string function_code_prev;
             string argument_type;
@@ -388,7 +388,7 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                 function_code_prev = code;
 
                 if(code.substr(0,1)=="," and !first){
-                    write(",",write_to_main);
+                    *write_to += ",";
                     code = string_delete_amount(code,1);
                 }
 
@@ -402,14 +402,14 @@ int CodeParser::harvest_from_variable_value(string& code, string &type, int writ
                 }
 
                 //Handle Value
-                if(code_parser.harvest_from_variable_value(code,argument_type,write_to_main,",)")==EXIT_FAILURE){
+                if(code_parser.harvest_from_variable_value(code,argument_type,",)")==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
                 code = string_kill_whitespace(code);
             }
 
-            write(")",write_to_main);
+            *write_to += ")";
 
             if(function_code_prev==code){
                 error_fatal("Internal Function Error");
@@ -520,8 +520,8 @@ int CodeParser::harvest_from_variable_value_type(string code, string &type){
 
             type = function_handler.functions[function_handler.find(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type;
 
-            if(type == "null"){
-                error_fatal("Couldn't use type null");
+            if(type == "none"){
+                error_fatal("Couldn't use type none");
                 return EXIT_FAILURE;
             }
         }

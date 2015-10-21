@@ -31,10 +31,10 @@ using namespace std;
 //Predefinition
 class CodeParser{
 public:
-    int parse_args(string& code, bool write_to_main);
-    int parse_function_from(string& code, bool write_to_main, bool check_semicolon, int class_id);
+    int parse_args(string& code);
+    int parse_function_from(string& code, bool check_semicolon, int class_id);
     void chop(string& code);
-    int harvest_from_variable_value(string& code, string &type, int write_to_main, string additional_characters);
+    int harvest_from_variable_value(string& code, string &type, string additional_characters);
     int harvest_from_variable_value_type(string code, string &type);
     int arg_type(string code);
 }code_parser;

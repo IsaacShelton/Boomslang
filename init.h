@@ -14,7 +14,7 @@ using namespace std;
 
 error_log("Initializing");
 
-function_handler.add("native_execute","null","String",0,SCOPETYPE_GLOBAL);
+function_handler.add("native_execute","none","String",0,SCOPETYPE_GLOBAL);
 
 ve_actions.add("import");
 ve_actions.add("native_include");
@@ -24,27 +24,20 @@ ve_actions.add("register_class");
 ve_actions.add("register_class_function");
 ve_actions.add("register_function");
 
-ve_keywords.add("void");
-ve_keywords.add("or");
-ve_keywords.add("and");
-ve_keywords.add("if");
-ve_keywords.add("public");
-ve_keywords.add("global");
-ve_keywords.add("template");
-ve_keywords.add("object");
+ve_keywords.add("on");
 
 class_handler.add("String");
 class_handler.add("Number");
 
-variable_handler.add("null","",SCOPETYPE_GLOBAL,I_NULL);
+variable_handler.add("none","",SCOPETYPE_GLOBAL,I_NULL);
 
-function_handler.add("output","null","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
-function_handler.add("output","null","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
-function_handler.add("input","null","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
-function_handler.add("input","null","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
-function_handler.add("print","null","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
-function_handler.add("print","null","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
-function_handler.add("wait","null","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
+function_handler.add("output","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
+function_handler.add("output","none","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
+function_handler.add("input","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
+function_handler.add("input","none","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
+function_handler.add("print","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
+function_handler.add("print","none","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
+function_handler.add("wait","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
 
 file_read.open(file_read_name.c_str());
 file_write.open(file_write_name.c_str());

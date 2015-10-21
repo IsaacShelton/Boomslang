@@ -71,6 +71,7 @@ string linker_flags = "";
 string compile_code = "";
 ifstream file_read;
 ofstream file_write;
+string* write_to;
 
 int errors = 0;
 int warnings = 0;

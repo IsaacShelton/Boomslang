@@ -80,8 +80,8 @@ int VariableHandler::find(string var_name, string var_type, int var_parent_id, i
 }
 
 int VariableHandler::find_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables){
-        bool name_null = (var_name==" ");//" " == null
-        bool type_null = (var_type==" ");//" " == null
+        bool name_null = (var_name==" ");//" " == none
+        bool type_null = (var_type==" ");//" " == none
         bool parent_id_null = (var_parent_id==-1);
         bool parent_type_null = (var_parent_type==-1);
 
@@ -106,9 +106,9 @@ void FunctionHandler::add(string name, string type, string args, int parent_id, 
 }
 
 bool FunctionHandler::exists(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type){
-    bool name_null = (func_name==" ");//" " == null
-    bool type_null = (func_type==" ");//" " == null
-    bool args_null = (func_args==" ");//" " == null
+    bool name_null = (func_name==" ");//" " == none
+    bool type_null = (func_type==" ");//" " == none
+    bool args_null = (func_args==" ");//" " == none
     bool parent_id_null = (func_parent_id==-1);
     bool parent_type_null = (func_parent_type==-1);
 
@@ -126,9 +126,9 @@ bool FunctionHandler::exists(string func_name, string func_type, string func_arg
 }
 
 bool FunctionHandler::exists_in(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type, vector<Function> your_functions){
-    bool name_null = (func_name==" ");//" " == null
-    bool type_null = (func_type==" ");//" " == null
-    bool args_null = (func_args==" ");//" " == null
+    bool name_null = (func_name==" ");//" " == none
+    bool type_null = (func_type==" ");//" " == none
+    bool args_null = (func_args==" ");//" " == none
     bool parent_id_null = (func_parent_id==-1);
     bool parent_type_null = (func_parent_type==-1);
 
@@ -146,9 +146,9 @@ bool FunctionHandler::exists_in(string func_name, string func_type, string func_
 }
 
 int FunctionHandler::find(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type){
-    bool name_null = (func_name==" ");//" " == null
-    bool type_null = (func_type==" ");//" " == null
-    bool args_null = (func_args==" ");//" " == null
+    bool name_null = (func_name==" ");//" " == none
+    bool type_null = (func_type==" ");//" " == none
+    bool args_null = (func_args==" ");//" " == none
     bool parent_id_null = (func_parent_id==-1);
     bool parent_type_null = (func_parent_type==-1);
 
@@ -166,9 +166,9 @@ int FunctionHandler::find(string func_name, string func_type, string func_args, 
 }
 
 int FunctionHandler::find_in(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type, vector<Function> your_functions){
-    bool name_null = (func_name==" ");//" " == null
-    bool type_null = (func_type==" ");//" " == null
-    bool args_null = (func_args==" ");//" " == null
+    bool name_null = (func_name==" ");//" " == none
+    bool type_null = (func_type==" ");//" " == none
+    bool args_null = (func_args==" ");//" " == none
     bool parent_id_null = (func_parent_id==-1);
     bool parent_type_null = (func_parent_type==-1);
 
@@ -194,7 +194,7 @@ void ClassHandler::add(string name){
 }
 
 bool ClassHandler::exists(string name){
-    bool name_null = (name==" ");//" " == null
+    bool name_null = (name==" ");//" " == none
 
     for(unsigned int i=0;i<classes.size();i++){
         if (
@@ -206,7 +206,7 @@ bool ClassHandler::exists(string name){
 }
 
 int ClassHandler::find(string name){
-        bool name_null = (name==" ");//" " == null
+        bool name_null = (name==" ");//" " == none
 
         for(unsigned int i=0;i<classes.size();i++){
             if (
