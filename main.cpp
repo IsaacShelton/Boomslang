@@ -35,8 +35,8 @@ public:
     int parse_declaration_args(string& code, string method_name);
     int parse_function_from(string& code, bool check_semicolon, int class_id);
     void chop(string& code);
-    int harvest_from_variable_value(string& code, string &type, string additional_characters);
-    int harvest_from_variable_value_type(string code, string &type);
+    int harvest_from_variable_value(string& code, string &type, string additional_characters, string method = "");
+    int harvest_from_variable_value_type(string code, string &type, string method = "");
     int arg_type(string code);
 }code_parser;
 

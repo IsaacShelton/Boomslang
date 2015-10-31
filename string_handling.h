@@ -139,15 +139,7 @@ string string_kill_newline(string str){
 }
 
 string resource(string a){
-    return "BOOMSLANG_" + string_replace_all(string_replace_all(a,":","::BOOMSLANG_"),".",".BOOMSLANG_");
-}
-
-string resource_function(string a){
-    return "BOOMSLANG_" + string_replace_all(string_replace_all(a,":","::BOOMSLANG_"),".","::BOOMSLANG_");
-}
-
-string resource_hidden(string a){
-    return "BOOMSLANGHIDDEN_" + string_replace_all(string_replace_all(a,":","::BOOMSLANG_"),".",".BOOMSLANG_");
+    return "boomslang_" + string_replace_all(string_replace_all(a,":","::boomslang_"),".",".boomslang_");
 }
 
 string delete_backslash(string a){
@@ -374,7 +366,7 @@ string harvest_decimal(string& code){
     return str;
 }
 
-int harvest_raw_expression(string& code, string& exp, string& type){
+int harvest_raw_expression(string& code, string& exp, string& type, string method = ""){
     /*
         code - code to harvest raw expression from
             example: ("Hello" + " World")blah blah blah
@@ -393,12 +385,11 @@ int harvest_raw_expression(string& code, string& exp, string& type){
     bool accept_value = true;
 
     while(compile_code.substr(0,1)=="("){
-
         compile_code = string_delete_amount(compile_code,1);
         balance += 1;
     }
 
-    if(code_parser.harvest_from_variable_value_type(code,type)==EXIT_FAILURE)
+    if(code_parser.harvest_from_variable_value_type(code,type,method)==EXIT_FAILURE)
         return EXIT_FAILURE;
 
     code = string_kill_whitespace(code);
@@ -432,7 +423,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                     return EXIT_FAILURE;
                 }
 
-                exp += "BOOMSLANG_Number(" + harvest_decimal(code) + ")";
+                exp += "boomslang_Number(" + harvest_decimal(code) + ")";
             }
             else if(accept_value==true){
                 error_fatal("Expected a value before '-'");
@@ -516,7 +507,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
             }
 
             code = string_delete_until_or(code," ;\n+-*/)");
-            exp += " BOOMSLANGCORE_create<" + resource(variable_class) + ">() ";
+            exp += resource(variable_class) + "()";
 
             code = string_kill_whitespace(code);
         }
@@ -538,7 +529,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                 return EXIT_FAILURE;
             }
 
-            exp += "BOOMSLANG_String(\"" + harvest_string(code) + "\")";
+            exp += "boomslang_String(\"" + harvest_string(code) + "\")";
         }
         else if(code_parser.arg_type(code)==ARGTYPE_NUMBER){
 
@@ -558,7 +549,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                 return EXIT_FAILURE;
             }
 
-            exp += "BOOMSLANG_Number(" + harvest_decimal(code) + ")";
+            exp += "boomslang_Number(" + harvest_decimal(code) + ")";
         }
         else if(code_parser.arg_type(code)==ARGTYPE_VARIABLE){
             if(accept_value==false){
@@ -583,7 +574,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                 while(code.substr(0,1)=="." or code.substr(0,1)==","){
 
                     if(code.substr(0,1)==","){
-                        if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                        if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN) and method==""){
                             exp += ";\n";
                             return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ),SCOPETYPE_TEMPLATE)].type;
                             exp += resource(variable_name);
@@ -592,8 +583,17 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                                 return EXIT_FAILURE;
                             }
                             prev_return_type = return_type;
+                        } else if(variable_handler.exists(variable_name,S_NULL,function_handler.find(method,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION) and method!=""){
+                            exp += ";\n";
+                            return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type ),SCOPETYPE_TEMPLATE)].type;
+                            exp += resource(variable_name);
+                            write_to = &ve_main_code;
+                            if(code_parser.parse_function_from(code,true,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type ))==-1){
+                                return EXIT_FAILURE;
+                            }
+                            prev_return_type = return_type;
                         } else {
-                            error_fatal("Undeclared Variable " + variable_name + ".");
+                            error_fatal("Undeclared Variable '" + variable_name + "'");
                             pend();
                             return EXIT_FAILURE;
                         }
@@ -618,7 +618,7 @@ int harvest_raw_expression(string& code, string& exp, string& type){
                                 return EXIT_FAILURE;
                             }
                         }
-                    }\
+                    }
                 }
 
                 code = string_kill_whitespace(code);

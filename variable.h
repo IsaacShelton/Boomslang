@@ -24,7 +24,7 @@ compile_code = string_kill_all_whitespace(compile_code);
 if(compile_code.substr(0,1)=="."){
     error_debug("Found " + variable_name + " to contain a method.");
 
-    if(!variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation) and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,I_NULL),SCOPETYPE_FUNCTION)){
+    if(!( variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation) and method_name=="")and !(variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)  and method_name!="")){
         error_fatal("Undeclared Variable '" + variable_name + "'");
         pend();
         return EXIT_FAILURE;
@@ -38,7 +38,7 @@ if(compile_code.substr(0,1)=="."){
     while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
         if(compile_code.substr(0,1)==","){
-            if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){
+            if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation) and method_name==""){
                 *write_to += ";\n";
                 return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type ),SCOPETYPE_TEMPLATE)].type;
                 *write_to += resource(variable_name);
@@ -48,14 +48,23 @@ if(compile_code.substr(0,1)=="."){
                 }
 
                 prev_return_type = return_type;
+            } else if(variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION) and method_name!=""){
+                *write_to += ";\n";
+                return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find( variable_handler.variables[variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type ),SCOPETYPE_TEMPLATE)].type;
+                *write_to += resource(variable_name);
+
+                if(code_parser.parse_function_from(compile_code,true,class_handler.find( variable_handler.variables[variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type ))==-1){
+                    return EXIT_FAILURE;
+                }
+
+                prev_return_type = return_type;
             } else {
-                error_fatal("Undeclared Variable " + variable_name + ".");
+                error_fatal("Undeclared Variable '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
             }
         }
-
-        if(compile_code.substr(0,1)=="."){
+        else if(compile_code.substr(0,1)=="."){
             if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                 return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
 
@@ -63,7 +72,7 @@ if(compile_code.substr(0,1)=="."){
                     return EXIT_FAILURE;
                 }
                 prev_return_type = return_type;
-                } else {
+            } else {
                 if(prev_return_type!="none"){
                     error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
                     pend();

@@ -1,6 +1,6 @@
 /**
     ============ compile_function.h ============
-    Code for Compiling Boomslang in a Function
+    Code for Compiling Boomslang in a Method
 
     This file should NOT be included
     anywhere besides from compile.h at
@@ -18,7 +18,7 @@ string write_buffer = "";
 indentation = 1;
 write_to = &write_buffer;
 
-///Function Code Compile Loop
+///Method Code Compile Loop
 while(compile_code!=compile_prev and indentation>0){
     compile_code = string_kill_newline(compile_code);
     unsigned int new_indentation = 0;
@@ -42,6 +42,7 @@ while(compile_code!=compile_prev and indentation>0){
         }
     }
 
+
     //Check for blocks
     if(new_indentation > indentation){
         while(new_indentation > indentation){
@@ -51,6 +52,7 @@ while(compile_code!=compile_prev and indentation>0){
     }
     else if(indentation > new_indentation){
         if(new_indentation<1){
+            ///The end of the Method
             indentation = new_indentation;
             continue;
         }
@@ -104,6 +106,39 @@ while(compile_code!=compile_prev and indentation>0){
         }
 
         compile_code = string_delete_amount(compile_code,1);
+    }
+
+    //Return statement?
+    if(compile_code.substr(0,7)=="return "){
+        compile_code = string_delete_amount(compile_code,7);
+
+        write_to = &ve_main_code;
+        string new_return_type;
+
+        if(code_parser.harvest_from_variable_value_type(compile_code,new_return_type)==EXIT_FAILURE){
+            error_fatal("Couldn't Determine return type for method '" + method_name + "'");
+            pend();
+            return EXIT_FAILURE;
+        }
+
+        if( function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type=="none" or function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type==new_return_type ){
+            function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type = new_return_type;
+            return_type = new_return_type;
+
+            write_buffer += "return ";
+            write_to = &write_buffer;
+
+            if(code_parser.harvest_from_variable_value(compile_code,new_return_type,"")==EXIT_FAILURE){
+                return EXIT_FAILURE;
+            }
+            write_buffer += ";\n";
+            code_parser.chop(compile_code);
+            continue;
+        } else {
+            error_fatal("Conflicting return types '" + new_return_type + "' and '" + function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type + "'");
+            pend();
+            return EXIT_FAILURE;
+        }
     }
 
     //Is it a action?
@@ -251,7 +286,7 @@ while(compile_code!=compile_prev and indentation>0){
             //String
 
             string rawstring = harvest_string(compile_code);
-            write_buffer += "BOOMSLANG_String(\"" + rawstring + "\")";
+            write_buffer += "boomslang_String(\"" + rawstring + "\")";
             compile_code = string_kill_whitespace(compile_code);
             string prev_return_type = "String";
             string return_type = "";
@@ -267,7 +302,7 @@ while(compile_code!=compile_prev and indentation>0){
                 if(compile_code.substr(0,1)==","){
                     write_buffer += ";";
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("String"),SCOPETYPE_TEMPLATE)].type;
-                    write_buffer += "BOOMSLANG_String(\"" + rawstring + "\")";
+                    write_buffer += "boomslang_String(\"" + rawstring + "\")";
                     if(code_parser.parse_function_from(compile_code,true,class_handler.find("String"))==-1){
                         return EXIT_FAILURE;
                     }
@@ -306,7 +341,7 @@ while(compile_code!=compile_prev and indentation>0){
             //Decimal
 
             string rawdecimal = harvest_decimal(compile_code);
-            write_buffer += "BOOMSLANG_Number(" + rawdecimal + ")";
+            write_buffer += "boomslang_Number(" + rawdecimal + ")";
             compile_code = string_kill_whitespace(compile_code);
             string return_type = "Decimal";
             string prev_return_type = "";
@@ -316,7 +351,7 @@ while(compile_code!=compile_prev and indentation>0){
                 if(compile_code.substr(0,1)==","){
                     write_buffer += ";\n";
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("Decimal"),SCOPETYPE_TEMPLATE)].type;
-                    write_buffer += "BOOMSLANG_Number(" + rawdecimal + ")";
+                    write_buffer += "boomslang_Number(" + rawdecimal + ")";
                     if(code_parser.parse_function_from(compile_code,true,class_handler.find("Decimal"))==-1){
                         return EXIT_FAILURE;
                     }

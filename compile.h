@@ -100,7 +100,9 @@ while(compile_code!="" and compile_code!=compile_prev){
 
     //Is it a keyword?
     if(ve_keywords.exists(string_get_until_or(compile_code," \n"))){
+        //Method Declaration
         if(string_get_until_or(compile_code," \n")=="on"){
+            error_debug("Found Function Declaration");
             //Function Declaration
             compile_code = string_delete_amount(compile_code,2);
             compile_code = string_kill_whitespace(compile_code);
@@ -108,7 +110,7 @@ while(compile_code!="" and compile_code!=compile_prev){
 
             string method_name = string_get_until_or(compile_code," (");
             compile_code = string_delete_until_or(compile_code," (");
-            function_handler.add(method_name,S_NULL,"",I_NULL,SCOPETYPE_GLOBAL);
+            function_handler.add(method_name,"none","",I_NULL,SCOPETYPE_GLOBAL);
 
             //Expect opening parenthesis
             if(compile_code.substr(0,1)!="("){
@@ -129,6 +131,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             } else {
                 file_write << "void " + resource(method_name) + buffer + "{\n" << write_buffer << "}\n";
             }
+            continue;
         }
     }
 
@@ -146,7 +149,7 @@ while(compile_code!="" and compile_code!=compile_prev){
 
     //Is it a method?
     if( is_identifier(string_get_until_or(compile_code,"(")) ){
-        error_debug("Found " + string_get_until_or(compile_code,"(") + " to be a function.");
+        error_debug("Found " + string_get_until_or(compile_code,"(") + " to be a method.");
 
         string function_name = string_get_until_or(compile_code,"(");
         compile_code = string_delete_until_or(compile_code,"(");
@@ -209,12 +212,14 @@ while(compile_code!="" and compile_code!=compile_prev){
     //Is it a variable?
     if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
         write_to = &ve_main_code;
+        string method_name = "";
         #include "variable.h"
     }
 
     //Is it a value?
     if( rawvalue_exists(compile_code) ){
         error_debug("Found raw value exists");
+        write_to = &ve_main_code;
 
         if(compile_code.substr(0,1)=="("){//Expression
             string raw_expression_type = S_NULL;
@@ -278,7 +283,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             //String
 
             string rawstring = harvest_string(compile_code);
-            ve_main_code += "BOOMSLANG_String(\"" + rawstring + "\")";
+            ve_main_code += "boomslang_String(\"" + rawstring + "\")";
             compile_code = string_kill_whitespace(compile_code);
             string prev_return_type = "String";
             string return_type = "";
@@ -294,7 +299,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 if(compile_code.substr(0,1)==","){
                     write(";",true);
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("String"),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += "BOOMSLANG_String(\"" + rawstring + "\")";
+                    ve_main_code += "boomslang_String(\"" + rawstring + "\")";
                     if(code_parser.parse_function_from(compile_code,true,class_handler.find("String"))==-1){
                         return EXIT_FAILURE;
                     }
@@ -304,7 +309,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 if(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parser.parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                        if(code_parser.parse_function_from(compile_code,true,class_handler.find(prev_return_type))==EXIT_FAILURE){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -333,7 +338,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             //Decimal
 
             string rawdecimal = harvest_decimal(compile_code);
-            ve_main_code += "BOOMSLANG_Number(" + rawdecimal + ")";
+            ve_main_code += "boomslang_Number(" + rawdecimal + ")";
             compile_code = string_kill_whitespace(compile_code);
             string return_type = "Decimal";
             string prev_return_type = "";
@@ -343,7 +348,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 if(compile_code.substr(0,1)==","){
                     write(";\n",true);
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("Decimal"),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += "BOOMSLANG_Number(" + rawdecimal + ")";
+                    ve_main_code += "boomslang_Number(" + rawdecimal + ")";
                     if(code_parser.parse_function_from(compile_code,true,class_handler.find("Decimal"))==-1){
                         return EXIT_FAILURE;
                     }
