@@ -412,4 +412,7 @@ if(indentation!=0){
     return EXIT_FAILURE;
 }
 
-write_buffer = resource(template_name) + "(){\n" + init_buffer + "}\n" + write_buffer;
+if(unique_template)
+    write_buffer = template_name + "(){\n" + init_buffer + "}\n" + write_buffer;
+else
+    write_buffer = resource(template_name) + "(){\n" + init_buffer + "}\n" + write_buffer;

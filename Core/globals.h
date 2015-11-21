@@ -95,6 +95,9 @@ string ve_scope = "BOOMSLANG";
 //Current Context
 string ve_context = S_NULL;
 
+//Unique Templates
+unsigned int next_unique_template = 0;
+
 //Wait after compiled?
 bool waitafter = false;
 

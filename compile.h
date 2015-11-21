@@ -19,7 +19,7 @@ string method_name;
 ///Main Compile Loop
 while(compile_code!="" and compile_code!=compile_prev){
     compile_code = string_kill_newline(compile_code);
-    int new_indentation = 0;
+    unsigned int new_indentation = 0;
 
     //Get Indents
     while(is_indent(compile_code)){
@@ -158,9 +158,24 @@ while(compile_code!="" and compile_code!=compile_prev){
             code_parser.chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
+            compile_code = string_kill_newline(compile_code);
 
-            ve_main_code += resource(class_name) + " " + resource(variable_name) + ";";
-            variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
+            if(is_indent(compile_code)){
+                string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
+                bool unique_template = true;
+
+                #include "compileTemplate.h"
+
+                file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_buffer + "};\n";
+                ve_main_code += "boomslangUniqueTemplate" + to_string(next_unique_template) + " " + resource(variable_name) + ";";
+
+                variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
+                next_unique_template += 1;
+                continue;
+            } else {
+                ve_main_code += resource(class_name) + " " + resource(variable_name) + ";";
+                variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
+            }
         }
         //Template Declaration
         if(string_get_until_or(compile_code," ")=="template"){
@@ -169,6 +184,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             compile_code = string_kill_whitespace(compile_code);
 
             string template_name = string_get_until_or(compile_code," \n");
+            bool unique_template = false;
             compile_code = string_delete_until_or(compile_code," \n");
             compile_code = string_kill_whitespace(compile_code);
 

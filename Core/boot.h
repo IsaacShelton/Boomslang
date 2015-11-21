@@ -16,7 +16,9 @@ string file_write_name = "/home/" + USERNAME + "/Boomslang/source/prenative.cpp"
 #endif
 
 //Get current full path
+#ifndef DEBUG
 _fullpath(terminal_complete_path, arg[0], sizeof(terminal_complete_path));
+#endif
 
 //Remove Filename from full path
 #if (BUILD_OS == WINDOWS)
