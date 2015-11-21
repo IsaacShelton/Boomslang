@@ -47,8 +47,12 @@ function_handler.add("wait","none","",class_handler.find("String"),SCOPETYPE_TEM
 function_handler.add("call","none","",class_handler.find("Callback"),SCOPETYPE_TEMPLATE);
 
 //Open Read and Write Files
-file_read.open(file_read_name.c_str());
 file_write.open(file_write_name.c_str());
+if(local_path){
+    file_read.open(file_read_name.c_str());
+} else {
+    file_read.open( (terminal_path + file_read_name).c_str()) ;
+}
 
 //Ensure they are open
 if (!file_read.is_open() and !file_write.is_open()){

@@ -67,4 +67,8 @@ if (file_read_name==""){
 }
 
 //Determine if the file read path is local
-
+if(file_exists(file_read_name)){
+    local_path = false;
+} else {
+    local_path = true;
+}

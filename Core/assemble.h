@@ -21,19 +21,38 @@ if (ve_apptype == APPTYPE_WINDOWS){
     }
 
     //Remove old executable
-    if(file_exists(filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe"))){
-        if(remove((filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe")).c_str())!=0){
-            error_fatal("Failed to delete output file.");
-            pend();
-            return EXIT_FAILURE;
+    if(local_path){//Relative Path
+        if(file_exists(terminal_path + filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe"))){
+            if(remove((terminal_path + filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe")).c_str())!=0){
+                error_fatal("Failed to delete output file.");
+                pend();
+                return EXIT_FAILURE;
+            }
+        }
+
+        if(file_exists( ("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\native.o") )){
+            if(remove( ("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\native.o").c_str() )!=0){
+                error_fatal("Failed to delete object file.");
+                pend();
+                return EXIT_FAILURE;
+            }
         }
     }
+    else {//Absolute Path
+        if(file_exists(filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe"))){
+            if(remove((filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe")).c_str())!=0){
+                error_fatal("Failed to delete output file.");
+                pend();
+                return EXIT_FAILURE;
+            }
+        }
 
-    if(file_exists( ("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\native.o") )){
-        if(remove( ("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\native.o").c_str() )!=0){
-            error_fatal("Failed to delete object file.");
-            pend();
-            return EXIT_FAILURE;
+        if(file_exists( ("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\native.o") )){
+            if(remove( ("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\native.o").c_str() )!=0){
+                error_fatal("Failed to delete object file.");
+                pend();
+                return EXIT_FAILURE;
+            }
         }
     }
 
