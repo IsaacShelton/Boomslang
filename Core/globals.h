@@ -102,7 +102,6 @@ bool waitafter = false;
 bool runafter = false;
 
 //Local Path?
-bool local_path = false;
 char terminal_complete_path[255];
 string terminal_path;
 

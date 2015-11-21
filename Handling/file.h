@@ -126,7 +126,11 @@ string filename_name(string a){
 
 //Gets the path of the file from path and filename
 string filename_path(string a){
-    return a.substr(0, a.find_last_of("\\")) + "\\";
+    if (a.find_last_of("\\")==string::npos){
+        return a;
+    } else {
+        return a.substr(0, a.find_last_of("\\")) + "\\";
+    }
 }
 
 //Gets the new filename from filename and new extension
