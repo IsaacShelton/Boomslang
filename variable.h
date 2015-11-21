@@ -103,7 +103,7 @@ if(compile_code.substr(0,1)=="="){
         compile_code = string_kill_all_whitespace(compile_code);
 
         //Get Value Type
-        if(code_parser.harvest_from_variable_value_type(compile_code,variable_type)==EXIT_FAILURE){
+        if(code_parser.harvest_value_type(compile_code,variable_type)==EXIT_FAILURE){
             error_fatal("Couldn't Determine Type for Variable '" + variable_name + "'");
             pend();
             return EXIT_FAILURE;
@@ -112,14 +112,18 @@ if(compile_code.substr(0,1)=="="){
         *write_to += resource(variable_type) + " " + resource(variable_name) + "=";
 
         //Handle Value
-        if(code_parser.harvest_from_variable_value(compile_code,variable_type,"")==EXIT_FAILURE){
+        if(code_parser.harvest_value(compile_code,variable_type,"")==EXIT_FAILURE){
             return EXIT_FAILURE;
         }
 
         code_parser.chop(compile_code);
 
         *write_to += ";\n";
-        variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
+
+        if(method_name=="")
+            variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
+        else
+            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
     }
     else {//Might be Declared
         if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Does the variable exist?
@@ -130,7 +134,7 @@ if(compile_code.substr(0,1)=="="){
             *write_to += resource(variable_name) + "=";
 
             //Handle Value
-            if(code_parser.harvest_from_variable_value(compile_code,variable_type,"")==EXIT_FAILURE){
+            if(code_parser.harvest_value(compile_code,variable_type,"")==EXIT_FAILURE){
                return EXIT_FAILURE;
             }
 

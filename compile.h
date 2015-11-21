@@ -124,13 +124,59 @@ while(compile_code!="" and compile_code!=compile_prev){
                 return EXIT_FAILURE;
             }
 
-            #include "compile_function.h"
+            #include "compileFunction.h"
 
             if(return_type!="none"){
                 file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" << write_buffer << "}\n";
             } else {
                 file_write << "void " + resource(method_name) + buffer + "{\n" << write_buffer << "}\n";
             }
+            continue;
+        }
+        //Variable Declaration
+        if(string_get_until_or(compile_code," ")=="new"){
+            compile_code = string_delete_until_or(compile_code," ");
+
+            compile_code = string_kill_whitespace(compile_code);
+
+            string class_name = string_get_until_or(compile_code," ");
+            compile_code = string_delete_until_or(compile_code," ");
+
+            compile_code = string_kill_whitespace(compile_code);
+
+            string variable_name = string_get_until_or(compile_code," \n");
+            compile_code = string_delete_until_or(compile_code," \n");
+
+            if(!class_handler.exists(class_name)){
+                error_fatal("Undeclared Template '" + class_name + "'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            compile_code = string_kill_whitespace(compile_code);
+
+            code_parser.chop(compile_code);
+
+            compile_code = string_kill_whitespace(compile_code);
+
+            ve_main_code += resource(class_name) + " " + resource(variable_name) + ";";
+            variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
+        }
+        //Template Declaration
+        if(string_get_until_or(compile_code," ")=="template"){
+            error_debug("Found Template Declaration");
+            compile_code = string_delete_until_or(compile_code," ");
+            compile_code = string_kill_whitespace(compile_code);
+
+            string template_name = string_get_until_or(compile_code," \n");
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+
+            #include "compileTemplate.h"
+
+            file_write << "class " + resource(template_name) + "{\npublic:\n" + write_buffer + "};\n";
+
+            class_handler.add(template_name);
             continue;
         }
     }
@@ -143,7 +189,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         compile_code = string_delete_until(compile_code," ");
         compile_code = string_kill_whitespace(compile_code);
 
-        #include "action.h"
+        #include "Parsing/action.h"
         continue;
     }
 
@@ -177,14 +223,14 @@ while(compile_code!="" and compile_code!=compile_prev){
                 first = false;
 
                 //Get Value Type
-                if(code_parser.harvest_from_variable_value_type(compile_code,argument_type)==EXIT_FAILURE){
+                if(code_parser.harvest_value_type(compile_code,argument_type)==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in Method '" + function_name + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
 
                 //Handle Value
-                if(code_parser.harvest_from_variable_value(compile_code,argument_type,",)")==EXIT_FAILURE){
+                if(code_parser.harvest_value(compile_code,argument_type,",)")==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
