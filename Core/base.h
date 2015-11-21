@@ -379,7 +379,7 @@ int CodeParser::harvest_value(string& code, string &type, string additional_char
 
             code = string_kill_whitespace(code);
 
-            *write_to += "*" + resource(variable_name);
+            *write_to += resource(variable_name);
 
             if(code.substr(0,1)=="."){
                 string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
