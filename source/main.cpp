@@ -1,5 +1,5 @@
 ///Build Information
-#include "Core/build.h"
+#include "../include/build.h"
 
 ///Basic Headers
 #include <iostream>
@@ -27,35 +27,38 @@
 #endif
 
 ///Predefinitions
-#include "Core/predefinition.h"
+#include "../include/predefinition.h"
 
 using namespace std;
 
 //Boomslang Global Variables
-#include "Core/globals.h"
+#include "../include/globals.h"
 
 //Boomslang String Handling Functions
-#include "Handling/stringHandling.h"
+#include "../include/string handling.h"
 
 //Boomslang Resource Handling Functions
-#include "Handling/resourceHandling.h"
+#include "../include/resource handling.h"
 
 //Boomslang General Purpose Functions
-#include "Handling/scripts.h"
+#include "../include/scripts.h"
 
 //Boomslang File Handling Functions
-#include "Handling/file.h"
+#include "../include/file.h"
 
 //Boomslang Base Compile Functions
-#include "Core/base.h"
+#include "../include/base.h"
+
+//Boomslang final assemble functions
+#include "../include/assemble.h"
 
 int main(int arg_count, char* arg[])
 {
     //Start Up Boomslang
-    #include "Core/boot.h"
+    #include "../include/boot.h"
 
     //Run Boomslang
-    #include "Core/init.h"
+    #include "../include/init.h"
 
     //Return Success
     if(!runafter) pend();

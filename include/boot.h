@@ -39,7 +39,7 @@ if (arg_count==1 or arg_count==0){
     file_read_name = "";
 }
 
-#include "../Parsing/dash.h"
+#include "dash.h"
 
 //Add Newline
 if(!runafter)

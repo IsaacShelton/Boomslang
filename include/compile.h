@@ -120,11 +120,11 @@ while(compile_code!="" and compile_code!=compile_prev){
             }
 
             write_to = &buffer;
-            if(code_parser.parse_declaration_args(compile_code,method_name)==EXIT_FAILURE){
+            if(code_parse_declaration_args(compile_code,method_name)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
-            #include "compileFunction.h"
+            #include "compile function.h"
 
             if(return_type!="none"){
                 file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" << write_buffer << "}\n";
@@ -155,7 +155,7 @@ while(compile_code!="" and compile_code!=compile_prev){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
             compile_code = string_kill_newline(compile_code);
@@ -164,7 +164,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
                 bool unique_template = true;
 
-                #include "compileTemplate.h"
+                #include "compile template.h"
 
                 file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_buffer + "};\n";
                 ve_main_code += "boomslangUniqueTemplate" + to_string(next_unique_template) + " " + resource(variable_name) + ";";
@@ -188,7 +188,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             compile_code = string_delete_until_or(compile_code," \n");
             compile_code = string_kill_whitespace(compile_code);
 
-            #include "compileTemplate.h"
+            #include "compile template.h"
 
             file_write << "class " + resource(template_name) + "{\npublic:\n" + write_buffer + "};\n";
 
@@ -205,7 +205,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         compile_code = string_delete_until(compile_code," ");
         compile_code = string_kill_whitespace(compile_code);
 
-        #include "Parsing/action.h"
+        #include "action.h"
         continue;
     }
 
@@ -239,14 +239,14 @@ while(compile_code!="" and compile_code!=compile_prev){
                 first = false;
 
                 //Get Value Type
-                if(code_parser.harvest_value_type(compile_code,argument_type)==EXIT_FAILURE){
+                if(code_harvest_value_type(compile_code,argument_type)==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in Method '" + function_name + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
 
                 //Handle Value
-                if(code_parser.harvest_value(compile_code,argument_type,",)")==EXIT_FAILURE){
+                if(code_harvest_value(compile_code,argument_type,",)")==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
@@ -260,7 +260,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             }
 
             compile_code = string_delete_amount(compile_code,1);
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
 
             ve_main_code += ");\n";
         } else {
@@ -287,8 +287,10 @@ while(compile_code!="" and compile_code!=compile_prev){
             string raw_expression_type = S_NULL;
             string raw_expression;
 
-            if (harvest_raw_expression(compile_code,raw_expression,raw_expression_type)==EXIT_FAILURE)
+            if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type)==EXIT_FAILURE)
                 return EXIT_FAILURE;
+
+            write_to = &ve_main_code;
 
             ve_main_code += raw_expression;
             compile_code = string_kill_whitespace(compile_code);
@@ -307,7 +309,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                     write(";",true);
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(raw_expression_type),SCOPETYPE_TEMPLATE)].type;
                     ve_main_code += raw_expression;
-                    if(code_parser.parse_function_from(compile_code,true,class_handler.find(raw_expression_type))==-1){
+                    if(code_parse_function_from(compile_code,true,class_handler.find(raw_expression_type))==-1){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -316,7 +318,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 if(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parser.parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                        if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -333,10 +335,9 @@ while(compile_code!="" and compile_code!=compile_prev){
                     }
                 }
             }
-
             compile_code = string_kill_whitespace(compile_code);
 
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
             write(";\n",true);
@@ -344,7 +345,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         else if(compile_code.substr(0,1)=="\""){//String
             //String
 
-            string rawstring = harvest_string(compile_code);
+            string rawstring = code_harvest_string(compile_code);
             ve_main_code += "boomslang_String(\"" + rawstring + "\")";
             compile_code = string_kill_whitespace(compile_code);
             string prev_return_type = "String";
@@ -362,7 +363,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                     write(";",true);
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("String"),SCOPETYPE_TEMPLATE)].type;
                     ve_main_code += "boomslang_String(\"" + rawstring + "\")";
-                    if(code_parser.parse_function_from(compile_code,true,class_handler.find("String"))==-1){
+                    if(code_parse_function_from(compile_code,true,class_handler.find("String"))==-1){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -371,7 +372,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 if(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parser.parse_function_from(compile_code,true,class_handler.find(prev_return_type))==EXIT_FAILURE){
+                        if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==EXIT_FAILURE){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -391,7 +392,7 @@ while(compile_code!="" and compile_code!=compile_prev){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
             write(";\n",true);
@@ -399,7 +400,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         or compile_code.substr(0,1)=="9"){//Number
             //Decimal
 
-            string rawdecimal = harvest_decimal(compile_code);
+            string rawdecimal = code_harvest_decimal(compile_code);
             ve_main_code += "boomslang_Number(" + rawdecimal + ")";
             compile_code = string_kill_whitespace(compile_code);
             string return_type = "Decimal";
@@ -411,7 +412,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                     write(";\n",true);
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("Decimal"),SCOPETYPE_TEMPLATE)].type;
                     ve_main_code += "boomslang_Number(" + rawdecimal + ")";
-                    if(code_parser.parse_function_from(compile_code,true,class_handler.find("Decimal"))==-1){
+                    if(code_parse_function_from(compile_code,true,class_handler.find("Decimal"))==-1){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -420,7 +421,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 if(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parser.parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                        if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -440,7 +441,7 @@ while(compile_code!="" and compile_code!=compile_prev){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
 
             compile_code = string_kill_all_whitespace(compile_code);
             write(";\n",true);

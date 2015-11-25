@@ -75,18 +75,20 @@ error_log("Compiling");
 //Include Boomslang Assets
 file_write << "#include \"boomslang.h\"" << endl;
 
-#include "../compile.h"
+#include "compile.h"
 
 file_write.close();
 
-#include "../Core/preprocess.h"
+#include "preprocess.h"
 
 error_log("Assembling");
 
-#include "../Core/assemble.h"
+if(assemble()==EXIT_FAILURE){
+    return EXIT_FAILURE;
+}
 
 error_log("Cleaning up");
 
-#include "../Core/cleanup.h"
+#include "cleanup.h"
 
 error_log("Complete");

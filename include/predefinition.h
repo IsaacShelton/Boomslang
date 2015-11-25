@@ -4,16 +4,13 @@ using namespace std;
 //Predefinition
 
 //Class for parsing common code
-class CodeParser{
-public:
-    int parse_args(string& code);
-    int parse_declaration_args(string& code, string method_name);
-    int parse_function_from(string& code, bool check_semicolon, int class_id);
-    void chop(string& code);
-    int harvest_value(string& code, string &type, string additional_characters, string method = "");
-    int harvest_value_type(string code, string &type, string method = "");
-    int arg_type(string code);
-}code_parser;
+int code_parse_args(string& code);
+int code_parse_declaration_args(string& code, string method_name);
+int code_parse_function_from(string& code, bool check_semicolon, int class_id);
+void code_chop(string& code);
+int code_harvest_value(string& code, string &type, string additional_characters, string method = "");
+int code_harvest_value_type(string code, string &type, string method = "");
+int code_arg_type(string code);
 
 
 //Classes for Containing Resource Data
@@ -44,6 +41,7 @@ public:
     int parent_id = -1;
     int parent_type = -1;
     unsigned int indent = 0;
+    bool is_unique = false;
 
     Variable(string new_name, string new_type, int new_parent_id, int new_parent_type, unsigned int new_indent = 0){
         name = new_name;

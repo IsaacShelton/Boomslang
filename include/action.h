@@ -27,7 +27,7 @@ if(action=="register_class"){
     compile_code = string_delete_until_or(compile_code,"\n; ");
 
     compile_code = string_kill_all_whitespace(compile_code);
-    code_parser.chop(compile_code);
+    code_chop(compile_code);
 
     class_handler.add(class_to_add);
 }
@@ -129,7 +129,7 @@ if(action=="register_function"){
     }
 
     compile_code = string_delete_amount(compile_code,1);
-    code_parser.chop(compile_code);
+    code_chop(compile_code);
 
     function_handler.add(function_name,function_return_type,function_args,I_NULL,SCOPETYPE_GLOBAL);
 }
@@ -188,7 +188,7 @@ if(action=="register_class_function"){
     compile_code = string_delete_amount(compile_code,1);
 
     compile_code = string_delete_amount(compile_code,1);
-    code_parser.chop(compile_code);
+    code_chop(compile_code);
 
     function_handler.add(string_delete_amount(string_delete_until(function_name,"."),1),function_return_type,function_args,class_handler.find(string_get_until(function_name,".")),SCOPETYPE_TEMPLATE);
 }

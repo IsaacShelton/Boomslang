@@ -1,10 +1,10 @@
 /**
-    ============ compileFunction.h ============
+    ============ compile template.h ============
     Code for Compiling Boomslang in a Method
 
     This file should NOT be included
     anywhere besides from compile.h at
-    function compiling.
+    template compiling.
 
     This Header does NOT contain a
     header guard so include with
@@ -15,6 +15,7 @@ using namespace std;
 
 string return_type = "none";
 string write_buffer = "";
+string init_buffer = "";
 indentation = 1;
 write_to = &write_buffer;
 
@@ -132,45 +133,12 @@ while(compile_code!=compile_prev and indentation>0){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
 
             write_buffer += resource(class_name) + " " + resource(variable_name) + ";";
             variable_handler.add(variable_name,class_name,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
-        }
-    }
-
-    //Return statement?
-    if(compile_code.substr(0,7)=="return "){
-        compile_code = string_delete_amount(compile_code,7);
-
-        write_to = &ve_main_code;
-        string new_return_type;
-
-        if(code_parser.harvest_value_type(compile_code,new_return_type)==EXIT_FAILURE){
-            error_fatal("Couldn't Determine return type for method '" + method_name + "'");
-            pend();
-            return EXIT_FAILURE;
-        }
-
-        if( function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type=="none" or function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type==new_return_type ){
-            function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type = new_return_type;
-            return_type = new_return_type;
-
-            write_buffer += "return ";
-            write_to = &write_buffer;
-
-            if(code_parser.harvest_value(compile_code,new_return_type,"")==EXIT_FAILURE){
-                return EXIT_FAILURE;
-            }
-            write_buffer += ";\n";
-            code_parser.chop(compile_code);
-            continue;
-        } else {
-            error_fatal("Conflicting return types '" + new_return_type + "' and '" + function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type + "'");
-            pend();
-            return EXIT_FAILURE;
         }
     }
 
@@ -182,12 +150,13 @@ while(compile_code!=compile_prev and indentation>0){
         compile_code = string_delete_until(compile_code," ");
         compile_code = string_kill_whitespace(compile_code);
 
-        #include "Parsing/action.h"
+        #include "action.h"
         continue;
     }
 
     //Is it a function?
     if( is_identifier(string_get_until_or(compile_code,"(")) ){
+        write_to = &init_buffer;
         error_debug("Found " + string_get_until_or(compile_code,"(") + " to be a function.");
 
         string function_name = string_get_until_or(compile_code,"(");
@@ -195,7 +164,7 @@ while(compile_code!=compile_prev and indentation>0){
 
         if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_FUNCTION) ){
 
-            write_buffer += resource(function_name) + "(";
+            init_buffer += resource(function_name) + "(";
 
             string function_code_prev;
             string argument_type;
@@ -209,21 +178,21 @@ while(compile_code!=compile_prev and indentation>0){
                 function_code_prev = compile_code;
 
                 if(compile_code.substr(0,1)=="," and !first){
-                    write_buffer += ",";
+                    init_buffer += ",";
                     compile_code = string_delete_amount(compile_code,1);
                 }
 
                 first = false;
 
                 //Get Value Type
-                if(code_parser.harvest_value_type(compile_code,argument_type)==EXIT_FAILURE){
+                if(code_harvest_value_type(compile_code,argument_type)==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
 
                 //Handle Value
-                if(code_parser.harvest_value(compile_code,argument_type,",)")==EXIT_FAILURE){
+                if(code_harvest_value(compile_code,argument_type,",)")==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
@@ -237,34 +206,40 @@ while(compile_code!=compile_prev and indentation>0){
             }
 
             compile_code = string_delete_amount(compile_code,1);
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
         } else {
             error_fatal("The Function '" + function_name + "' does not exist.");
             pend();
             return EXIT_FAILURE;
         }
+        write_to = &write_buffer;
         continue;
     }
 
     //Is it a variable?
     if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
         write_to = &write_buffer;
+        method_name = "";
+        /*template_name == template_name*/
         #include "variable.h"
     }
 
     //Is it a value?
     if( rawvalue_exists(compile_code) ){
         error_debug("Found raw value exists");
+        write_to = &init_buffer;
 
 
         if(compile_code.substr(0,1)=="("){//Expression
             string raw_expression_type = S_NULL;
             string raw_expression;
 
-            if (harvest_raw_expression(compile_code,raw_expression,raw_expression_type)==EXIT_FAILURE)
+            if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type)==EXIT_FAILURE)
                 return EXIT_FAILURE;
 
-            write_buffer += raw_expression;
+            write_to = &ve_main_code;
+
+            init_buffer += raw_expression;
             compile_code = string_kill_whitespace(compile_code);
             string prev_return_type = raw_expression_type;
             string return_type = "";
@@ -278,10 +253,10 @@ while(compile_code!=compile_prev and indentation>0){
             while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
                 if(compile_code.substr(0,1)==","){
-                    write_buffer += ";";
+                    init_buffer += ";";
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(raw_expression_type),SCOPETYPE_TEMPLATE)].type;
-                    write_buffer += raw_expression;
-                    if(code_parser.parse_function_from(compile_code,true,class_handler.find(raw_expression_type))==-1){
+                    init_buffer += raw_expression;
+                    if(code_parse_function_from(compile_code,true,class_handler.find(raw_expression_type))==-1){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -290,7 +265,7 @@ while(compile_code!=compile_prev and indentation>0){
                 if(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parser.parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                        if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -310,16 +285,16 @@ while(compile_code!=compile_prev and indentation>0){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
-            write_buffer += ";\n";
+            init_buffer += ";\n";
         }
         else if(compile_code.substr(0,1)=="\""){//String
             //String
 
-            string rawstring = harvest_string(compile_code);
-            write_buffer += "boomslang_String(\"" + rawstring + "\")";
+            string rawstring = code_harvest_string(compile_code);
+            init_buffer += "boomslang_String(\"" + rawstring + "\")";
             compile_code = string_kill_whitespace(compile_code);
             string prev_return_type = "String";
             string return_type = "";
@@ -333,10 +308,10 @@ while(compile_code!=compile_prev and indentation>0){
             while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
                 if(compile_code.substr(0,1)==","){
-                    write_buffer += ";";
+                    init_buffer += ";";
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("String"),SCOPETYPE_TEMPLATE)].type;
-                    write_buffer += "boomslang_String(\"" + rawstring + "\")";
-                    if(code_parser.parse_function_from(compile_code,true,class_handler.find("String"))==-1){
+                    init_buffer += "boomslang_String(\"" + rawstring + "\")";
+                    if(code_parse_function_from(compile_code,true,class_handler.find("String"))==-1){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -345,7 +320,7 @@ while(compile_code!=compile_prev and indentation>0){
                 if(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parser.parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                        if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -365,16 +340,16 @@ while(compile_code!=compile_prev and indentation>0){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
 
             compile_code = string_kill_whitespace(compile_code);
-            write_buffer += ";\n";
+            init_buffer += ";\n";
         } else if(compile_code.substr(0,1)=="0" or compile_code.substr(0,1)=="1" or compile_code.substr(0,1)=="2" or compile_code.substr(0,1)=="3" or compile_code.substr(0,1)=="4" or compile_code.substr(0,1)=="5" or compile_code.substr(0,1)=="6" or compile_code.substr(0,1)=="7" or compile_code.substr(0,1)=="8"
         or compile_code.substr(0,1)=="9"){//Number
             //Decimal
 
-            string rawdecimal = harvest_decimal(compile_code);
-            write_buffer += "boomslang_Number(" + rawdecimal + ")";
+            string rawdecimal = code_harvest_decimal(compile_code);
+            init_buffer += "boomslang_Number(" + rawdecimal + ")";
             compile_code = string_kill_whitespace(compile_code);
             string return_type = "Decimal";
             string prev_return_type = "";
@@ -382,10 +357,10 @@ while(compile_code!=compile_prev and indentation>0){
             while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
 
                 if(compile_code.substr(0,1)==","){
-                    write_buffer += ";\n";
+                    init_buffer += ";\n";
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("Decimal"),SCOPETYPE_TEMPLATE)].type;
-                    write_buffer += "boomslang_Number(" + rawdecimal + ")";
-                    if(code_parser.parse_function_from(compile_code,true,class_handler.find("Decimal"))==-1){
+                    init_buffer += "boomslang_Number(" + rawdecimal + ")";
+                    if(code_parse_function_from(compile_code,true,class_handler.find("Decimal"))==-1){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -394,7 +369,7 @@ while(compile_code!=compile_prev and indentation>0){
                 if(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parser.parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                        if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -414,11 +389,13 @@ while(compile_code!=compile_prev and indentation>0){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            code_parser.chop(compile_code);
+            code_chop(compile_code);
 
             compile_code = string_kill_all_whitespace(compile_code);
-            write_buffer += ";\n";
+            init_buffer += ";\n";
         }
+
+        write_to = &write_buffer;
     }
 }
 
@@ -436,3 +413,8 @@ if(indentation!=0){
     pend();
     return EXIT_FAILURE;
 }
+
+if(unique_template)
+    write_buffer = template_name + "(){\n" + init_buffer + "}\n" + write_buffer;
+else
+    write_buffer = resource(template_name) + "(){\n" + init_buffer + "}\n" + write_buffer;
