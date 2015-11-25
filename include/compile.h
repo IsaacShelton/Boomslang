@@ -303,35 +303,22 @@ while(compile_code!="" and compile_code!=compile_prev){
                 return EXIT_FAILURE;
             }
 
-            while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
-
-                if(compile_code.substr(0,1)==","){
-                    write(";",true);
-                    return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(raw_expression_type),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += raw_expression;
-                    if(code_parse_function_from(compile_code,true,class_handler.find(raw_expression_type))==-1){
+            while(compile_code.substr(0,1)=="."){
+                if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+                    return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                    if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
-                }
-
-                if(compile_code.substr(0,1)=="."){
-                    if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
-                        return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
-                            return EXIT_FAILURE;
-                        }
-                        prev_return_type = return_type;
+                } else {
+                    if(prev_return_type!="none"){
+                        error_fatal("Undeclared Method '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
+                        pend();
+                        return EXIT_FAILURE;
                     } else {
-                        if(prev_return_type!="none"){
-                            error_fatal("Undeclared Method '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
-                            pend();
-                            return EXIT_FAILURE;
-                        } else {
-                            error_fatal("You Can't Call Methods of none");
-                            pend();
-                            return EXIT_FAILURE;
-                        }
+                        error_fatal("You Can't Call Methods of none");
+                        pend();
+                        return EXIT_FAILURE;
                     }
                 }
             }
@@ -357,35 +344,22 @@ while(compile_code!="" and compile_code!=compile_prev){
                 return EXIT_FAILURE;
             }
 
-            while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
-
-                if(compile_code.substr(0,1)==","){
-                    write(";",true);
-                    return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("String"),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += "boomslang_String(\"" + rawstring + "\")";
-                    if(code_parse_function_from(compile_code,true,class_handler.find("String"))==-1){
+            while(compile_code.substr(0,1)=="."){
+                if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+                    return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                    if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
-                }
-
-                if(compile_code.substr(0,1)=="."){
-                    if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
-                        return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==EXIT_FAILURE){
-                            return EXIT_FAILURE;
-                        }
-                        prev_return_type = return_type;
+                } else {
+                    if(prev_return_type!="none"){
+                        error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
+                        pend();
+                        return EXIT_FAILURE;
                     } else {
-                        if(prev_return_type!="none"){
-                            error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
-                            pend();
-                            return EXIT_FAILURE;
-                        } else {
-                            error_fatal("none does not have Methods");
-                            pend();
-                            return EXIT_FAILURE;
-                        }
+                        error_fatal("none does not have Methods");
+                        pend();
+                        return EXIT_FAILURE;
                     }
                 }
             }
@@ -406,35 +380,22 @@ while(compile_code!="" and compile_code!=compile_prev){
             string return_type = "Decimal";
             string prev_return_type = "";
 
-            while(compile_code.substr(0,1)=="." or compile_code.substr(0,1)==","){
-
-                if(compile_code.substr(0,1)==","){
-                    write(";\n",true);
-                    return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find("Decimal"),SCOPETYPE_TEMPLATE)].type;
-                    ve_main_code += "boomslang_Number(" + rawdecimal + ")";
-                    if(code_parse_function_from(compile_code,true,class_handler.find("Decimal"))==-1){
+            while(compile_code.substr(0,1)=="."){
+                if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+                    return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                    if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
-                }
-
-                if(compile_code.substr(0,1)=="."){
-                    if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
-                        return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
-                            return EXIT_FAILURE;
-                        }
-                        prev_return_type = return_type;
+                } else {
+                    if(prev_return_type!="none"){
+                        error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
+                        pend();
+                        return EXIT_FAILURE;
                     } else {
-                        if(prev_return_type!="none"){
-                            error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
-                            pend();
-                            return EXIT_FAILURE;
-                        } else {
-                            error_fatal("You Can't Call Functions of none");
-                            pend();
-                            return EXIT_FAILURE;
-                        }
+                        error_fatal("You Can't Call Functions of none");
+                        pend();
+                        return EXIT_FAILURE;
                     }
                 }
             }
