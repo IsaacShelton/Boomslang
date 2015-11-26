@@ -15,7 +15,8 @@ using namespace std;
 
 string return_type = "none";
 string write_buffer = "";
-indentation = 1;
+unsigned int before_indentation = indentation;
+indentation += 1;
 write_to = &write_buffer;
 
 ///Method Code Compile Loop
@@ -394,7 +395,7 @@ if (compile_code==compile_prev and compile_code!=""){
 }
 
 //Block Error? (This error should never occur)
-if(indentation!=0){
+if(indentation>=before_indentation){
     error_fatal("Unbalanced Blocks");
     pend();
     return EXIT_FAILURE;

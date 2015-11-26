@@ -111,6 +111,41 @@ while(compile_code!=compile_prev and indentation>0){
 
     //Is it a keyword?
     if(ve_keywords.exists(string_get_until_or(compile_code," \n"))){
+        //Method Declaration
+        if(string_get_until_or(compile_code," \n")=="on"){
+            error_debug("Found Method Declaration");
+            //Method Declaration
+            compile_code = string_delete_amount(compile_code,2);
+            compile_code = string_kill_whitespace(compile_code);
+            string buffer;
+
+            string method_name = string_get_until_or(compile_code," (");
+            compile_code = string_delete_until_or(compile_code," (");
+
+            if(!unique_template)
+                function_handler.add(method_name,"none","",class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+
+            //Expect opening parenthesis
+            if(compile_code.substr(0,1)!="("){
+                error_fatal("Expected '(' before '" + compile_code.substr(0,1) + "' in Method Argument Declaration");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            write_to = &buffer;
+            if(code_parse_declaration_args(compile_code,method_name)==EXIT_FAILURE){
+                return EXIT_FAILURE;
+            }
+
+            #include "compile function.h"
+
+            if(return_type!="none"){
+                write_buffer += resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+            } else {
+                write_buffer += "void " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+            }
+            continue;
+        }
         //Variable Declaration
         if(string_get_until_or(compile_code," ")=="new"){
             compile_code = string_delete_until_or(compile_code," ");

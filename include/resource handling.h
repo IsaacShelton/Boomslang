@@ -75,7 +75,7 @@ int VariableHandler::find(string var_name, string var_type, int var_parent_id, i
         ) return i;
     }
 
-    return EXIT_FAILURE;
+    return -1;
 }
 
 int VariableHandler::find_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables){
@@ -93,7 +93,7 @@ int VariableHandler::find_in(string var_name, string var_type, int var_parent_id
             ) return i;
         }
 
-        return EXIT_FAILURE;
+        return -1;
     }
 
 //Functions
@@ -160,7 +160,7 @@ int FunctionHandler::find(string func_name, string func_type, string func_args, 
         ) return i;
     }
 
-    return EXIT_FAILURE;
+    return -1;
 }
 
 int FunctionHandler::find_in(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type, vector<Function> your_functions){
@@ -180,7 +180,7 @@ int FunctionHandler::find_in(string func_name, string func_type, string func_arg
         ) return i;
     }
 
-    return EXIT_FAILURE;
+    return -1;
 }
 
 //Classes
