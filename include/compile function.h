@@ -194,7 +194,7 @@ while(compile_code!=compile_prev and indentation>0){
         string function_name = string_get_until_or(compile_code,"(");
         compile_code = string_delete_until_or(compile_code,"(");
 
-        if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_FUNCTION) ){
+        if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
 
             write_buffer += resource(function_name) + "(";
 
@@ -239,6 +239,8 @@ while(compile_code!=compile_prev and indentation>0){
 
             compile_code = string_delete_amount(compile_code,1);
             code_chop(compile_code);
+
+            write_buffer += ");\n";
         } else {
             error_fatal("The Function '" + function_name + "' does not exist.");
             pend();

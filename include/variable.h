@@ -25,23 +25,27 @@ if(compile_code.substr(0,1)=="."){
     error_debug("Found " + variable_name + " to contain a method.");
 
     if( (!variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation) and method_name=="") or (!variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION) and method_name!="") ){
-        error_fatal("Undeclared Variable '" + variable_name + "'");
+        error_fatal("Undeclared Variable '" + variable_name + "'a");
         pend();
         return EXIT_FAILURE;
     }
 
-    string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+    string return_type;
+
+    if(method_name=="")
+        return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+    else
+        return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type;
+
     string prev_return_type = return_type;
 
     *write_to += resource(variable_name);
 
     while(compile_code.substr(0,1)=="."){
-
-        cout <<function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) << endl;
         if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
             return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
 
-            if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+            if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
             prev_return_type = return_type;
@@ -100,7 +104,12 @@ if(compile_code.substr(0,1)=="="){
     }
     else {//Variable is Declared
         //Create the new Variable
-        string variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+        string variable_type;
+
+        if(method_name=="")
+            variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+        else
+            variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_TEMPLATE)].type;
         compile_code = string_kill_whitespace(compile_code);
 
         *write_to += resource(variable_name) + "=";

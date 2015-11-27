@@ -15,9 +15,10 @@ using namespace std;
 
 string return_type = "none";
 string write_buffer = "";
+string write_template_buffer;
 string init_buffer = "";
 indentation = 1;
-write_to = &write_buffer;
+write_to = &write_template_buffer;
 
 ///Method Code Compile Loop
 while(compile_code!=compile_prev and indentation>0){
@@ -48,7 +49,7 @@ while(compile_code!=compile_prev and indentation>0){
     if(new_indentation > indentation){
         while(new_indentation > indentation){
             indentation++;
-            write_buffer += "{\n";
+            write_template_buffer += "{\n";
         }
     }
     else if(indentation > new_indentation){
@@ -60,7 +61,7 @@ while(compile_code!=compile_prev and indentation>0){
 
         while(indentation > new_indentation){
             indentation--;
-            write_buffer += "}\n";
+            write_template_buffer += "}\n";
         }
     }
 
@@ -92,16 +93,16 @@ while(compile_code!=compile_prev and indentation>0){
         while(!( balance==0 and compile_code.substr(0,1)=="}" )){
             if(compile_code.substr(0,1)=="{"){
                 balance+=1;
-                write_buffer += compile_code.substr(0,1);
+                write_template_buffer += compile_code.substr(0,1);
                 compile_code = string_delete_amount(compile_code,1);
             }
             else
             if(compile_code.substr(0,1)=="}"){
                 balance-=1;
-                write_buffer += compile_code.substr(0,1);
+                write_template_buffer += compile_code.substr(0,1);
                 compile_code = string_delete_amount(compile_code,1);
             } else {
-                write_buffer += compile_code.substr(0,1);
+                write_template_buffer += compile_code.substr(0,1);
                 compile_code = string_delete_amount(compile_code,1);
             }
         }
@@ -140,9 +141,15 @@ while(compile_code!=compile_prev and indentation>0){
             #include "compile function.h"
 
             if(return_type!="none"){
-                write_buffer += resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+                if(method_name=="")
+                    file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+                else
+                    write_template_buffer += resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
             } else {
-                write_buffer += "void " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+                if(method_name=="")
+                    file_write << "void " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+                else
+                    write_template_buffer += "void " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
             }
             continue;
         }
@@ -172,7 +179,7 @@ while(compile_code!=compile_prev and indentation>0){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            write_buffer += resource(class_name) + " " + resource(variable_name) + ";";
+            write_template_buffer += resource(class_name) + " " + resource(variable_name) + ";";
             variable_handler.add(variable_name,class_name,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
         }
     }
@@ -247,13 +254,13 @@ while(compile_code!=compile_prev and indentation>0){
             pend();
             return EXIT_FAILURE;
         }
-        write_to = &write_buffer;
+        write_to = &write_template_buffer;
         continue;
     }
 
     //Is it a variable?
     if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
-        write_to = &write_buffer;
+        write_to = &write_template_buffer;
         method_name = "";
         /*template_name == template_name*/
         #include "variable.h"
@@ -391,7 +398,7 @@ while(compile_code!=compile_prev and indentation>0){
             init_buffer += ";\n";
         }
 
-        write_to = &write_buffer;
+        write_to = &write_template_buffer;
     }
 }
 
@@ -411,6 +418,6 @@ if(indentation!=0){
 }
 
 if(unique_template)
-    write_buffer = template_name + "(){\n" + init_buffer + "}\n" + write_buffer;
+    write_template_buffer = template_name + "(){\n" + init_buffer + "}\n" + write_template_buffer;
 else
-    write_buffer = resource(template_name) + "(){\n" + init_buffer + "}\n" + write_buffer;
+    write_template_buffer = resource(template_name) + "(){\n" + init_buffer + "}\n" + write_template_buffer;

@@ -166,14 +166,14 @@ while(compile_code!="" and compile_code!=compile_prev){
 
                 #include "compile template.h"
 
-                file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_buffer + "};\n";
+                file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_template_buffer + "};\n";
                 ve_main_code += "boomslangUniqueTemplate" + to_string(next_unique_template) + " " + resource(variable_name) + ";";
 
                 variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
                 next_unique_template += 1;
                 continue;
             } else {
-                ve_main_code += resource(class_name) + " " + resource(variable_name) + ";";
+                ve_main_code += resource(class_name) + " " + resource(variable_name) + ";\n";
                 variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
             }
         }
@@ -187,12 +187,11 @@ while(compile_code!="" and compile_code!=compile_prev){
             bool unique_template = false;
             compile_code = string_delete_until_or(compile_code," \n");
             compile_code = string_kill_whitespace(compile_code);
+            class_handler.add(template_name);
 
             #include "compile template.h"
 
-            file_write << "class " + resource(template_name) + "{\npublic:\n" + write_buffer + "};\n";
-
-            class_handler.add(template_name);
+            file_write << "class " + resource(template_name) + "{\npublic:\n" + write_template_buffer + "};\n";
             continue;
         }
     }
