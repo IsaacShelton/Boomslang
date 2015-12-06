@@ -78,7 +78,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
         exp - returns expression
 
         type - returns type of the expression
-            return example: String
+            return example: String1
 
         returns success or failure
     */
@@ -100,6 +100,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
 
 
     while( ((code.substr(0,1)!=")") or balance!=1) and (code_prev!=code) ){
+        write_to = &exp;
         code_prev = code;
         code = string_kill_whitespace(code);
 
@@ -217,10 +218,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             if(code.substr(0,1)!="("){
                 exp += "()";
             } else {
-                string* prev_write_to = write_to;
-                write_to = &exp;
                 code_parse_args(code);
-                write_to = prev_write_to;
             }
 
             code = string_kill_whitespace(code);
@@ -284,12 +282,12 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             if(code.substr(0,1)=="."){
                 string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
                 string prev_return_type = return_type;
+                write_to = &exp;
 
                 while(code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        *write_to = ve_main_code;
-                        if(code_parse_function_from(code,true,class_handler.find(prev_return_type))==-1){
+                        if(code_parse_function_from(code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -307,10 +305,6 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
                 }
 
                 code = string_kill_whitespace(code);
-
-                code_chop(code);
-
-                exp += ";\n";
             }
         }
         else if(code_arg_type(code)==ARGTYPE_FUNCTION){

@@ -146,7 +146,7 @@ while(compile_code!=compile_prev and indentation>0){
     if(compile_code.substr(0,7)=="return "){
         compile_code = string_delete_amount(compile_code,7);
 
-        write_to = &ve_main_code;
+        write_to = &write_buffer;
         string new_return_type;
 
         if(code_harvest_value_type(compile_code,new_return_type)==EXIT_FAILURE){
@@ -259,6 +259,7 @@ while(compile_code!=compile_prev and indentation>0){
     if( rawvalue_exists(compile_code) ){
         error_debug("Found raw value exists");
 
+        write_to = &write_buffer;
 
         if(compile_code.substr(0,1)=="("){//Expression
             string raw_expression_type = S_NULL;
@@ -281,7 +282,7 @@ while(compile_code!=compile_prev and indentation>0){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -323,7 +324,7 @@ while(compile_code!=compile_prev and indentation>0){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type)==EXIT_FAILURE)){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -359,7 +360,7 @@ while(compile_code!=compile_prev and indentation>0){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;

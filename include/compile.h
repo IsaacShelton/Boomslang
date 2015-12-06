@@ -310,7 +310,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -351,7 +351,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==EXIT_FAILURE){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -387,7 +387,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==-1){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
