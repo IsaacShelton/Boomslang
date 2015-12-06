@@ -267,8 +267,6 @@ while(compile_code!=compile_prev and indentation>0){
             if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type)==EXIT_FAILURE)
                 return EXIT_FAILURE;
 
-            write_to = &ve_main_code;
-
             write_buffer += raw_expression;
             compile_code = string_kill_whitespace(compile_code);
             string prev_return_type = raw_expression_type;

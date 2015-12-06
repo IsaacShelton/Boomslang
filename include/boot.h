@@ -12,7 +12,7 @@
 
 #if (BUILD_OS == LINUX)
 USERNAME = getlogin();
-string file_write_name = "/home/" + USERNAME + "/Boomslang/source/prenative.cpp";
+string file_write_name = "/home/" + USERNAME + "/Boomslang/source/first native.cpp";
 #endif
 
 //Get current full path

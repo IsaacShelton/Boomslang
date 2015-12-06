@@ -73,7 +73,7 @@ file_read.close();
 error_log("Compiling");
 
 //Include Boomslang Assets
-file_write << "#include \"boomslang.h\"" << endl;
+file_write << "#include \"../core/boomslangcore.h\"" << endl;
 
 #include "compile.h"
 

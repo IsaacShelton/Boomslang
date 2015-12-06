@@ -124,6 +124,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 return EXIT_FAILURE;
             }
 
+            string template_name = "";
             #include "compile function.h"
 
             if(return_type!="none"){
@@ -155,10 +156,13 @@ while(compile_code!="" and compile_code!=compile_prev){
 
             compile_code = string_kill_whitespace(compile_code);
 
-            code_chop(compile_code);
+            if(compile_code.substr(0,1)!="\n"){
+                error_fatal("Expected newline before '" + compile_code.substr(0,1) + "'");
+                pend();
+                return EXIT_FAILURE;
+            }
 
-            compile_code = string_kill_whitespace(compile_code);
-            compile_code = string_kill_newline(compile_code);
+            compile_code = string_delete_amount(compile_code,1);
 
             if(is_indent(compile_code)){
                 string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
@@ -274,6 +278,7 @@ while(compile_code!="" and compile_code!=compile_prev){
     if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
         write_to = &ve_main_code;
         string method_name = "";
+        string template_name = "";
         #include "variable.h"
     }
 

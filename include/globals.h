@@ -64,7 +64,7 @@ string USERNAME;
 string file_read_name = "";
 
 #if (BUILD_OS == WINDOWS)
-string file_write_name = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\prenative.cpp";
+string file_write_name = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\first native.cpp";
 #endif
 
 //Platform to compile to

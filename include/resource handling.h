@@ -18,6 +18,7 @@ using namespace std;
 //Variables
 void VariableHandler::add(string name, string type, int parent_id, int parent_type, unsigned int indent){
     Variable* ptr_var = (new Variable(name,type,parent_id,parent_type,indent));
+    ptr_var->is_unique = false;
     variables.push_back( *ptr_var );
     delete ptr_var;
 }
