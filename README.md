@@ -5,6 +5,6 @@ The Boomslang Programming Language is an open-source programming language that c
 
 ##Hello World Program
 
-"Hello World".output()
+<code>"Hello World".output()</code>
 
 (When compiling console programs specify the -console flag)
