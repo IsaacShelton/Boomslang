@@ -18,8 +18,7 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 <code>("You entered : " + userInput).output()</code><br>
 
 ###Creating a basic window
-<br>
-<code>use library.interface</code>
+<code>use library.interface</code><br>
 <br>
 <code>window = new Interface</code><br>
 <code>window.show()</code><br>
