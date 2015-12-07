@@ -11,8 +11,8 @@ The Boomslang Programming Language is an open-source programming language that c
 NOTE: Ensure to use the -console compiler flag when compiling console programs such as this one.
 
 ###Taking input
-<code>user<br>Input = ""</code><br>
-<code></code><br>
+<code>userInput = ""</code><br>
+<br>
 <code>"Please enter something:".output()</code><br>
 <code>userInput.input()</code><br>
 <code>("You entered : " + userInput).output()</code><br>
