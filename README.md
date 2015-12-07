@@ -37,8 +37,8 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 <code>window = new Interface</code><br>
 <br>
 <code>new Overseer overseer</code><br>
-<code>&nbsp;&nbsp;on display()</code><br>
-<code>&nbsp;&nbsp;&nbsp;&nbsp;(new Rectangle(0,0,100,100)).draw()</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;on display()</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(new Rectangle(0,0,100,100)).draw()</code><br>
 <br>
 <code>overseer.bind(window)</code><br>
 <code>window.show()</code><br>
