@@ -12,9 +12,9 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 
 ###Taking input
 <code>
-userInput = ""
-
-"Please enter something:".output()
-userInput.input()
+userInput = ""<br/>
+<br/>
+"Please enter something:".output()<br/>
+userInput.input()<br/>
 ("You entered : " + userInput).output()
 </code>
