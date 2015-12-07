@@ -98,8 +98,10 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
 
     code = string_kill_whitespace(code);
 
+    string* prev_write_to;
 
     while( ((code.substr(0,1)!=")") or balance!=1) and (code_prev!=code) ){
+        prev_write_to = write_to;
         write_to = &exp;
         code_prev = code;
         code = string_kill_whitespace(code);
@@ -382,6 +384,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
 
     code = string_delete_amount(code,1);
     exp += ")";
+    write_to = prev_write_to;
 
     return EXIT_SUCCESS;
 }

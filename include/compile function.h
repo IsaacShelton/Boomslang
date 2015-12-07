@@ -262,6 +262,7 @@ while(compile_code!=compile_prev and indentation>0){
         write_to = &write_buffer;
 
         if(compile_code.substr(0,1)=="("){//Expression
+            error_debug("Found expression");
             string raw_expression_type = S_NULL;
             string raw_expression;
 
