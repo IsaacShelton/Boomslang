@@ -32,6 +32,7 @@
 #define ARGTYPE_NUMBER 1
 #define ARGTYPE_VARIABLE 2
 #define ARGTYPE_FUNCTION 3
+#define ARGTYPE_LIST 4
 
 //Function to check if a string contains another string
 bool string_contains(string,string);
@@ -109,7 +110,7 @@ char terminal_complete_path[255];
 string terminal_path;
 
 //Compiler and Linker Flags
-string compile_flags = "";
+string compile_flags = "-std=c++11";
 string linker_flags = "";
 
 //Boomslang Code

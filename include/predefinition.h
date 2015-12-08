@@ -4,12 +4,12 @@ using namespace std;
 //Predefinition
 
 //Class for parsing common code
-int code_parse_args(string& code);
+int code_parse_args(string& code, string method_name, string template_name);
 int code_parse_declaration_args(string& code, string method_name, string template_name);
-int code_parse_function_from(string& code, bool check_semicolon, int class_id);
+int code_parse_function_from(string& code, bool check_semicolon, int class_id, string method_name, string template_name);
 void code_chop(string& code);
-int code_harvest_value(string& code, string &type, string additional_characters, string method = "", string template_name = "");
-int code_harvest_value_type(string code, string &type, string method = "", string template_name = "");
+int code_harvest_value(string& code, string &type, string additional_characters, string method, string template_name);
+int code_harvest_value_type(string code, string &type, string method, string template_name);
 int code_arg_type(string code);
 
 

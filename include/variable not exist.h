@@ -5,7 +5,7 @@ string variable_type = S_NULL;
 compile_code = string_kill_all_whitespace(compile_code);
 
 //Get Value Type
-if(code_harvest_value_type(compile_code,variable_type)==EXIT_FAILURE){
+if(code_harvest_value_type(compile_code,variable_type,method_name,template_name)==EXIT_FAILURE){
     error_fatal("Couldn't Determine Type for Variable '" + variable_name + "'");
     pend();
     return EXIT_FAILURE;
@@ -14,7 +14,7 @@ if(code_harvest_value_type(compile_code,variable_type)==EXIT_FAILURE){
 *write_to += resource(variable_type) + " " + resource(variable_name) + "=";
 
 //Handle Value
-if(code_harvest_value(compile_code,variable_type,"")==EXIT_FAILURE){
+if(code_harvest_value(compile_code,variable_type,"",method_name,template_name)==EXIT_FAILURE){
     return EXIT_FAILURE;
 }
 

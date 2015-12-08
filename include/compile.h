@@ -120,7 +120,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             }
 
             write_to = &buffer;
-            if(code_parse_declaration_args(compile_code,method_name)==EXIT_FAILURE){
+            if(code_parse_declaration_args(compile_code,method_name,"")==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
@@ -188,14 +188,25 @@ while(compile_code!="" and compile_code!=compile_prev){
             compile_code = string_kill_whitespace(compile_code);
 
             string template_name = string_get_until_or(compile_code," \n");
+            string parent_list = "";
             bool unique_template = false;
             compile_code = string_delete_until_or(compile_code," \n");
             compile_code = string_kill_whitespace(compile_code);
+
+            while(compile_code.substr(0,1)!="\n"){
+                if(parent_list==""){
+                    parent_list = ":";
+                }
+                parent_list += "public " + resource(string_get_until_or(compile_code," \n"));
+                compile_code = string_delete_until_or(compile_code," \n");
+                compile_code = string_kill_whitespace(compile_code);
+            }
+
             class_handler.add(template_name);
 
             #include "compile template.h"
 
-            file_write << "class " + resource(template_name) + "{\npublic:\n" + write_template_buffer + "};\n";
+            file_write << "class " + resource(template_name) + parent_list + "{\npublic:\n" + write_template_buffer + "};\n";
             continue;
         }
     }
@@ -242,14 +253,14 @@ while(compile_code!="" and compile_code!=compile_prev){
                 first = false;
 
                 //Get Value Type
-                if(code_harvest_value_type(compile_code,argument_type)==EXIT_FAILURE){
+                if(code_harvest_value_type(compile_code,argument_type,"","")==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in Method '" + function_name + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
 
                 //Handle Value
-                if(code_harvest_value(compile_code,argument_type,",)")==EXIT_FAILURE){
+                if(code_harvest_value(compile_code,argument_type,",)","","")==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
@@ -310,7 +321,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -351,7 +362,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -387,7 +398,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;

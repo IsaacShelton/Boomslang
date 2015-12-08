@@ -134,7 +134,7 @@ while(compile_code!=compile_prev and indentation>0){
             }
 
             write_to = &buffer;
-            if(code_parse_declaration_args(compile_code,method_name)==EXIT_FAILURE){
+            if(code_parse_declaration_args(compile_code,method_name,template_name)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
@@ -227,14 +227,14 @@ while(compile_code!=compile_prev and indentation>0){
                 first = false;
 
                 //Get Value Type
-                if(code_harvest_value_type(compile_code,argument_type)==EXIT_FAILURE){
+                if(code_harvest_value_type(compile_code,argument_type,method_name,template_name)==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
 
                 //Handle Value
-                if(code_harvest_value(compile_code,argument_type,",)")==EXIT_FAILURE){
+                if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
@@ -276,10 +276,10 @@ while(compile_code!=compile_prev and indentation>0){
             string raw_expression_type = S_NULL;
             string raw_expression;
 
-            if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type)==EXIT_FAILURE)
+            if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"",template_name)==EXIT_FAILURE)
                 return EXIT_FAILURE;
 
-            write_to = &write_template_buffer;
+            write_to = &init_buffer;
 
             init_buffer += raw_expression;
             compile_code = string_kill_whitespace(compile_code);
@@ -295,7 +295,7 @@ while(compile_code!=compile_prev and indentation>0){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"",template_name)==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -337,7 +337,7 @@ while(compile_code!=compile_prev and indentation>0){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"",template_name)==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;
@@ -373,7 +373,7 @@ while(compile_code!=compile_prev and indentation>0){
             while(compile_code.substr(0,1)=="."){
                 if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                     return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type))==EXIT_FAILURE){
+                    if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"",template_name)==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
                     prev_return_type = return_type;

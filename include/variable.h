@@ -83,7 +83,7 @@ if(compile_code.substr(0,1)=="."){
         if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
             return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
 
-            if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type))==EXIT_FAILURE){
+            if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type),method_name,template_name)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
             prev_return_type = return_type;
@@ -113,22 +113,14 @@ if(compile_code.substr(0,1)=="="){
     compile_code = string_kill_whitespace(compile_code);
 
     //Does the variable not exist?
-    if(template_name=="" and method_name==""){//Main scope
-        if( !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation) ){
-            #include "variable not exist.h"
-        }
-    } else if (template_name!="" and method_name!=""){//Template method
-        if(!variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
-            #include "variable not exist.h"
-        }
-    } else if (template_name!="" and method_name==""){//Template non-methods
-        if(!variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)){
-            #include "variable not exist.h"
-        }
-    }else if (template_name=="" and method_name!=""){//Method
-        if(!variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)){
-            #include "variable not exist.h"
-        }
+    if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
+        #include "variable not exist.h"
+    } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){//Template method
+        #include "variable not exist.h"
+    } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)){//Template non-methods
+        #include "variable not exist.h"
+    }else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)){//Method
+        #include "variable not exist.h"
     } else {//Variable is Declared
         string variable_type;
 
