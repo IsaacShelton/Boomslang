@@ -20,7 +20,7 @@ indentation += 1;
 write_to = &write_buffer;
 
 ///Method Code Compile Loop
-while(compile_code!=compile_prev and indentation>0){
+while(compile_code!=compile_prev and indentation>before_indentation){
     compile_code = string_kill_newline(compile_code);
     unsigned int new_indentation = 0;
 
@@ -43,7 +43,6 @@ while(compile_code!=compile_prev and indentation>0){
         }
     }
 
-
     //Check for blocks
     if(new_indentation > indentation){
         while(new_indentation > indentation){
@@ -52,20 +51,19 @@ while(compile_code!=compile_prev and indentation>0){
         }
     }
     else if(indentation > new_indentation){
-        if(new_indentation<1){
-            ///The end of the Method
-            indentation = new_indentation;
-            continue;
-        }
-
-        while(indentation > new_indentation){
+        while((indentation > new_indentation) and (indentation > before_indentation)){
             indentation--;
             write_buffer += "}\n";
         }
     }
 
     if(compile_code=="") continue;
-    if(indentation<1) continue;
+    if(new_indentation<=before_indentation){
+        for(int i = 0; i < new_indentation;i++){
+            compile_code = "\t" + compile_code;
+        }
+        continue;
+    }
 
     //Prepare for command
     compile_code = string_kill_all_whitespace(compile_code);
@@ -107,6 +105,40 @@ while(compile_code!=compile_prev and indentation>0){
         }
 
         compile_code = string_delete_amount(compile_code,1);
+    }
+
+    ///Check for before block clauses
+
+    //if
+    if(string_get_until(compile_code," ")=="if"){
+        error_debug("Found if statement");
+        compile_code = string_delete_until(compile_code," ");
+
+        string expression;
+        string type = S_NULL;
+
+        if(code_harvest_value_type(compile_code,type,method_name,template_name)){
+            return EXIT_FAILURE;
+        }
+
+        if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name)){
+            return EXIT_FAILURE;
+        }
+
+        write_buffer += "if" + expression + ")";
+
+        continue;
+    }
+
+    //else
+    if(string_get_until_or(compile_code," \n")=="else"){
+        error_debug("Found else statement");
+        compile_code = string_delete_until_or(compile_code," \n");
+        compile_code = string_kill_whitespace(compile_code);
+
+        write_buffer += " else ";
+
+        continue;
     }
 
     //Is it a keyword?
@@ -252,6 +284,7 @@ while(compile_code!=compile_prev and indentation>0){
     //Is it a variable?
     if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
         write_to = &write_buffer;
+        string init_buffer;
         #include "variable.h"
     }
 
@@ -398,7 +431,7 @@ if (compile_code==compile_prev and compile_code!=""){
 }
 
 //Block Error? (This error should never occur)
-if(indentation>=before_indentation){
+if(indentation>before_indentation){
     error_fatal("Unbalanced Blocks");
     pend();
     return EXIT_FAILURE;

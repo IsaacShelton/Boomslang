@@ -19,7 +19,7 @@ string variable_name = string_get_until_or(compile_code," =+-/*.");
 string variable_buffer;
 
 compile_code = string_delete_until_or(compile_code," =+-/*.");
-compile_code = string_kill_all_whitespace(compile_code);
+compile_code = string_kill_whitespace(compile_code);
 
 if(compile_code.substr(0,1)=="."){
     error_debug("Found " + variable_name + " to contain a method.");
@@ -31,6 +31,7 @@ if(compile_code.substr(0,1)=="."){
             return EXIT_FAILURE;
         }
     } else if (template_name!="" and method_name==""){//Template non-methods
+        write_to = &init_buffer;
         if(!variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
             error_fatal("Undeclared Variable '" + variable_name + "'");
             pend();

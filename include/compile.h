@@ -98,6 +98,40 @@ while(compile_code!="" and compile_code!=compile_prev){
         compile_code = string_delete_amount(compile_code,1);
     }
 
+    ///Check for before block clauses
+
+    //if
+    if(string_get_until(compile_code," ")=="if"){
+        error_debug("Found if statement");
+        compile_code = string_delete_until(compile_code," ");
+
+        string expression;
+        string type = S_NULL;
+
+        if(code_harvest_value_type(compile_code,type,"","")){
+            return EXIT_FAILURE;
+        }
+
+        if(code_harvest_raw_expression(compile_code,expression,type,"","")){
+            return EXIT_FAILURE;
+        }
+
+        ve_main_code += "if" + expression + ")";
+
+        continue;
+    }
+
+    //else
+    if(string_get_until_or(compile_code," \n")=="else"){
+        error_debug("Found else statement");
+        compile_code = string_delete_until_or(compile_code," \n");
+        compile_code = string_kill_whitespace(compile_code);
+
+        ve_main_code += " else ";
+
+        continue;
+    }
+
     //Is it a keyword?
     if(ve_keywords.exists(string_get_until_or(compile_code," \n"))){
         //Method Declaration
@@ -128,14 +162,15 @@ while(compile_code!="" and compile_code!=compile_prev){
             #include "compile function.h"
 
             if(return_type!="none"){
-                file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" << write_buffer << "}\n";
+                file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" << write_buffer;
             } else {
-                file_write << "void " + resource(method_name) + buffer + "{\n" << write_buffer << "}\n";
+                file_write << "void " + resource(method_name) + buffer + "{\n" << write_buffer;
             }
             continue;
         }
         //Variable Declaration
         if(string_get_until_or(compile_code," ")=="new"){
+            error_debug("Found new");
             compile_code = string_delete_until_or(compile_code," ");
 
             compile_code = string_kill_whitespace(compile_code);
@@ -162,7 +197,7 @@ while(compile_code!="" and compile_code!=compile_prev){
                 return EXIT_FAILURE;
             }
 
-            compile_code = string_delete_amount(compile_code,1);
+            compile_code = string_kill_newline(compile_code);
 
             if(is_indent(compile_code)){
                 string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
@@ -203,6 +238,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             }
 
             class_handler.add(template_name);
+            variable_handler.add("self",template_name,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
 
             #include "compile template.h"
 
@@ -290,6 +326,7 @@ while(compile_code!="" and compile_code!=compile_prev){
         write_to = &ve_main_code;
         string method_name = "";
         string template_name = "";
+        string init_buffer;
         #include "variable.h"
     }
 
@@ -302,7 +339,7 @@ while(compile_code!="" and compile_code!=compile_prev){
             string raw_expression_type = S_NULL;
             string raw_expression;
 
-            if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type)==EXIT_FAILURE)
+            if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"","")==EXIT_FAILURE)
                 return EXIT_FAILURE;
 
             write_to = &ve_main_code;

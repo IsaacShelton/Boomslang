@@ -17,7 +17,8 @@ string return_type = "none";
 string write_buffer = "";
 string write_template_buffer;
 string init_buffer = "";
-indentation = 1;
+unsigned int before_indentation = indentation;
+indentation += 1;
 write_to = &write_template_buffer;
 
 ///Method Code Compile Loop
@@ -49,24 +50,23 @@ while(compile_code!=compile_prev and indentation>0){
     if(new_indentation > indentation){
         while(new_indentation > indentation){
             indentation++;
-            write_template_buffer += "{\n";
+            write_buffer += "{\n";
         }
     }
     else if(indentation > new_indentation){
-        if(new_indentation<1){
-            ///The end of the Method
-            indentation = new_indentation;
-            continue;
-        }
-
-        while(indentation > new_indentation){
+        while((indentation > new_indentation) and (indentation > before_indentation)){
             indentation--;
-            write_template_buffer += "}\n";
+            write_buffer += "}\n";
         }
     }
 
     if(compile_code=="") continue;
-    if(indentation<1) continue;
+    if(new_indentation<=before_indentation){
+        for(int i = 0; i < new_indentation;i++){
+            compile_code = "\t" + compile_code;
+        }
+        continue;
+    }
 
     //Prepare for command
     compile_code = string_kill_all_whitespace(compile_code);
@@ -110,6 +110,40 @@ while(compile_code!=compile_prev and indentation>0){
         compile_code = string_delete_amount(compile_code,1);
     }
 
+    ///Check for before block clauses
+
+    //if
+    if(string_get_until(compile_code," ")=="if"){
+        error_debug("Found if statement");
+        compile_code = string_delete_until(compile_code," ");
+
+        string expression;
+        string type = S_NULL;
+
+        if(code_harvest_value_type(compile_code,type,method_name,template_name)){
+            return EXIT_FAILURE;
+        }
+
+        if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name)){
+            return EXIT_FAILURE;
+        }
+
+        init_buffer += "if" + expression + ")";
+
+        continue;
+    }
+
+    //else
+    if(string_get_until_or(compile_code," \n")=="else"){
+        error_debug("Found else statement");
+        compile_code = string_delete_until_or(compile_code," \n");
+        compile_code = string_kill_whitespace(compile_code);
+
+        init_buffer += " else ";
+
+        continue;
+    }
+
     //Is it a keyword?
     if(ve_keywords.exists(string_get_until_or(compile_code," \n"))){
         //Method Declaration
@@ -142,14 +176,14 @@ while(compile_code!=compile_prev and indentation>0){
 
             if(return_type!="none"){
                 if(method_name=="")
-                    file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+                    file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
                 else
-                    write_template_buffer += resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+                    write_template_buffer += resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
             } else {
                 if(method_name=="")
-                    file_write << "void " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+                    file_write << "void " + resource(method_name) + buffer + "{\n" + write_buffer;
                 else
-                    write_template_buffer += "void " + resource(method_name) + buffer + "{\n" + write_buffer + "}\n";
+                    write_template_buffer += "void " + resource(method_name) + buffer + "{\n" + write_buffer;
             }
             continue;
         }
@@ -264,6 +298,8 @@ while(compile_code!=compile_prev and indentation>0){
         method_name = "";
         /*template_name == template_name*/
         #include "variable.h"
+        write_to = &write_template_buffer;
+        continue;
     }
 
     //Is it a value?
@@ -418,6 +454,6 @@ if(indentation!=0){
 }
 
 if(unique_template)
-    write_template_buffer = template_name + "(){\n" + init_buffer + "}\n" + write_template_buffer;
+    write_template_buffer = "\n" + write_template_buffer + template_name + "(){\n" + init_buffer + "}\n" ;
 else
-    write_template_buffer = resource(template_name) + "(){\n" + init_buffer + "}\n" + write_template_buffer;
+    write_template_buffer = "\n" + write_template_buffer + resource(template_name) + "(){\n" + init_buffer + "}\n";

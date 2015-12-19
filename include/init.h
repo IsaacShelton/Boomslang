@@ -31,7 +31,7 @@ ve_keywords.add("template");
 //Base Templates
 class_handler.add("String");
 class_handler.add("Number");
-class_handler.add("Callback");
+class_handler.add("Byte");
 
 //None
 variable_handler.add("none","",SCOPETYPE_GLOBAL,I_NULL);
