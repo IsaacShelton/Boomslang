@@ -187,23 +187,44 @@ while(compile_code!=compile_prev and indentation>before_indentation){
             return EXIT_FAILURE;
         }
 
-        if( function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type=="none" or function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type==new_return_type ){
-            function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type = new_return_type;
-            return_type = new_return_type;
+        if(template_name==""){
+            if( function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type=="none" or function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type==new_return_type ){
+                function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type = new_return_type;
+                return_type = new_return_type;
 
-            write_buffer += "return ";
-            write_to = &write_buffer;
+                write_buffer += "return ";
+                write_to = &write_buffer;
 
-            if(code_harvest_value(compile_code,new_return_type,"",method_name,template_name)==EXIT_FAILURE){
+                if(code_harvest_value(compile_code,new_return_type,"",method_name,template_name)==EXIT_FAILURE){
+                    return EXIT_FAILURE;
+                }
+                write_buffer += ";\n";
+                code_chop(compile_code);
+                continue;
+            } else {
+                error_fatal("Conflicting return types '" + new_return_type + "' and '" + function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type + "'");
+                pend();
                 return EXIT_FAILURE;
             }
-            write_buffer += ";\n";
-            code_chop(compile_code);
-            continue;
         } else {
-            error_fatal("Conflicting return types '" + new_return_type + "' and '" + function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type + "'");
-            pend();
-            return EXIT_FAILURE;
+            if( function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type=="none" or function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type==new_return_type ){
+                function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type = new_return_type;
+                return_type = new_return_type;
+
+                write_buffer += "return ";
+                write_to = &write_buffer;
+
+                if(code_harvest_value(compile_code,new_return_type,"",method_name,template_name)==EXIT_FAILURE){
+                    return EXIT_FAILURE;
+                }
+                write_buffer += ";\n";
+                code_chop(compile_code);
+                continue;
+            } else {
+                error_fatal("Conflicting return types '" + new_return_type + "' and '" + function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type + "'");
+                pend();
+                return EXIT_FAILURE;
+            }
         }
     }
 
