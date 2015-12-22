@@ -1,22 +1,14 @@
-/**
-    ============ string_handling.h ============
-    Code for String Handling Functions
 
-    This file should NOT be included
-    anywhere besides from main.cpp.
+#ifndef STRINGHANDLING_H_INCLUDED
+#define STRINGHANDLING_H_INCLUDED
 
-    This Header does NOT contain a
-    header guard so include with
-    cation.
-*/
+#include <string>
+#include "../include/base.h"
+#include "../include/globals.h"
+#include "../include/scripts.h"
+#include <algorithm>
 
 using namespace std;
-
-void error_show(string a);
-void error_fatal(string a);
-void pend();
-
-///String Handling Functions
 
 //Checks if parent string contains substring
 bool string_contains(string parent_string, string sub_string){
@@ -333,3 +325,5 @@ bool rawvalue_exists(string code){
 
     return false;
 }
+
+#endif // STRINGHANDLING_H_INCLUDED

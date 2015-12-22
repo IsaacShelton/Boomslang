@@ -26,19 +26,16 @@
 #include <stdlib.h>
 #endif
 
-///Predefinitions
-#include "../include/predefinition.h"
-
 using namespace std;
 
 //Boomslang Global Variables
-#include "../include/globals.h"
+#include "../include/globals define.h"
 
 //Boomslang String Handling Functions
-#include "../include/string handling.h"
+#include "../include/management.h"
 
 //Boomslang Resource Handling Functions
-#include "../include/resource handling.h"
+#include "../include/resource.h"
 
 //Boomslang General Purpose Functions
 #include "../include/scripts.h"
@@ -52,13 +49,16 @@ using namespace std;
 //Boomslang final assemble functions
 #include "../include/assemble.h"
 
+int boot(int, char**);
+int init(int, char**);
+
 int main(int arg_count, char* arg[])
 {
     //Start Up Boomslang
-    #include "../include/boot.h"
+    boot(arg_count,arg);
 
     //Run Boomslang
-    #include "../include/init.h"
+    init(arg_count,arg);
 
     //Return Success
     if(!runafter) pend();

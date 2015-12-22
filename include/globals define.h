@@ -4,6 +4,7 @@
 
 #include "build.h"
 #include "management.h"
+#include "resource.h"
 #include <windows.h>
 #include <fstream>
 
@@ -31,20 +32,25 @@
 #define ARGTYPE_LIST 4
 
 //Current User Name
-extern string USERNAME;
+string USERNAME;
 
 //Names of read and write files
-extern string file_read_name;
-extern string file_write_name;
+string file_read_name;
+string file_write_name;
 
 //Platform to compile to
-extern int ve_apptype;
+int ve_apptype;
 
 //Does the program use the console?
-extern bool console;
+bool console;
 
 //Current Line Indentation
-extern unsigned int indentation;
+unsigned int indentation;
+
+//Resource Handlers
+ClassHandler class_handler;
+VariableHandler variable_handler;
+FunctionHandler function_handler;
 
 //Simple String Container Class
 class Container{
@@ -56,49 +62,49 @@ class Container{
 };
 
 //Containers to store names of actions, constants, keywords, and packages
-extern Container ve_actions;
-extern Container ve_constants;
-extern Container ve_keywords;
-extern Container ve_packages;
+Container ve_actions;
+Container ve_constants;
+Container ve_keywords;
+Container ve_packages;
 
 //Main Code Variable
-extern string ve_main_code;
+string ve_main_code;
 
 //Current Scope
-extern string ve_scope;
+string ve_scope;
 
 //Current Context
-extern string ve_context;
+string ve_context;
 
 //Unique Templates
-extern unsigned int next_unique_template;
+unsigned int next_unique_template;
 
 //Wait after compiled?
-extern bool waitafter;
+bool waitafter;
 
 //Run after compile?
-extern bool runafter;
+bool runafter;
 
 //Local Path?
-extern char terminal_complete_path[255];
-extern string terminal_path;
+char terminal_complete_path[255];
+string terminal_path;
 
 //Compiler and Linker Flags
-extern string compile_flags;
-extern string linker_flags;
+string compile_flags;
+string linker_flags;
 
 //Boomslang Code
-extern string compile_code;
+string compile_code;
 
 //Input and Output files
-extern ifstream file_read;
-extern ofstream file_write;
+ifstream file_read;
+ofstream file_write;
 
 //Pointer to Variable that functions write output code to
-extern string* write_to;
+string* write_to;
 
 //Number of Errors and Warnings
-extern int errors;
-extern int warnings;
+int errors;
+int warnings;
 
 #endif // GLOBALS_H_INCLUDED

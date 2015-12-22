@@ -1,19 +1,27 @@
-/**
-    ============ resource_handling.h ============
-    Code for Compile Resource Functions
-
-    This file should NOT be included
-    anywhere besides from main.cpp.
-
-    This Header does NOT contain a
-    header guard so include with
-    cation.
-*/
 
 using namespace std;
 
-///Base Resource Class Functions
+#include <string>
+#include <stdlib.h>
+#include "../include/resource.h"
 
+Class::Class(string new_name){
+    name = new_name;
+}
+Variable::Variable(string new_name, string new_type, int new_parent_id, int new_parent_type, unsigned int new_indent){
+    name = new_name;
+    type = new_type;
+    parent_id = new_parent_id;
+    parent_type = new_parent_type;
+    indent = new_indent;
+}
+Function::Function(string new_name, string new_type, string new_args, int new_parent_id, int new_parent_type){
+    name = new_name;
+    type = new_type;
+    args = new_args;
+    parent_id = new_parent_id;
+    parent_type = new_parent_type;
+}
 
 //Variables
 void VariableHandler::add(string name, string type, int parent_id, int parent_type, unsigned int indent){
@@ -204,13 +212,13 @@ bool ClassHandler::exists(string name){
 }
 
 int ClassHandler::find(string name){
-        bool name_null = (name==" ");//" " == none
+    bool name_null = (name==" ");//" " == none
 
-        for(unsigned int i=0;i<classes.size();i++){
-            if (
-                (classes[i].name == name or name_null)
-            ) return i;
-        }
-
-        return EXIT_FAILURE;
+    for(unsigned int i=0;i<classes.size();i++){
+        if (
+            (classes[i].name == name or name_null)
+        ) return i;
     }
+
+    return EXIT_FAILURE;
+}
