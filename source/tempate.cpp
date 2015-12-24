@@ -1,10 +1,12 @@
 
 #include <string>
+#include <iostream>
 #include "../include/globals.h"
 #include "../include/resource.h"
 #include "../include/base.h"
 #include "../include/action.h"
 #include "../include/function.h"
+#include "../include/variable.h"
 
 using namespace std;
 
@@ -153,8 +155,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 string method_name = string_get_until_or(compile_code," (");
                 compile_code = string_delete_until_or(compile_code," (");
 
-                if(!unique_template)
-                    function_handler.add(method_name,"none","",class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+                function_handler.add(method_name,"none","",class_handler.find(template_name),SCOPETYPE_TEMPLATE);
 
                 //Expect opening parenthesis
                 if(compile_code.substr(0,1)!="("){
@@ -168,7 +169,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     return EXIT_FAILURE;
                 }
 
-                if(compile_function(arg_count,args,indentation,"",template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
+                if(compile_function(arg_count,args,indentation,method_name,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 if(return_type!="none"){
                     if(method_name=="")
@@ -293,7 +294,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             write_to = &write_template_buffer;
             method_name = "";
             /*template_name == template_name*/
-            #include "../include/variable.h"
+            compile_variable(method_name,template_name,init_buffer);
             write_to = &write_template_buffer;
             continue;
         }

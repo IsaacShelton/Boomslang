@@ -9,6 +9,7 @@
 #include "../include/function.h"
 #include "../include/template.h"
 #include "../include/action.h"
+#include "../include/variable.h"
 
 using namespace std;
 
@@ -201,8 +202,9 @@ int compile(int arg_count, char** arg){
 
                 if(is_indent(compile_code)){
                     string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
+                    class_handler.add(template_name);
 
-                    if(compile_template(arg_count,arg,indentation,true,"","",write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
+                    if(compile_template(arg_count,arg,indentation,true,"",template_name,write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                     file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_template_buffer + "};\n";
                     ve_main_code += "boomslangUniqueTemplate" + to_string(next_unique_template) + " " + resource(variable_name) + ";";
@@ -241,7 +243,7 @@ int compile(int arg_count, char** arg){
                 class_handler.add(template_name);
                 variable_handler.add("self",template_name,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
 
-                if(compile_template(arg_count,arg,indentation,false,"","",write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
+                if(compile_template(arg_count,arg,indentation,false,"",template_name,write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 file_write << "class " + resource(template_name) + parent_list + "{\npublic:\n" + write_template_buffer + "};\n";
                 continue;
@@ -326,7 +328,8 @@ int compile(int arg_count, char** arg){
             string method_name = "";
             string template_name = "";
             string init_buffer;
-            #include "../include/variable.h"
+            compile_variable(method_name,template_name,init_buffer);
+            continue;
         }
 
         //Is it a value?

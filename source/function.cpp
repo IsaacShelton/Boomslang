@@ -1,9 +1,11 @@
 
 #include <string>
+#include <iostream>
 #include "../include/globals.h"
 #include "../include/resource.h"
 #include "../include/base.h"
 #include "../include/action.h"
+#include "../include/variable.h"
 
 using namespace std;
 
@@ -102,8 +104,6 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
 
             compile_code = string_delete_amount(compile_code,1);
         }
-
-        ///Check for before block clauses
 
         //if
         if(string_get_until(compile_code," ")=="if"){
@@ -302,7 +302,8 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
         if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
             write_to = &write_buffer;
             string init_buffer;
-            #include "../include/variable.h"
+            compile_variable(method_name,template_name,init_buffer);
+            continue;
         }
 
         //Is it a value?
