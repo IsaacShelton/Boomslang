@@ -55,10 +55,10 @@ int init(int, char**);
 int main(int arg_count, char* arg[])
 {
     //Start Up Boomslang
-    boot(arg_count,arg);
+    if(boot(arg_count,arg)==EXIT_FAILURE) return EXIT_FAILURE;
 
     //Run Boomslang
-    init(arg_count,arg);
+    if(init(arg_count,arg)==EXIT_FAILURE) return EXIT_FAILURE;
 
     //Return Success
     if(!runafter) pend();

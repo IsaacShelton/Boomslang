@@ -168,7 +168,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     return EXIT_FAILURE;
                 }
 
-                compile_function(arg_count,args,indentation,"",template_name,return_type,write_buffer);
+                if(compile_function(arg_count,args,indentation,"",template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 if(return_type!="none"){
                     if(method_name=="")

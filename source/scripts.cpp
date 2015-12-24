@@ -32,7 +32,7 @@ bool file_exists(string filename){
 //Shows a fatal error
 void error_fatal(string error){
     errors += 1;
-    cout << endl << "Fatal Error - " + error << endl;
+    cout << "Fatal Error - " + error << endl;
 }
 
 //Shows a regular error
@@ -66,7 +66,7 @@ void error_suggest(string error){
 }
 
 void pend(){
-    cout << endl << "Errors: " + to_string(errors) + " Warnings: " + to_string(warnings) << endl;
+    cout << endl << "Errors: " + to_string(errors) + " Warnings: " + to_string(warnings);
     if (waitafter){
         string blankstring;
         getline(cin,blankstring);

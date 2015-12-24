@@ -63,9 +63,15 @@ int boot(int arg_count, char** arg){
     //Check the argument count
     if (arg_count==1 or arg_count==0){
         //No File was Specified
-        error_fatal("No file Specified");
-        error_suggest("Type 'boomslang -help' for help");
-        pend();
+        cout << endl;
+        cout << "boomslang <filename> [options]" << endl << endl;
+        cout << " -help     | help" << endl;
+        cout << " -console  | uses the console" << endl;
+        cout << " -wait     | wait after complete" << endl;
+        cout << " -run      | run after compiled" << endl;
+        cout << " -windows  | compile for windows" << endl;
+        cout << " -linux    | compile for linux" << endl;
+        cout << " -android  | compile for android" << endl;
         return EXIT_FAILURE;
     } else {
         //Filename will be figured out later

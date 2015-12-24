@@ -22,10 +22,16 @@ while(i<arg_count){
         ///Show help
 
         cout << endl;
-        cout << "'boomslang <filename>' - compile program" << endl;
-        cout << "'boomslang -help' - help" << endl;
+        cout << "boomslang <filename> [options]" << endl << endl;
+        cout << " -help     | help" << endl;
+        cout << " -console  | uses the console" << endl;
+        cout << " -wait     | wait after complete" << endl;
+        cout << " -run      | run after compiled" << endl;
+        cout << " -windows  | compile for windows" << endl;
+        cout << " -linux    | compile for linux" << endl;
+        cout << " -android  | compile for android" << endl;
 
-        return EXIT_SUCCESS;
+        return EXIT_FAILURE;
     }
     else
     if (dash_argument=="-wait"){

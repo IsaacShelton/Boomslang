@@ -109,13 +109,9 @@ int compile(int arg_count, char** arg){
             string expression;
             string type = S_NULL;
 
-            if(code_harvest_value_type(compile_code,type,"","")){
-                return EXIT_FAILURE;
-            }
+            if(code_harvest_value_type(compile_code,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
 
-            if(code_harvest_raw_expression(compile_code,expression,type,"","")){
-                return EXIT_FAILURE;
-            }
+            if(code_harvest_raw_expression(compile_code,expression,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
 
             ve_main_code += "if" + expression + ")";
 
@@ -159,11 +155,9 @@ int compile(int arg_count, char** arg){
                 }
 
                 write_to = &buffer;
-                if(code_parse_declaration_args(compile_code,method_name,"")==EXIT_FAILURE){
-                    return EXIT_FAILURE;
-                }
+                if(code_parse_declaration_args(compile_code,method_name,"")==EXIT_FAILURE) return EXIT_FAILURE;
 
-                compile_function(arg_count,arg,indentation,method_name,template_name,return_type,write_buffer);
+                if(compile_function(arg_count,arg,indentation,method_name,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 if(return_type!="none"){
                     file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" << write_buffer;
@@ -208,7 +202,7 @@ int compile(int arg_count, char** arg){
                 if(is_indent(compile_code)){
                     string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
 
-                    compile_template(arg_count,arg,indentation,true,"","",write_template_buffer);
+                    if(compile_template(arg_count,arg,indentation,true,"","",write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                     file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_template_buffer + "};\n";
                     ve_main_code += "boomslangUniqueTemplate" + to_string(next_unique_template) + " " + resource(variable_name) + ";";
@@ -247,7 +241,7 @@ int compile(int arg_count, char** arg){
                 class_handler.add(template_name);
                 variable_handler.add("self",template_name,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
 
-                compile_template(arg_count,arg,indentation,false,"","",write_template_buffer);
+                if(compile_template(arg_count,arg,indentation,false,"","",write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 file_write << "class " + resource(template_name) + parent_list + "{\npublic:\n" + write_template_buffer + "};\n";
                 continue;
@@ -303,9 +297,7 @@ int compile(int arg_count, char** arg){
                     }
 
                     //Handle Value
-                    if(code_harvest_value(compile_code,argument_type,",)","","")==EXIT_FAILURE){
-                        return EXIT_FAILURE;
-                    }
+                    if(code_harvest_value(compile_code,argument_type,",)","","")==EXIT_FAILURE) return EXIT_FAILURE;
 
                     compile_code = string_kill_whitespace(compile_code);
                 }
@@ -346,8 +338,7 @@ int compile(int arg_count, char** arg){
                 string raw_expression_type = S_NULL;
                 string raw_expression;
 
-                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"","")==EXIT_FAILURE)
-                    return EXIT_FAILURE;
+                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
 
                 write_to = &ve_main_code;
 
@@ -365,9 +356,8 @@ int compile(int arg_count, char** arg){
                 while(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE){
-                            return EXIT_FAILURE;
-                        }
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE) return EXIT_FAILURE;
+
                         prev_return_type = return_type;
                     } else {
                         if(prev_return_type!="none"){
@@ -406,9 +396,8 @@ int compile(int arg_count, char** arg){
                 while(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE){
-                            return EXIT_FAILURE;
-                        }
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE) return EXIT_FAILURE;
+
                         prev_return_type = return_type;
                     } else {
                         if(prev_return_type!="none"){
@@ -442,9 +431,8 @@ int compile(int arg_count, char** arg){
                 while(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE){
-                            return EXIT_FAILURE;
-                        }
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE) return EXIT_FAILURE;
+
                         prev_return_type = return_type;
                     } else {
                         if(prev_return_type!="none"){

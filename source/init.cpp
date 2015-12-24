@@ -74,7 +74,7 @@ int init(int arg_count, char** arg){
     //Include Boomslang Assets
     file_write << "#include \"../core/boomslangcore.h\"" << endl;
 
-    compile(arg_count,arg);
+    if(compile(arg_count,arg)==EXIT_FAILURE) return EXIT_FAILURE;
 
     file_write.close();
 
@@ -82,9 +82,7 @@ int init(int arg_count, char** arg){
 
     error_log("Assembling");
 
-    if(assemble()==EXIT_FAILURE){
-        return EXIT_FAILURE;
-    }
+    if(assemble()==EXIT_FAILURE) return EXIT_FAILURE;
 
     error_log("Cleaning up");
 
