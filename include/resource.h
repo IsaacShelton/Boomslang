@@ -51,6 +51,7 @@ class Function: public Resource{
     string args = "";/*SomeClass,SomeClass,SomeClass*/
     int parent_id = -1;
     int parent_type = -1;
+    bool pure = false;
 
     Function(string new_name, string new_type, string new_args, int new_parent_id, int new_parent_type);
 };

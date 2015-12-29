@@ -15,9 +15,11 @@ int init(int arg_count, char** arg){
 
     //Actions
     ve_actions.add("use");
+    ve_actions.add("import");
     ve_actions.add("native_include");
     ve_actions.add("native_library");
     ve_actions.add("native_standard_library");
+    ve_actions.add("register");
     ve_actions.add("register_class");
     ve_actions.add("register_class_function");
     ve_actions.add("register_function");

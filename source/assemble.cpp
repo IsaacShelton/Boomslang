@@ -44,12 +44,12 @@ int assemble(){
         if(runafter){
             system(("\"" + filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe") + "\"").c_str());
         }
-        #else
+        #else //(BUILD_OS == WINDOWS)
         error_fatal("Can't create Windows executable");
         error_suggest("Compile your code on a machine running Windows");
         pend();
         return EXIT_FAILURE;
-        #endif
+        #endif //else (BUILD_OS == WINDOWS)
     }
 
     if (ve_apptype == APPTYPE_ANDROID){

@@ -12,7 +12,6 @@ using namespace std;
 int compile_function(int arg_count,char** args, unsigned int indentation,string method_name,string template_name,string& return_type,string& write_buffer){
     unsigned int before_indentation = indentation;
     string compile_prev;
-    return_type = "none";
     write_buffer = "";
     indentation += 1;
     write_to = &write_buffer;
@@ -145,10 +144,10 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
 
                 compile_code = string_kill_whitespace(compile_code);
 
-                string class_name = string_get_until_or(compile_code," ");
-                compile_code = string_delete_until_or(compile_code," ");
+                string class_name = string_get_until_or(compile_code," \n");
+                compile_code = string_delete_until_or(compile_code," \n");
 
-                compile_code = string_kill_whitespace(compile_code);
+                compile_code = string_kill_all_whitespace(compile_code);
 
                 string variable_name = string_get_until_or(compile_code," \n");
                 compile_code = string_delete_until_or(compile_code," \n");
@@ -217,7 +216,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                     code_chop(compile_code);
                     continue;
                 } else {
-                    error_fatal("Conflicting return types '" + new_return_type + "' and '" + function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type + "'");
+                    error_fatal("Conflicting return types '" + new_return_type + "' and '" + function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type + "'");
                     pend();
                     return EXIT_FAILURE;
                 }

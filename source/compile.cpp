@@ -141,22 +141,39 @@ int compile(int arg_count, char** arg){
 
                 string buffer;
                 string write_buffer;
-                string return_type;
-                string method_name = string_get_until_or(compile_code," (");
+                string return_type = "none";
+                string method_name = string_get_until_or(compile_code," (\n-");
                 string template_name = "";
 
-                compile_code = string_delete_until_or(compile_code," (");
+                compile_code = string_delete_until_or(compile_code," (\n-");
                 function_handler.add(method_name,"none","",I_NULL,SCOPETYPE_GLOBAL);
 
+                compile_code = string_kill_whitespace(compile_code);
+
                 //Expect opening parenthesis
-                if(compile_code.substr(0,1)!="("){
-                    error_fatal("Expected '(' before '" + compile_code.substr(0,1) + "' in Method Argument Declaration");
+                if(compile_code.substr(0,1)!="(" and compile_code.substr(0,1)!="\n" and compile_code.substr(0,2)!="->"){
+                    error_fatal("Expected '(' or '->' or newline before '" + compile_code.substr(0,1) + "' in Method Argument Declaration");
                     pend();
                     return EXIT_FAILURE;
                 }
 
-                write_to = &buffer;
-                if(code_parse_declaration_args(compile_code,method_name,"")==EXIT_FAILURE) return EXIT_FAILURE;
+                if(compile_code.substr(0,1)=="("){
+                    write_to = &buffer;
+                    if(code_parse_declaration_args(compile_code,method_name,"")==EXIT_FAILURE) return EXIT_FAILURE;
+                } else {
+                    buffer = "()";
+                }
+
+                compile_code = string_kill_whitespace(compile_code);
+
+                if(compile_code.substr(0,2)=="->"){
+                    compile_code = string_delete_amount(compile_code,2);
+                    compile_code = string_kill_whitespace(compile_code);
+                    return_type = string_get_until_or(compile_code," \n");
+                    compile_code = string_delete_until_or(compile_code," \n");
+                    compile_code = string_kill_whitespace(compile_code);
+                    function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type = return_type;
+                }
 
                 if(compile_function(arg_count,arg,indentation,method_name,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
@@ -174,10 +191,10 @@ int compile(int arg_count, char** arg){
 
                 compile_code = string_kill_whitespace(compile_code);
 
-                string class_name = string_get_until_or(compile_code," ");
-                compile_code = string_delete_until_or(compile_code," ");
+                string class_name = string_get_until_or(compile_code," \n");
+                compile_code = string_delete_until_or(compile_code," \n");
 
-                compile_code = string_kill_whitespace(compile_code);
+                compile_code = string_kill_all_whitespace(compile_code);
 
                 string variable_name = string_get_until_or(compile_code," \n");
                 compile_code = string_delete_until_or(compile_code," \n");
@@ -186,6 +203,12 @@ int compile(int arg_count, char** arg){
 
                 if(!class_handler.exists(class_name)){
                     error_fatal("Undeclared Template '" + class_name + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                    error_fatal("The variable '" + variable_name + "' was already declared");
                     pend();
                     return EXIT_FAILURE;
                 }
@@ -228,6 +251,12 @@ int compile(int arg_count, char** arg){
                 string parent_list = "";
                 bool unique_template = false;
 
+                if(class_handler.exists(template_name)){
+                    error_fatal("The template '" + template_name + "' was already declared");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
                 compile_code = string_delete_until_or(compile_code," \n");
                 compile_code = string_kill_whitespace(compile_code);
 
@@ -258,7 +287,7 @@ int compile(int arg_count, char** arg){
             compile_code = string_delete_until(compile_code," ");
             compile_code = string_kill_whitespace(compile_code);
 
-            action(action_name);
+            if(action(action_name)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 

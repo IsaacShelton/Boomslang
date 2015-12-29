@@ -149,24 +149,38 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 //Method Declaration
                 compile_code = string_delete_amount(compile_code,2);
                 compile_code = string_kill_whitespace(compile_code);
-                string buffer;
-                string return_type;
 
-                string method_name = string_get_until_or(compile_code," (");
-                compile_code = string_delete_until_or(compile_code," (");
+                string buffer;
+                string return_type = "none";
+
+                string method_name = string_get_until_or(compile_code," (\n-");
+                compile_code = string_delete_until_or(compile_code," (\n-");
 
                 function_handler.add(method_name,"none","",class_handler.find(template_name),SCOPETYPE_TEMPLATE);
 
                 //Expect opening parenthesis
-                if(compile_code.substr(0,1)!="("){
-                    error_fatal("Expected '(' before '" + compile_code.substr(0,1) + "' in Method Argument Declaration");
+                if(compile_code.substr(0,1)!="(" and compile_code.substr(0,1)!="\n" and compile_code.substr(0,2)!="->"){
+                    error_fatal("Expected '(' or '->' or newline before '" + compile_code.substr(0,1) + "' in Method Argument Declaration");
                     pend();
                     return EXIT_FAILURE;
                 }
 
-                write_to = &buffer;
-                if(code_parse_declaration_args(compile_code,method_name,template_name)==EXIT_FAILURE){
-                    return EXIT_FAILURE;
+                if(compile_code.substr(0,1)=="("){
+                    write_to = &buffer;
+                    if(code_parse_declaration_args(compile_code,method_name,template_name)==EXIT_FAILURE) return EXIT_FAILURE;
+                } else {
+                    buffer = "()";
+                }
+
+                compile_code = string_kill_whitespace(compile_code);
+
+                if(compile_code.substr(0,2)=="->"){
+                    compile_code = string_delete_amount(compile_code,2);
+                    compile_code = string_kill_whitespace(compile_code);
+                    return_type = string_get_until_or(compile_code," \n");
+                    compile_code = string_delete_until_or(compile_code," \n");
+                    compile_code = string_kill_whitespace(compile_code);
+                    function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type = return_type;
                 }
 
                 if(compile_function(arg_count,args,indentation,method_name,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
@@ -190,10 +204,10 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
                 compile_code = string_kill_whitespace(compile_code);
 
-                string class_name = string_get_until_or(compile_code," ");
-                compile_code = string_delete_until_or(compile_code," ");
+                string class_name = string_get_until_or(compile_code," \n");
+                compile_code = string_delete_until_or(compile_code," \n");
 
-                compile_code = string_kill_whitespace(compile_code);
+                compile_code = string_kill_all_whitespace(compile_code);
 
                 string variable_name = string_get_until_or(compile_code," \n");
                 compile_code = string_delete_until_or(compile_code," \n");
