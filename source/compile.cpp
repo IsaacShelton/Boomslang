@@ -18,7 +18,6 @@ int compile(int arg_count, char** arg){
     string method_name;
 
     ///Main Compile Loop
-
     while(compile_code!="" and compile_code!=compile_prev){
         compile_code = string_kill_newline(compile_code);
         unsigned int new_indentation = 0;
@@ -102,6 +101,33 @@ int compile(int arg_count, char** arg){
 
         ///Check for before block clauses
 
+        //else
+        if(string_get_until_or(compile_code," \n")=="else"){
+            error_debug("Found else statement");
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+
+            ve_main_code += " else ";
+
+            if(string_get_until(compile_code," ")=="if"){
+                error_debug("Found if statement");
+                compile_code = string_delete_until(compile_code," ");
+
+                string expression;
+                string type = S_NULL;
+
+                if(code_harvest_value_type(compile_code,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
+
+                if(code_harvest_raw_expression(compile_code,expression,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
+
+                ve_main_code += "if" + expression + ")";
+
+                continue;
+            }
+
+            continue;
+        }
+
         //if
         if(string_get_until(compile_code," ")=="if"){
             error_debug("Found if statement");
@@ -119,15 +145,59 @@ int compile(int arg_count, char** arg){
             continue;
         }
 
-        //else
-        if(string_get_until_or(compile_code," \n")=="else"){
-            error_debug("Found else statement");
+        //try
+        if(string_get_until_or(compile_code," \n")=="try"){
+            error_debug("Found try statement");
             compile_code = string_delete_until_or(compile_code," \n");
             compile_code = string_kill_whitespace(compile_code);
 
-            ve_main_code += " else ";
-
+            ve_main_code += "try ";
             continue;
+        }
+
+        //catch
+        if(string_get_until_or(compile_code," \n")=="catch"){
+            error_debug("Found catch statement");
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+
+            if(compile_code.substr(0,1)=="\n"){
+                ve_main_code += "catch(...) ";
+                continue;
+            }
+            else {//Catch specific template
+                string catch_template = string_get_until_or(compile_code," \n");
+                compile_code = string_delete_until_or(compile_code," \n");
+                compile_code = string_kill_whitespace(compile_code);
+
+                if(!class_handler.exists(catch_template)){
+                    error_fatal("Undeclared Template '" + catch_template + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                if(compile_code.substr(0,1)=="\n"){
+                    ve_main_code += "catch(" + resource(catch_template) + ") ";
+                    continue;
+                } else if(compile_code.substr(0,2)=="as"){//Catch into variable
+                    compile_code = string_delete_amount(compile_code,2);
+                    compile_code = string_kill_whitespace(compile_code);
+
+                    string catch_variable = string_get_until_or(compile_code," \n");
+                    compile_code = string_delete_until_or(compile_code," \n");
+                    compile_code = string_kill_whitespace(compile_code);
+
+                    ve_main_code += "catch(" + resource(catch_template) + " " + resource(catch_variable) + ") ";
+                    variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN);
+                    continue;
+                } else {
+                    error_fatal("Expected 'as' before '" + compile_code.substr(0,1) + "' after template in catch statement");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                continue;
+            }
         }
 
         //Is it a keyword?
@@ -357,7 +427,7 @@ int compile(int arg_count, char** arg){
             string method_name = "";
             string template_name = "";
             string init_buffer;
-            compile_variable(method_name,template_name,init_buffer);
+            if(compile_variable(method_name,template_name,init_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 

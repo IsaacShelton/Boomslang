@@ -23,6 +23,7 @@ string resource(string);
 string delete_backslash(string a);
 string string_upper(string a);
 bool is_identifier(string what);
+bool is_identifier(string what, string extras);
 bool is_indent(string what);
 bool rawvalue_exists(string code);
 

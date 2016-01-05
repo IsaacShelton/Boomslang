@@ -26,6 +26,7 @@ int init(int arg_count, char** arg){
 
     //Keywords
     ve_keywords.add("on");
+    ve_keywords.add("when");
     ve_keywords.add("new");
     ve_keywords.add("template");
 

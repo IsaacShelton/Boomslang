@@ -19,6 +19,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
     ///Method Code Compile Loop
     while(compile_code!=compile_prev and indentation>before_indentation){
         compile_code = string_kill_newline(compile_code);
+
         unsigned int new_indentation = 0;
 
         //Get Indents
@@ -104,6 +105,37 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
             compile_code = string_delete_amount(compile_code,1);
         }
 
+        //else
+        if(string_get_until_or(compile_code," \n")=="else"){
+            error_debug("Found else statement");
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+
+            write_buffer += " else ";
+
+            if(string_get_until(compile_code," ")=="if"){
+                error_debug("Found if statement");
+                compile_code = string_delete_until(compile_code," ");
+
+                string expression;
+                string type = S_NULL;
+
+                if(code_harvest_value_type(compile_code,type,method_name,template_name)){
+                    return EXIT_FAILURE;
+                }
+
+                if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name)){
+                    return EXIT_FAILURE;
+                }
+
+                write_buffer += "if" + expression + ")";
+
+                continue;
+            }
+
+            continue;
+        }
+
         //if
         if(string_get_until(compile_code," ")=="if"){
             error_debug("Found if statement");
@@ -121,17 +153,6 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
             }
 
             write_buffer += "if" + expression + ")";
-
-            continue;
-        }
-
-        //else
-        if(string_get_until_or(compile_code," \n")=="else"){
-            error_debug("Found else statement");
-            compile_code = string_delete_until_or(compile_code," \n");
-            compile_code = string_kill_whitespace(compile_code);
-
-            write_buffer += " else ";
 
             continue;
         }
@@ -301,7 +322,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
         if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
             write_to = &write_buffer;
             string init_buffer;
-            compile_variable(method_name,template_name,init_buffer);
+            if(compile_variable(method_name,template_name,init_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 

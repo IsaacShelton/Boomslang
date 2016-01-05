@@ -257,6 +257,107 @@ bool is_identifier(string what){
     }
 }
 
+//Checks to see if the string is an identifier
+bool is_identifier(string what, string extras){
+    //Is it blank?
+    if (what=="") return false;
+
+    //Does it start with a number?
+    if (what.substr(0,1)=="0"
+        or what.substr(0,1)=="1"
+        or what.substr(0,1)=="2"
+        or what.substr(0,1)=="3"
+        or what.substr(0,1)=="4"
+        or what.substr(0,1)=="5"
+        or what.substr(0,1)=="6"
+        or what.substr(0,1)=="7"
+        or what.substr(0,1)=="8"
+        or what.substr(0,1)=="9")
+        return false;
+
+    //Underscore are ok
+    string a = string_replace_all(what,"_","");
+
+    //Numbers are ok
+    a = string_replace_all(a,"1","");
+    a = string_replace_all(a,"2","");
+    a = string_replace_all(a,"3","");
+    a = string_replace_all(a,"4","");
+    a = string_replace_all(a,"5","");
+    a = string_replace_all(a,"6","");
+    a = string_replace_all(a,"7","");
+    a = string_replace_all(a,"8","");
+    a = string_replace_all(a,"9","");
+    a = string_replace_all(a,"0","");
+
+    //Lowercase Letters are ok
+    a = string_replace_all(a,"a","");
+    a = string_replace_all(a,"b","");
+    a = string_replace_all(a,"c","");
+    a = string_replace_all(a,"d","");
+    a = string_replace_all(a,"e","");
+    a = string_replace_all(a,"f","");
+    a = string_replace_all(a,"g","");
+    a = string_replace_all(a,"h","");
+    a = string_replace_all(a,"i","");
+    a = string_replace_all(a,"j","");
+    a = string_replace_all(a,"k","");
+    a = string_replace_all(a,"l","");
+    a = string_replace_all(a,"m","");
+    a = string_replace_all(a,"n","");
+    a = string_replace_all(a,"o","");
+    a = string_replace_all(a,"p","");
+    a = string_replace_all(a,"q","");
+    a = string_replace_all(a,"r","");
+    a = string_replace_all(a,"s","");
+    a = string_replace_all(a,"t","");
+    a = string_replace_all(a,"u","");
+    a = string_replace_all(a,"v","");
+    a = string_replace_all(a,"w","");
+    a = string_replace_all(a,"x","");
+    a = string_replace_all(a,"y","");
+    a = string_replace_all(a,"z","");
+
+    //Uppercase Letters are ok
+    a = string_replace_all(a,"A","");
+    a = string_replace_all(a,"B","");
+    a = string_replace_all(a,"C","");
+    a = string_replace_all(a,"D","");
+    a = string_replace_all(a,"E","");
+    a = string_replace_all(a,"F","");
+    a = string_replace_all(a,"G","");
+    a = string_replace_all(a,"H","");
+    a = string_replace_all(a,"I","");
+    a = string_replace_all(a,"J","");
+    a = string_replace_all(a,"K","");
+    a = string_replace_all(a,"L","");
+    a = string_replace_all(a,"M","");
+    a = string_replace_all(a,"N","");
+    a = string_replace_all(a,"O","");
+    a = string_replace_all(a,"P","");
+    a = string_replace_all(a,"Q","");
+    a = string_replace_all(a,"R","");
+    a = string_replace_all(a,"S","");
+    a = string_replace_all(a,"T","");
+    a = string_replace_all(a,"U","");
+    a = string_replace_all(a,"V","");
+    a = string_replace_all(a,"W","");
+    a = string_replace_all(a,"X","");
+    a = string_replace_all(a,"Y","");
+    a = string_replace_all(a,"Z","");
+
+    while(extras!=""){
+        a = string_replace_all(a,extras.substr(0,1),"");
+        extras = string_delete_amount(extras,1);
+    }
+
+    if (a==""){
+        return true;
+    } else {
+        return false;
+    }
+}
+
 //Checks the see if the string is an indent character
 bool is_indent(string what){
     if(what.substr(0,1)=="\t" or what.substr(0,4)=="    ")

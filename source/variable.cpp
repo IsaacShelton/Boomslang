@@ -20,7 +20,8 @@ int compile_variable(string method_name, string template_name, string& init_buff
     if(compile_code.substr(0,1)=="."){
         error_debug("Found " + variable_name + " to contain a method.");
 
-        if(template_name=="" and method_name==""){//Main scope
+        if(class_handler.exists(variable_name)){}
+        else if(template_name=="" and method_name==""){//Main scope
             if( !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation) ){
                 error_fatal("Undeclared Variable '" + variable_name + "'");
                 pend();
@@ -49,7 +50,8 @@ int compile_variable(string method_name, string template_name, string& init_buff
 
         string return_type;
 
-        if(method_name==""){
+        if(class_handler.exists(variable_name)){}
+        else if(method_name==""){
             if(template_name==""){
                 //In main scope
                 return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
@@ -73,11 +75,76 @@ int compile_variable(string method_name, string template_name, string& init_buff
         }
 
         string prev_return_type = return_type;
+        bool first = true;
 
         *write_to += resource(variable_name);
 
         while(compile_code.substr(0,1)=="."){
-            if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+            if(class_handler.exists(variable_name) and first){
+                if(!function_handler.exists(variable_name + string_get_until_or(compile_code," ("),S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)){
+                    error_fatal("Undeclared method '" + variable_name + string_get_until_or(compile_code," (") + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                string function_name = variable_name + string_get_until_or(compile_code,"(");
+                string post_function_name = string_get_until_or(compile_code,"(");
+                compile_code = string_delete_until_or(compile_code,"(");
+
+                if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
+                    *write_to += "::" + resource(string_delete_amount(post_function_name,1)) + "(";
+
+                    string function_code_prev;
+                    string argument_type;
+
+                    compile_code = string_delete_amount(compile_code,1);
+                    compile_code = string_kill_all_whitespace(compile_code);
+                    bool first_funcloop = true;
+
+                    while(compile_code.substr(0,1)!=")" and function_code_prev!=compile_code){
+                        compile_code = string_kill_whitespace(compile_code);
+                        function_code_prev = compile_code;
+
+                        if(compile_code.substr(0,1)=="," and !first){
+                            *write_to += ",";
+                            compile_code = string_delete_amount(compile_code,1);
+                        }
+
+                        first_funcloop = false;
+
+                        //Get Value Type
+                        if(code_harvest_value_type(compile_code,argument_type,method_name,template_name)==EXIT_FAILURE){
+                            error_fatal("Couldn't Determine Type for Argument in Method '" + function_name + "'");
+                            pend();
+                            return EXIT_FAILURE;
+                        }
+
+                        //Handle Value
+                        if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name)==EXIT_FAILURE) return EXIT_FAILURE;
+
+                        compile_code = string_kill_whitespace(compile_code);
+                    }
+
+                    if(function_code_prev==compile_code){
+                        error_fatal("Internal Function Error");
+                        pend();
+                        return EXIT_FAILURE;
+                    }
+
+                    compile_code = string_delete_amount(compile_code,1);
+                    code_chop(compile_code);
+
+                    *write_to += ")";
+                } else {
+                    error_fatal("The Method '" + function_name + "' does not exist.");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                return_type = function_handler.functions[function_handler.find(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type;
+                prev_return_type = return_type;
+            }
+            else if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                 return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
 
                 if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type),method_name,template_name)==EXIT_FAILURE){
@@ -95,6 +162,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                     return EXIT_FAILURE;
                 }
             }
+            first = false;
         }
 
         compile_code = string_kill_whitespace(compile_code);
