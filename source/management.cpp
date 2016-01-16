@@ -1,7 +1,5 @@
 
-#ifndef STRINGHANDLING_H_INCLUDED
-#define STRINGHANDLING_H_INCLUDED
-
+#include <iostream>
 #include <string>
 #include "../include/base.h"
 #include "../include/globals.h"
@@ -426,5 +424,3 @@ bool rawvalue_exists(string code){
 
     return false;
 }
-
-#endif // STRINGHANDLING_H_INCLUDED

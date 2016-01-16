@@ -41,6 +41,7 @@ int boot(int arg_count, char** arg){
     warnings = 0;
     ve_scope = "BOOMSLANG";
     next_unique_template = 0;
+    next_embedded_id = 0;
     waitafter = false;
     runafter = false;
     compile_flags = "-std=c++11";
@@ -66,6 +67,7 @@ int boot(int arg_count, char** arg){
         cout << endl;
         cout << "boomslang <filename> [options]" << endl << endl;
         cout << " -help     | help" << endl;
+        cout << " -version  | version info" << endl;
         cout << " -console  | uses the console" << endl;
         cout << " -wait     | wait after complete" << endl;
         cout << " -run      | run after compiled" << endl;

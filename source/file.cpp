@@ -113,7 +113,11 @@ int execute_silent(string strFunct, string strParams){
 
 //Gets the name of the file from path and filename
 string filename_name(string a){
-    return string_delete_amount(a.substr(a.find_last_of("\\"), a.length() - a.find_last_of("\\")),1);
+    if (a.find_last_of("\\")==string::npos){
+        return a;
+    } else {
+        return string_delete_amount(a.substr(a.find_last_of("\\"), a.length() - a.find_last_of("\\")),1);
+    }
 }
 
 //Gets the path of the file from path and filename
@@ -129,6 +133,11 @@ string filename_path(string a){
 string filename_change_ext(string filename, string ext_without_dot){
     string file_no_ext = string_get_until(filename,".");
     return file_no_ext + "." + ext_without_dot;
+}
+
+ifstream::pos_type file_size(string size_filename){
+    std::ifstream file_stream(size_filename.c_str(), std::ifstream::ate | std::ifstream::binary);
+    return file_stream.tellg();
 }
 
 //Writes to ve_main_code or straight to file

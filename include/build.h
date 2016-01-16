@@ -9,7 +9,7 @@
 
 #define BUILD_OS WINDOWS
 
-#define BUILD_MAJOR 1
+#define BUILD_MAJOR 2
 #define BUILD_MINOR 0
 #define BUILD_RELEASE 0
 

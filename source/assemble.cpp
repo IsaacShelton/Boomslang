@@ -12,6 +12,8 @@ int assemble(){
             linker_flags = "-Wl,--subsystem,windows " + linker_flags;
         }
 
+        cout << "1" << endl;
+
         //Remove old executable
         if(file_exists(filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe"))){
             if(remove((filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe")).c_str())!=0){
@@ -21,6 +23,8 @@ int assemble(){
             }
         }
 
+        cout << "2" << endl;
+
         if(file_exists( ("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final native.o") )){
             if(remove( ("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final native.o").c_str() )!=0){
                 error_fatal("Failed to delete object file.");
@@ -29,9 +33,19 @@ int assemble(){
             }
         }
 
+        cout << "3" << endl;
+
+        try {
+            filename_path(file_read_name);
+        } catch(bad_alloc){
+            cout << "bad alloc happened" << endl;
+        }
+
         //Run MinGW
         execute_silent("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\bin\\g++","-c \"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final native.cpp\" " + compile_flags + " -o \"" + "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final native.o" + "\" 2>\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\logs\\native_errors.log\"");
         execute_silent("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\bin\\g++","\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final native.o\" \"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\core\\libboomslangcore.a\" " + linker_flags + " -o \"" + filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe") + "\" 2>\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\logs\\linker_errors.log\"");
+
+        cout << "4" << endl;
 
         //Check if MinGW created an executable
         if (!file_exists(filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe"))){
@@ -40,11 +54,17 @@ int assemble(){
             pend();
             return EXIT_FAILURE;
         }
+        cin.get();
+
+        cout << "5" << endl;
 
         if(runafter){
             system(("\"" + filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"exe") + "\"").c_str());
         }
-        #else //(BUILD_OS == WINDOWS)
+
+        cout << "6" << endl;
+
+        #else //(BUILD_OS == WINDOWS)s
         error_fatal("Can't create Windows executable");
         error_suggest("Compile your code on a machine running Windows");
         pend();

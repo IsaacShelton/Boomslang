@@ -73,6 +73,9 @@ extern string ve_context;
 //Unique Templates
 extern unsigned int next_unique_template;
 
+//Embedded id
+extern unsigned int next_embedded_id;
+
 //Wait after compiled?
 extern bool waitafter;
 

@@ -16,6 +16,7 @@ using namespace std;
 int compile(int arg_count, char** arg){
     string compile_prev = "";
     string method_name;
+    string clean_up;
 
     ///Main Compile Loop
     while(compile_code!="" and compile_code!=compile_prev){
@@ -198,6 +199,28 @@ int compile(int arg_count, char** arg){
 
                 continue;
             }
+        }
+
+        //throw
+        if(string_get_until_or(compile_code," \n")=="throw"){
+            error_debug("Found throw statement");
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+            string type_of;
+
+            *write_to += "throw ";
+
+            if(code_harvest_value_type(compile_code,type_of,"","")==EXIT_FAILURE){
+                error_fatal("Couldn't Determine type for throw statement");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            if(code_harvest_value(compile_code,type_of,"","","")==EXIT_FAILURE){
+                return EXIT_FAILURE;
+            }
+
+            *write_to += ";\n";
         }
 
         //Is it a keyword?
@@ -427,7 +450,7 @@ int compile(int arg_count, char** arg){
             string method_name = "";
             string template_name = "";
             string init_buffer;
-            if(compile_variable(method_name,template_name,init_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_variable(method_name,template_name,init_buffer,clean_up)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 
@@ -574,5 +597,5 @@ int compile(int arg_count, char** arg){
         return EXIT_FAILURE;
     }
 
-    file_write << "int main(int argument_count, char** argument){\n" + ve_main_code + "\nreturn 0;\n}";
+    file_write << "int main(int argument_count, char** argument){\n" + ve_main_code + "\n" + clean_up + "\nreturn 0;\n}";
 }

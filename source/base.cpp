@@ -823,6 +823,43 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             code = string_kill_whitespace(code);
         }
+        else if(string_get_until_or(code," ")=="embedded"){
+            code = string_delete_until_or(code," ");
+            code = string_kill_whitespace(code);
+            string embedded_filename = code_harvest_string(code);
+
+            if(file_exists(embedded_filename)){
+                ifstream embedded_file;
+
+                embedded_file.open(embedded_filename.c_str(),ios::binary);
+
+                if(embedded_file.is_open()){
+                    embedded_file.seekg(0, std::ios::beg);
+                    file_write << "#define boomslangEmbedded" << next_embedded_id << " boomslang_List<boomslang_Byte>({";
+
+                    while(!embedded_file.eof()){
+                        char byte_data;
+                        embedded_file.read(&byte_data, 1);
+                        file_write << (unsigned int)((unsigned char)(byte_data));
+                        if(!embedded_file.eof()){
+                            file_write << ",";
+                        }
+                    }
+
+                    file_write << "})" << endl;
+                    *write_to += "boomslangEmbedded" + to_string(next_embedded_id);
+                    next_embedded_id += 1;
+                } else {
+                    error_fatal("Failed to read embedded file '" + embedded_filename + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+            } else {
+                error_fatal("The embedded file '" + embedded_filename + "' does not exist");
+                pend();
+                return EXIT_FAILURE;
+            }
+        }
         else if(code_arg_type(code)==ARGTYPE_STRING){
 
             if(accept_value==false){
@@ -1165,6 +1202,19 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
         type = variable_class;
 
         code = string_kill_whitespace(code);
+    }
+    else if(string_get_until_or(code," ")=="embedded"){
+        code = string_delete_until_or(code," ");
+        code = string_kill_whitespace(code);
+        string embedded_filename = code_harvest_string(code);
+
+        if(file_exists(embedded_filename)){
+            type = "List<boomslang_Byte>";
+        } else {
+            error_fatal("The embedded file '" + embedded_filename + "' does not exist");
+            pend();
+            return EXIT_FAILURE;
+        }
     }
     else if(code_arg_type(code)==ARGTYPE_STRING){
         type = "String";

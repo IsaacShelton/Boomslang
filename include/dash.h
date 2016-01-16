@@ -1,14 +1,3 @@
-/**
-    ============ dash.h ============
-    Code for Handling Compiler Flags
-
-    This file should NOT be included
-    anywhere besides from boot.h.
-
-    This Header does NOT contain a
-    header guard so include with
-    cation.
-*/
 
 using namespace std;
 
@@ -30,6 +19,16 @@ while(i<arg_count){
         cout << " -windows  | compile for windows" << endl;
         cout << " -linux    | compile for linux" << endl;
         cout << " -android  | compile for android" << endl;
+
+        return EXIT_FAILURE;
+    }
+    else if (dash_argument=="-version"){
+        ///Show version
+
+        cout << endl;
+        cout << "Boomslang Compiler " << BUILD_MAJOR << "." << BUILD_MINOR  << "." << BUILD_RELEASE << endl;
+        cout << "open-source standard boomslang compiler" << endl;
+        cout << "view the source at github.com/IsaacShelton/Boomslang" << endl;
 
         return EXIT_FAILURE;
     }

@@ -79,6 +79,9 @@ string ve_context;
 //Unique Templates
 unsigned int next_unique_template;
 
+//Embedded id
+unsigned int next_embedded_id;
+
 //Wait after compiled?
 bool waitafter;
 

@@ -14,6 +14,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     string write_buffer = "";
     string init_buffer = "";
     string compile_prev;
+    string clean_up;
     unsigned int before_indentation = indentation;
     indentation += 1;
     write_to = &write_template_buffer;
@@ -159,6 +160,83 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             init_buffer += "if" + expression + ")";
 
             continue;
+        }
+
+        //try
+        if(string_get_until_or(compile_code," \n")=="try"){
+            error_debug("Found try statement");
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+
+            *write_to += "try ";
+            continue;
+        }
+
+        //catch
+        if(string_get_until_or(compile_code," \n")=="catch"){
+            error_debug("Found catch statement");
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+
+            if(compile_code.substr(0,1)=="\n"){
+                *write_to += "catch(...) ";
+                continue;
+            }
+            else {//Catch specific template
+                string catch_template = string_get_until_or(compile_code," \n");
+                compile_code = string_delete_until_or(compile_code," \n");
+                compile_code = string_kill_whitespace(compile_code);
+
+                if(!class_handler.exists(catch_template)){
+                    error_fatal("Undeclared Template '" + catch_template + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                if(compile_code.substr(0,1)=="\n"){
+                    *write_to += "catch(" + resource(catch_template) + ") ";
+                    continue;
+                } else if(compile_code.substr(0,2)=="as"){//Catch into variable
+                    compile_code = string_delete_amount(compile_code,2);
+                    compile_code = string_kill_whitespace(compile_code);
+
+                    string catch_variable = string_get_until_or(compile_code," \n");
+                    compile_code = string_delete_until_or(compile_code," \n");
+                    compile_code = string_kill_whitespace(compile_code);
+
+                    *write_to += "catch(" + resource(catch_template) + " " + resource(catch_variable) + ") ";
+                    variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN);
+                    continue;
+                } else {
+                    error_fatal("Expected 'as' before '" + compile_code.substr(0,1) + "' after template in catch statement");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                continue;
+            }
+        }
+
+        //throw
+        if(string_get_until_or(compile_code," \n")=="throw"){
+            error_debug("Found throw statement");
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+            string type_of;
+
+            *write_to += "throw ";
+
+            if(code_harvest_value_type(compile_code,type_of,"","")==EXIT_FAILURE){
+                error_fatal("Couldn't Determine type for throw statement");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            if(code_harvest_value(compile_code,type_of,"","","")==EXIT_FAILURE){
+                return EXIT_FAILURE;
+            }
+
+            *write_to += ";\n";
         }
 
         //Is it a keyword?
@@ -390,7 +468,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             write_to = &write_template_buffer;
             method_name = "";
             /*template_name == template_name*/
-            if(compile_variable(method_name,template_name,init_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_variable(method_name,template_name,init_buffer,clean_up)==EXIT_FAILURE) return EXIT_FAILURE;
             write_to = &write_template_buffer;
             continue;
         }
@@ -547,7 +625,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     }
 
     if(unique_template)
-        write_template_buffer = "\n" + write_template_buffer + template_name + "(){\n" + init_buffer + "}\n" ;
+        write_template_buffer = "\n" + write_template_buffer + template_name + "(){\n" + init_buffer + "}\n" + "~" + template_name + "(){\n" + clean_up + "}\n";
     else
-        write_template_buffer = "\n" + write_template_buffer + resource(template_name) + "(){\n" + init_buffer + "}\n";
+        write_template_buffer = "\n" + write_template_buffer + resource(template_name) + "(){\n" + init_buffer + "}\n" + "~" + resource(template_name) + "(){\n" + clean_up + "}\n";
 }
