@@ -444,7 +444,6 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
         //Is it a variable?
         if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
             method_name = "";
-            /*template_name == template_name*/
             if(compile_variable(method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }

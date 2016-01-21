@@ -77,7 +77,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
         string prev_return_type = return_type;
         bool first = true;
 
-        write_to += resource(variable_name);
+        init_buffer += resource(variable_name);
 
         while(compile_code.substr(0,1)=="."){
             if(class_handler.exists(variable_name) and first){
@@ -92,7 +92,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                 compile_code = string_delete_until_or(compile_code,"(");
 
                 if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
-                    write_to += "::" + resource(string_delete_amount(post_function_name,1)) + "(";
+                    init_buffer += "::" + resource(string_delete_amount(post_function_name,1)) + "(";
 
                     string function_code_prev;
                     string argument_type;
@@ -106,7 +106,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                         function_code_prev = compile_code;
 
                         if(compile_code.substr(0,1)=="," and !first){
-                            write_to += ",";
+                            init_buffer += ",";
                             compile_code = string_delete_amount(compile_code,1);
                         }
 
@@ -120,7 +120,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                         }
 
                         //Handle Value
-                        if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+                        if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,init_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                         compile_code = string_kill_whitespace(compile_code);
                     }
@@ -134,7 +134,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                     compile_code = string_delete_amount(compile_code,1);
                     code_chop(compile_code);
 
-                    write_to += ")";
+                    init_buffer += ")";
                 } else {
                     error_fatal("The Method '" + function_name + "' does not exist.");
                     pend();
@@ -147,7 +147,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
             else if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                 return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
 
-                if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type),method_name,template_name,write_to)==EXIT_FAILURE){
+                if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type),method_name,template_name,init_buffer)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
                 prev_return_type = return_type;
@@ -168,7 +168,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
         compile_code = string_kill_whitespace(compile_code);
 
         code_chop(compile_code);
-        write_to += ";\n";
+        init_buffer += ";\n";
     }
 
     if(compile_code.substr(0,1)=="="){
