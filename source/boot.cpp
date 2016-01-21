@@ -42,6 +42,7 @@ int boot(int arg_count, char** arg){
     ve_scope = "BOOMSLANG";
     next_unique_template = 0;
     next_embedded_id = 0;
+    next_method_id = 0;
     waitafter = false;
     runafter = false;
     compile_flags = "-std=c++11";

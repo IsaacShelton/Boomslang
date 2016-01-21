@@ -8,7 +8,7 @@
 
 using namespace std;
 
-int compile_variable(string method_name, string template_name, string& init_buffer, string& clean_up){
+int compile_variable(string method_name, string template_name, string& init_buffer, string& clean_up, string& write_to){
     error_debug("Found " + string_get_until_or(compile_code," =+-/*.") + " to be a variable.");
 
     string variable_name = string_get_until_or(compile_code," =+-/*.");
@@ -28,7 +28,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                 return EXIT_FAILURE;
             }
         } else if (template_name!="" and method_name==""){//Template non-methods
-            write_to = &init_buffer;
+            //write_to = &init_buffer;
             if(!variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
                 error_fatal("Undeclared Variable '" + variable_name + "'");
                 pend();
@@ -77,7 +77,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
         string prev_return_type = return_type;
         bool first = true;
 
-        *write_to += resource(variable_name);
+        write_to += resource(variable_name);
 
         while(compile_code.substr(0,1)=="."){
             if(class_handler.exists(variable_name) and first){
@@ -92,7 +92,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                 compile_code = string_delete_until_or(compile_code,"(");
 
                 if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
-                    *write_to += "::" + resource(string_delete_amount(post_function_name,1)) + "(";
+                    write_to += "::" + resource(string_delete_amount(post_function_name,1)) + "(";
 
                     string function_code_prev;
                     string argument_type;
@@ -106,7 +106,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                         function_code_prev = compile_code;
 
                         if(compile_code.substr(0,1)=="," and !first){
-                            *write_to += ",";
+                            write_to += ",";
                             compile_code = string_delete_amount(compile_code,1);
                         }
 
@@ -120,7 +120,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                         }
 
                         //Handle Value
-                        if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name)==EXIT_FAILURE) return EXIT_FAILURE;
+                        if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
                         compile_code = string_kill_whitespace(compile_code);
                     }
@@ -134,7 +134,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
                     compile_code = string_delete_amount(compile_code,1);
                     code_chop(compile_code);
 
-                    *write_to += ")";
+                    write_to += ")";
                 } else {
                     error_fatal("The Method '" + function_name + "' does not exist.");
                     pend();
@@ -147,7 +147,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
             else if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                 return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
 
-                if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type),method_name,template_name)==EXIT_FAILURE){
+                if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type),method_name,template_name,write_to)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
                 prev_return_type = return_type;
@@ -168,7 +168,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
         compile_code = string_kill_whitespace(compile_code);
 
         code_chop(compile_code);
-        *write_to += ";\n";
+        write_to += ";\n";
     }
 
     if(compile_code.substr(0,1)=="="){
@@ -179,13 +179,13 @@ int compile_variable(string method_name, string template_name, string& init_buff
 
         //Does the variable not exist?
         if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
         } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){//Template method
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
         } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)){//Template non-methods
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
         }else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)){//Method
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
         } else {//Variable is Declared
             string variable_type;
 
@@ -214,16 +214,16 @@ int compile_variable(string method_name, string template_name, string& init_buff
 
             compile_code = string_kill_whitespace(compile_code);
 
-            *write_to += resource(variable_name) + "=";
+            write_to += resource(variable_name) + "=";
 
             //Handle Value
-            if(code_harvest_value(compile_code,variable_type,"",method_name,template_name)==EXIT_FAILURE){
+            if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,write_to)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
             code_chop(compile_code);
 
-            *write_to += ";\n";
+            write_to += ";\n";
         }
     }
 
@@ -244,7 +244,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
     }
 }
 
-int compile_nonexisting_variable(string variable_name,string method_name, string template_name, string& init_buffer, string& clean_up){
+int compile_nonexisting_variable(string variable_name,string method_name, string template_name, string& init_buffer, string& clean_up, string& write_to){
     string variable_type = S_NULL;
     compile_code = string_kill_all_whitespace(compile_code);
 
@@ -258,18 +258,15 @@ int compile_nonexisting_variable(string variable_name,string method_name, string
     string value;
 
     {
-        string* prev_write_to = write_to;
-        write_to = &value;
+        //write_to = &value;
 
         //Handle Value
-        if(code_harvest_value(compile_code,variable_type,"",method_name,template_name)==EXIT_FAILURE){
+        if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,value)==EXIT_FAILURE){
             return EXIT_FAILURE;
         }
-
-        write_to = prev_write_to;
     }
 
-    *write_to += resource(variable_type) + "& " + resource(variable_name) + " = *(new " + resource(variable_type) + "(" + value + "));\n";
+    write_to += resource(variable_type) + "& " + resource(variable_name) + " = *(new " + resource(variable_type) + "(" + value + "));\n";
     clean_up += "delete &" + resource(variable_name) + ";\n";
 
     code_chop(compile_code);

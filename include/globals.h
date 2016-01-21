@@ -76,6 +76,9 @@ extern unsigned int next_unique_template;
 //Embedded id
 extern unsigned int next_embedded_id;
 
+//Method Code
+extern unsigned int next_method_id;
+
 //Wait after compiled?
 extern bool waitafter;
 
@@ -97,11 +100,8 @@ extern string compile_code;
 extern ifstream file_read;
 extern ofstream file_write;
 
-//Pointer to Variable that functions write output code to
-extern string* write_to;
-
 //Number of Errors and Warnings
-extern int errors;
-extern int warnings;
+extern unsigned int errors;
+extern unsigned int warnings;
 
 #endif // GLOBALS_H_INCLUDED

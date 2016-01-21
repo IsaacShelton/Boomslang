@@ -82,6 +82,9 @@ unsigned int next_unique_template;
 //Embedded id
 unsigned int next_embedded_id;
 
+//Method Code
+unsigned int next_method_id;
+
 //Wait after compiled?
 bool waitafter;
 
@@ -103,11 +106,8 @@ string compile_code;
 ifstream file_read;
 ofstream file_write;
 
-//Pointer to Variable that functions write output code to
-string* write_to;
-
 //Number of Errors and Warnings
-int errors;
-int warnings;
+unsigned int errors = 0;
+unsigned int warnings = 0;
 
 #endif // GLOBALS_H_INCLUDED

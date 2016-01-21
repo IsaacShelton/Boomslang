@@ -5,50 +5,45 @@
 using namespace std;
 
 //Imports boomslang package
-void import_boomslang(string imported_package){
-    string name;
-    string package;
-    string last;
-    string new_code;
-    ifstream file;
+void import_boomslang(string name){
+    string package_filename;
 
-    if (!ve_packages.exists(imported_package)){
-        name = imported_package;
-        package = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\";
-        last = "";
-        new_code = "";
+    if (!ve_packages.exists(name)){
+        package_filename = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\";
 
         if (string_contains(name,".")){
             while(string_contains(name,".")){
-                package += string_get_until(name,".") + "\\";
+                package_filename += string_get_until(name,".") + "\\";
                 name = string_delete_until(name,".");
                 name = string_delete_amount(name,1);
             }
         }
 
-        package += name + "\\";
+        package_filename += name + "\\";
 
-        //name = console in library._console_
+        package_filename = package_filename + name + ".boomslang";
 
-        if (file_exists(package + name + ".boomslang")){
-            ve_packages.add(imported_package);
-            string filename = package + name + ".boomslang";
-            file.open(filename.c_str());
+        if (file_exists(package_filename)){
+            ve_packages.add(name);
+
+            ifstream importFile;
+            importFile.open(package_filename.c_str());
 
             string line;
+            string new_code = "";
 
-            if (file.is_open()){
-                while(getline(file,line)){
+            if(importFile){
+                while(getline(importFile,line)){
                     new_code += line + "\n";
                 }
             } else {
-                error_show("Failed to Import Package '" + imported_package + "'");
+                error_show("Failed to Import Package '" + name + "'");
             }
 
-            file.close();
             compile_code = new_code + compile_code;
+            importFile.close();
         } else {
-            error_show("Unknown Package '" + imported_package + "'");
+            error_show("Unknown Package '" + name + "'");
         }
     }
 }
@@ -60,7 +55,7 @@ int execute_silent(string strFunct, string strParams){
 	PROCESS_INFORMATION ProcessInfo;
 	char Args[4096];
 	char *pEnvCMD = NULL;
-	char *pDefaultCMD = (char*)"CMD.EXE";
+	char *pDefaultCMD = "CMD.EXE";
 	ULONG rc;
 
 	memset(&StartupInfo, 0, sizeof(StartupInfo));
@@ -137,7 +132,9 @@ string filename_change_ext(string filename, string ext_without_dot){
 
 ifstream::pos_type file_size(string size_filename){
     std::ifstream file_stream(size_filename.c_str(), std::ifstream::ate | std::ifstream::binary);
-    return file_stream.tellg();
+    unsigned int size_of_file = file_stream.tellg();
+    file_stream.close();
+    return size_of_file;
 }
 
 //Writes to ve_main_code or straight to file

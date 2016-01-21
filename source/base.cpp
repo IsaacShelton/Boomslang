@@ -60,7 +60,7 @@ string code_harvest_decimal(string& code){
 }
 
 //Harvests a raw expression
-int code_harvest_raw_expression(string& code, string& exp, string& type, string method_name, string template_name){
+int code_harvest_raw_expression(string& code, string& exp, string& type, string method_name, string template_name, string& write_to){
     /*
         code - code to harvest raw expression from
             example: ("Hello" + " World")blah blah blah
@@ -89,11 +89,8 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
 
     code = string_kill_whitespace(code);
 
-    string* prev_write_to;
-
     while( (( code.substr(0,1)!=")") or balance!=1 ) and (code.substr(0,1)!="\n" or accept_value!=false) and (code_prev!=code) ){
-        prev_write_to = write_to;
-        write_to = &exp;
+        //write_to = &exp;
         code_prev = code;
         code = string_kill_whitespace(code);
 
@@ -212,7 +209,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             if(code.substr(0,1)!="("){
                 exp += "()";
             } else {
-                code_parse_args(code,method_name,template_name);
+                code_parse_args(code,method_name,template_name,exp);
             }
 
             code = string_kill_whitespace(code);
@@ -389,12 +386,12 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
                 }
 
                 string prev_return_type = return_type;
-                write_to = &exp;
+                //write_to = &exp;
 
                 while(code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(code,false,class_handler.find(prev_return_type),method_name,template_name)==EXIT_FAILURE){
+                        if(code_parse_function_from(code,false,class_handler.find(prev_return_type),method_name,template_name,exp)==EXIT_FAILURE){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -422,7 +419,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             }
             accept_value = false;
 
-            write_to = &exp;
+            //write_to = &exp;
 
             string function_name = string_get_until_or(code,"(");
 
@@ -433,7 +430,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             }
 
             code = string_delete_until_or(code,"(");
-            *write_to += resource(function_name) + "(";
+            write_to += resource(function_name) + "(";
 
             string function_code_prev;
             string argument_type;
@@ -447,7 +444,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
                 function_code_prev = code;
 
                 if(code.substr(0,1)=="," and !first){
-                    *write_to += ",";
+                    write_to += ",";
                     code = string_delete_amount(code,1);
                 }
 
@@ -459,14 +456,14 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
                 }
 
                 //Handle Value
-                if(code_harvest_value(code,argument_type,",)",method_name,template_name)==EXIT_FAILURE){
+                if(code_harvest_value(code,argument_type,",)",method_name,template_name,exp)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
                 code = string_kill_whitespace(code);
             }
 
-            *write_to += ")";//exp
+            write_to += ")";//exp
 
             if(function_code_prev==code){
                 error_fatal("Internal Function Error");
@@ -492,14 +489,13 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
     }
 
     code = string_delete_amount(code,1);
-    write_to = prev_write_to;
 
     return EXIT_SUCCESS;
 }
 
 //Parses Function Arguments, example input: ("hello world",10)
 //Returns code with semicolon and newline attached.
-int code_parse_args(string& code, string method_name, string template_name){
+int code_parse_args(string& code, string method_name, string template_name, string& write_to){
 
     if(code.substr(0,1)!="("){
         error_fatal("Expected '(' before '" + code.substr(0,1) + "' when parsing method arguments");
@@ -507,7 +503,7 @@ int code_parse_args(string& code, string method_name, string template_name){
         return EXIT_FAILURE;
     }
 
-    *write_to += "(";
+    write_to += "(";
     code = string_delete_amount(code,1);
     code = string_kill_all_whitespace(code);
     bool first = true;
@@ -519,7 +515,7 @@ int code_parse_args(string& code, string method_name, string template_name){
         function_code_prev = code;
 
         if(code.substr(0,1)=="," and !first){
-            *write_to += ",";
+            write_to += ",";
             code = string_delete_amount(code,1);
         }
 
@@ -533,14 +529,14 @@ int code_parse_args(string& code, string method_name, string template_name){
         }
 
         //Handle Value
-        if(code_harvest_value(code,argument_type,",)",method_name,template_name)==EXIT_FAILURE){
+        if(code_harvest_value(code,argument_type,",)",method_name,template_name,write_to)==EXIT_FAILURE){
             return EXIT_FAILURE;
         }
 
         code = string_kill_all_whitespace(code);
     }
 
-    *write_to += ")";
+    write_to += ")";
 
     if(function_code_prev==code){
         error_fatal("Internal Method Error");
@@ -553,7 +549,7 @@ int code_parse_args(string& code, string method_name, string template_name){
 }
 
 //Parses Function Declaration Arguments
-int code_parse_declaration_args(string& code, string method_name, string template_name){
+int code_parse_declaration_args(string& code, string method_name, string template_name, string& write_to){
 
     if(code.substr(0,1)!="("){
         error_fatal("Expected '(' before '" + code.substr(0,1) + "' when parsing method declaration arguments");
@@ -561,7 +557,7 @@ int code_parse_declaration_args(string& code, string method_name, string templat
         return EXIT_FAILURE;
     }
 
-    *write_to += "(";
+    write_to += "(";
     code = string_delete_amount(code,1);
     code = string_kill_all_whitespace(code);
     bool first = true;
@@ -573,7 +569,7 @@ int code_parse_declaration_args(string& code, string method_name, string templat
         function_code_prev = code;
 
         if(code.substr(0,1)=="," and !first){
-            *write_to += ",";
+            write_to += ",";
             code = string_delete_amount(code,1);
         }
 
@@ -603,7 +599,7 @@ int code_parse_declaration_args(string& code, string method_name, string templat
                 return EXIT_FAILURE;
             }
 
-            *write_to += resource(argument_type) + " " + resource(parameter_name) + "=";
+            write_to += resource(argument_type) + " " + resource(parameter_name) + "=";
 
             //Add the variable
             if (template_name!="" and method_name==""){//Template non-methods
@@ -615,14 +611,14 @@ int code_parse_declaration_args(string& code, string method_name, string templat
             }
 
             //Handle Value
-            if(code_harvest_value(code,argument_type,",)",method_name,template_name)==EXIT_FAILURE){
+            if(code_harvest_value(code,argument_type,",)",method_name,template_name,write_to)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
             code = string_kill_whitespace(code);
         }
     }
 
-    *write_to += ")";
+    write_to += ")";
 
     if(function_code_prev==code){
         error_fatal("Internal Method Declaration Error");
@@ -635,7 +631,7 @@ int code_parse_declaration_args(string& code, string method_name, string templat
 }
 
 //Parses Function that begins with a dot ".show()" for example
-int code_parse_function_from(string& code, bool check_semicolon, int class_id, string method_name, string template_name){
+int code_parse_function_from(string& code, bool check_semicolon, int class_id, string method_name, string template_name, string& write_to){
     code = string_kill_whitespace(code);
 
     if(code.substr(0,1)!="."){
@@ -661,9 +657,9 @@ int code_parse_function_from(string& code, bool check_semicolon, int class_id, s
         pend();
         return EXIT_FAILURE;
     }
-    *write_to += "." + resource(function_name);
+    write_to += "." + resource(function_name);
 
-    if(code_parse_args(code,method_name,template_name)==EXIT_FAILURE){
+    if(code_parse_args(code,method_name,template_name,write_to)==EXIT_FAILURE){
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
@@ -686,7 +682,7 @@ void code_chop(string& code){
 }
 
 //Writes and removes the value in expressions
-int code_harvest_value(string& code, string &type, string additional_characters, string method_name, string template_name){
+int code_harvest_value(string& code, string &type, string additional_characters, string method_name, string template_name, string& write_to){
     /*
         code - code
         type - variable type
@@ -712,7 +708,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             accept_value = true;
 
             code = string_delete_amount(code,1);
-            *write_to += "+";
+            write_to += "+";
         }
         else if (code.substr(0,1)=="-"){
             if (accept_value==true and (code.substr(1,1)=="0" or code.substr(1,1)=="1" or code.substr(1,1)=="2" or code.substr(1,1)=="3" or code.substr(1,1)=="4"
@@ -727,7 +723,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                     return EXIT_FAILURE;
                 }
 
-                *write_to += "boomslang_Number(" + code_harvest_decimal(code) + ")";
+                write_to += "boomslang_Number(" + code_harvest_decimal(code) + ")";
             }
             else if(accept_value==true){
                 error_fatal("Expected a value before '-'");
@@ -738,7 +734,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 accept_value = true;
 
                 code = string_delete_amount(code,1);
-                *write_to += "-";
+                write_to += "-";
             }
         }
         else if (code.substr(0,1)=="*"){
@@ -750,7 +746,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             accept_value = true;
 
             code = string_delete_amount(code,1);
-            *write_to += "*";
+            write_to += "*";
         }
         else if (code.substr(0,1)=="/"){
             if(accept_value==true){
@@ -761,7 +757,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             accept_value = true;
 
             code = string_delete_amount(code,1);
-            *write_to += "/";
+            write_to += "/";
         }
         else if (code.substr(0,1)=="("){
             if(accept_value==false){
@@ -772,7 +768,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             balance += 1;
             code = string_delete_amount(code,1);
-            *write_to += "(";
+            write_to += "(";
         }
         else if (code.substr(0,1)==")"){
             if(accept_value==true){
@@ -783,7 +779,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             balance -= 1;
             code = string_delete_amount(code,1);
-            *write_to += ")";
+            write_to += ")";
         }
         else if(string_get_until_or(code," ")=="new"){
             if(accept_value==false){
@@ -811,14 +807,14 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             }
 
             code = string_delete_until_or(code," ;\n+-*/(),");
-            *write_to += resource(variable_class);
+            write_to += resource(variable_class);
 
             code = string_kill_whitespace(code);
 
             if(code.substr(0,1)!="("){
-                *write_to += "()";
+                write_to += "()";
             } else {
-                code_parse_args(code,method_name,template_name);
+                code_parse_args(code,method_name,template_name,write_to);
             }
 
             code = string_kill_whitespace(code);
@@ -833,7 +829,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
                 embedded_file.open(embedded_filename.c_str(),ios::binary);
 
-                if(embedded_file.is_open()){
+                if(embedded_file){
                     embedded_file.seekg(0, std::ios::beg);
                     file_write << "#define boomslangEmbedded" << next_embedded_id << " boomslang_List<boomslang_Byte>({";
 
@@ -847,13 +843,15 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                     }
 
                     file_write << "})" << endl;
-                    *write_to += "boomslangEmbedded" + to_string(next_embedded_id);
+                    write_to += "boomslangEmbedded" + to_string(next_embedded_id);
                     next_embedded_id += 1;
                 } else {
                     error_fatal("Failed to read embedded file '" + embedded_filename + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
+
+                embedded_file.close();
             } else {
                 error_fatal("The embedded file '" + embedded_filename + "' does not exist");
                 pend();
@@ -878,7 +876,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 return EXIT_FAILURE;
             }
 
-            *write_to += "boomslang_String(\"" + code_harvest_string(code) + "\")";
+            write_to += "boomslang_String(\"" + code_harvest_string(code) + "\")";
         }
         else if(code_arg_type(code)==ARGTYPE_NUMBER){
 
@@ -898,7 +896,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 return EXIT_FAILURE;
             }
 
-            *write_to += "boomslang_Number(" + code_harvest_decimal(code) + ")";
+            write_to += "boomslang_Number(" + code_harvest_decimal(code) + ")";
         }
         else if(code_arg_type(code)==ARGTYPE_VARIABLE){
             if(accept_value==false){
@@ -960,7 +958,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             code = string_kill_whitespace(code);
 
-            *write_to += resource(variable_name);
+            write_to += resource(variable_name);
 
             if(code.substr(0,1)=="."){
                 string return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
@@ -969,7 +967,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 while(code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(code,true,class_handler.find(prev_return_type),method_name,template_name)==EXIT_FAILURE){
+                        if(code_parse_function_from(code,true,class_handler.find(prev_return_type),method_name,template_name,write_to)==EXIT_FAILURE){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -990,7 +988,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
                 code_chop(code);
 
-                *write_to += ";\n";
+                write_to += ";\n";
             }
         }
         else if(code_arg_type(code)==ARGTYPE_LIST){
@@ -1011,22 +1009,18 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             code = string_kill_all_whitespace(code);
 
-            string* prev_write_to = write_to;
-
             string list_data;
             string list_code_prev;
             string list_type = "none";
             string argument_type;
             bool first = true;
 
-            write_to = &list_data;
-
             while(code.substr(0,1)!="}" and list_code_prev!=code){
                 code = string_kill_all_whitespace(code);
                 list_code_prev = code;
 
                 if(code.substr(0,1)=="," and !first){
-                    *write_to += ",";//list_data
+                    list_data += ",";
                     code = string_delete_amount(code,1);
                 }
 
@@ -1054,7 +1048,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 }
 
                 //Handle Value
-                if(code_harvest_value(code,argument_type,",}",method_name,template_name)==EXIT_FAILURE){
+                if(code_harvest_value(code,argument_type,",}",method_name,template_name,list_data)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
@@ -1063,8 +1057,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             code = string_delete_amount(code,1);
 
-            write_to = prev_write_to;
-            *write_to += "boomslang_List<" + resource(argument_type) + ">({" + list_data + "})";
+            write_to += "boomslang_List<" + resource(argument_type) + ">({" + list_data + "})";
         }
         else if(code_arg_type(code)==ARGTYPE_FUNCTION){
             if(accept_value==false){
@@ -1083,7 +1076,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             }
 
             code = string_delete_until_or(code,"(");
-            *write_to += resource(function_name) + "(";
+            write_to += resource(function_name) + "(";
 
             string function_code_prev;
             string argument_type;
@@ -1097,7 +1090,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 function_code_prev = code;
 
                 if(code.substr(0,1)=="," and !first){
-                    *write_to += ",";
+                    write_to += ",";
                     code = string_delete_amount(code,1);
                 }
 
@@ -1109,14 +1102,14 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 }
 
                 //Handle Value
-                if(code_harvest_value(code,argument_type,",)",method_name,template_name)==EXIT_FAILURE){
+                if(code_harvest_value(code,argument_type,",)",method_name,template_name,write_to)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
                 code = string_kill_whitespace(code);
             }
 
-            *write_to += ")";
+            write_to += ")";
 
             if(function_code_prev==code){
                 error_fatal("Internal Function Error");

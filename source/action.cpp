@@ -37,7 +37,7 @@ int action(string action_name){
             string imported_code;
             import_file_stream.open((terminal_path + import_file_name).c_str());
 
-            if(!import_file_stream.is_open()){
+            if(!import_file_stream){
                 error_fatal("Failed to open file '" + (terminal_path + import_file_name) + "'");
                 pend();
                 return EXIT_FAILURE;
@@ -56,7 +56,7 @@ int action(string action_name){
             string imported_code;
             import_file_stream.open(import_file_name.c_str());
 
-            if(!import_file_stream.is_open()){
+            if(!import_file_stream){
                 error_fatal("Failed to open file '" + (terminal_path + import_file_name) + "'");
                 pend();
                 return EXIT_FAILURE;

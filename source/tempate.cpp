@@ -10,14 +10,13 @@
 
 using namespace std;
 
-int compile_template(int arg_count,char** args, unsigned int indentation,bool unique_template,string method_name,string template_name,string& write_template_buffer){
+int compile_template(int arg_count,char** args, unsigned int indentation,bool unique_template,string method_name,string template_name,string& write_to){
     string write_buffer = "";
     string init_buffer = "";
     string compile_prev;
     string clean_up;
     unsigned int before_indentation = indentation;
     indentation += 1;
-    write_to = &write_template_buffer;
 
     ///Method Code Compile Loop
     while(compile_code!=compile_prev and indentation>0){
@@ -83,31 +82,6 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             compile_code = string_delete_amount(compile_code,1);
         }
 
-        //Is is raw C++?
-        if(compile_code.substr(0,2)=="/{"){
-            int balance = 0;
-            compile_code = string_delete_amount(compile_code,2);
-
-            while(!( balance==0 and compile_code.substr(0,1)=="}" )){
-                if(compile_code.substr(0,1)=="{"){
-                    balance+=1;
-                    write_template_buffer += compile_code.substr(0,1);
-                    compile_code = string_delete_amount(compile_code,1);
-                }
-                else
-                if(compile_code.substr(0,1)=="}"){
-                    balance-=1;
-                    write_template_buffer += compile_code.substr(0,1);
-                    compile_code = string_delete_amount(compile_code,1);
-                } else {
-                    write_template_buffer += compile_code.substr(0,1);
-                    compile_code = string_delete_amount(compile_code,1);
-                }
-            }
-
-            compile_code = string_delete_amount(compile_code,1);
-        }
-
         ///Check for before block clauses
 
         //else
@@ -129,7 +103,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     return EXIT_FAILURE;
                 }
 
-                if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name)){
+                if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name,write_to)){
                     return EXIT_FAILURE;
                 }
 
@@ -153,7 +127,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 return EXIT_FAILURE;
             }
 
-            if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name)){
+            if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name,write_to)){
                 return EXIT_FAILURE;
             }
 
@@ -168,7 +142,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             compile_code = string_delete_until_or(compile_code," \n");
             compile_code = string_kill_whitespace(compile_code);
 
-            *write_to += "try ";
+            write_to += "try ";
             continue;
         }
 
@@ -179,7 +153,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             compile_code = string_kill_whitespace(compile_code);
 
             if(compile_code.substr(0,1)=="\n"){
-                *write_to += "catch(...) ";
+                write_to += "catch(...) ";
                 continue;
             }
             else {//Catch specific template
@@ -194,7 +168,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 }
 
                 if(compile_code.substr(0,1)=="\n"){
-                    *write_to += "catch(" + resource(catch_template) + ") ";
+                    write_to += "catch(" + resource(catch_template) + ") ";
                     continue;
                 } else if(compile_code.substr(0,2)=="as"){//Catch into variable
                     compile_code = string_delete_amount(compile_code,2);
@@ -204,7 +178,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     compile_code = string_delete_until_or(compile_code," \n");
                     compile_code = string_kill_whitespace(compile_code);
 
-                    *write_to += "catch(" + resource(catch_template) + " " + resource(catch_variable) + ") ";
+                    write_to += "catch(" + resource(catch_template) + " " + resource(catch_variable) + ") ";
                     variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN);
                     continue;
                 } else {
@@ -224,19 +198,19 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             compile_code = string_kill_whitespace(compile_code);
             string type_of;
 
-            *write_to += "throw ";
+            write_to += "throw ";
 
-            if(code_harvest_value_type(compile_code,type_of,"","")==EXIT_FAILURE){
+            if(code_harvest_value_type(compile_code,type_of,"",template_name)==EXIT_FAILURE){
                 error_fatal("Couldn't Determine type for throw statement");
                 pend();
                 return EXIT_FAILURE;
             }
 
-            if(code_harvest_value(compile_code,type_of,"","","")==EXIT_FAILURE){
+            if(code_harvest_value(compile_code,type_of,"","",template_name,write_to)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
-            *write_to += ";\n";
+            write_to += ";\n";
         }
 
         //Is it a keyword?
@@ -264,8 +238,8 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 }
 
                 if(compile_code.substr(0,1)=="("){
-                    write_to = &buffer;
-                    if(code_parse_declaration_args(compile_code,method_name,template_name)==EXIT_FAILURE) return EXIT_FAILURE;
+                    //write_to = &buffer;
+                    if(code_parse_declaration_args(compile_code,method_name,template_name,buffer)==EXIT_FAILURE) return EXIT_FAILURE;
                 } else {
                     buffer = "()";
                 }
@@ -283,17 +257,22 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
                 if(compile_function(arg_count,args,indentation,method_name,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
+                write_buffer = write_buffer.substr(0,write_buffer.length()-1);
+                file_write << "#define boomslangMethod" + to_string(next_method_id) + " {\\\n" << string_replace_all(write_buffer,"\n","\\\n") << endl;
+
                 if(return_type!="none"){
                     if(method_name=="")
-                        file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
+                        file_write << resource(return_type) + " " + resource(method_name) + buffer + " boomslangMethod" + to_string(next_method_id) + ";\n";
                     else
-                        write_template_buffer += resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
+                        write_to += resource(return_type) + " " + resource(method_name) + buffer + " boomslangMethod" + to_string(next_method_id) + ";\n";
                 } else {
                     if(method_name=="")
-                        file_write << "void " + resource(method_name) + buffer + "{\n" + write_buffer;
+                        file_write << "void " + resource(method_name) + buffer + " boomslangMethod" + to_string(next_method_id) + ";\n";
                     else
-                        write_template_buffer += "void " + resource(method_name) + buffer + "{\n" + write_buffer;
+                        write_to += "void " + resource(method_name) + buffer + " boomslangMethod" + to_string(next_method_id) + ";\n";
                 }
+
+                next_method_id++;
                 continue;
             }
             //Static method declaration
@@ -323,8 +302,8 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 }
 
                 if(compile_code.substr(0,1)=="("){
-                    write_to = &buffer;
-                    if(code_parse_declaration_args(compile_code,method_name,template_name)==EXIT_FAILURE) return EXIT_FAILURE;
+                    //write_to = &buffer;
+                    if(code_parse_declaration_args(compile_code,method_name,template_name,buffer)==EXIT_FAILURE) return EXIT_FAILURE;
                 } else {
                     buffer = "()";
                 }
@@ -349,12 +328,12 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     if(method_name=="")
                         file_write << "static " + resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
                     else
-                        write_template_buffer += "static " + resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
+                        write_to += "static " + resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
                 } else {
                     if(method_name=="")
                         file_write << "static void " + resource(method_name) + buffer + "{\n" + write_buffer;
                     else
-                        write_template_buffer += "static void " + resource(method_name) + buffer + "{\n" + write_buffer;
+                        write_to += "static void " + resource(method_name) + buffer + "{\n" + write_buffer;
                 }
                 continue;
             }
@@ -384,7 +363,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
                 compile_code = string_kill_whitespace(compile_code);
 
-                write_template_buffer += resource(class_name) + " " + resource(variable_name) + ";";
+                write_to += resource(class_name) + " " + resource(variable_name) + ";";
                 variable_handler.add(variable_name,class_name,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
             }
         }
@@ -403,7 +382,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
         //Is it a function?
         if( is_identifier(string_get_until_or(compile_code,"(")) ){
-            write_to = &init_buffer;
+            //write_to = &init_buffer;
             error_debug("Found " + string_get_until_or(compile_code,"(") + " to be a function.");
 
             string function_name = string_get_until_or(compile_code,"(");
@@ -439,7 +418,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     }
 
                     //Handle Value
-                    if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name)==EXIT_FAILURE){
+                    if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,init_buffer)==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
 
@@ -459,34 +438,30 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 pend();
                 return EXIT_FAILURE;
             }
-            write_to = &write_template_buffer;
             continue;
         }
 
         //Is it a variable?
         if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
-            write_to = &write_template_buffer;
             method_name = "";
             /*template_name == template_name*/
-            if(compile_variable(method_name,template_name,init_buffer,clean_up)==EXIT_FAILURE) return EXIT_FAILURE;
-            write_to = &write_template_buffer;
+            if(compile_variable(method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 
         //Is it a value?
         if( rawvalue_exists(compile_code) ){
             error_debug("Found raw value exists");
-            write_to = &init_buffer;
-
+            //write_to = &init_buffer;
 
             if(compile_code.substr(0,1)=="("){//Expression
                 string raw_expression_type = S_NULL;
                 string raw_expression;
 
-                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"",template_name)==EXIT_FAILURE)
+                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"",template_name,write_to)==EXIT_FAILURE)
                     return EXIT_FAILURE;
 
-                write_to = &init_buffer;
+                //write_to = &init_buffer;
 
                 init_buffer += raw_expression;
                 compile_code = string_kill_whitespace(compile_code);
@@ -502,7 +477,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 while(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"",template_name)==EXIT_FAILURE){
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"",template_name,write_to)==EXIT_FAILURE){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -544,7 +519,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 while(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"",template_name)==EXIT_FAILURE){
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"",template_name,write_to)==EXIT_FAILURE){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -580,7 +555,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 while(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"",template_name)==EXIT_FAILURE){
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"",template_name,write_to)==EXIT_FAILURE){
                             return EXIT_FAILURE;
                         }
                         prev_return_type = return_type;
@@ -604,8 +579,6 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 compile_code = string_kill_all_whitespace(compile_code);
                 init_buffer += ";\n";
             }
-
-            write_to = &write_template_buffer;
         }
     }
 
@@ -625,7 +598,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     }
 
     if(unique_template)
-        write_template_buffer = "\n" + write_template_buffer + template_name + "(){\n" + init_buffer + "}\n" + "~" + template_name + "(){\n" + clean_up + "}\n";
+        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n" + "~" + template_name + "(){\n" + clean_up + "}\n";
     else
-        write_template_buffer = "\n" + write_template_buffer + resource(template_name) + "(){\n" + init_buffer + "}\n" + "~" + resource(template_name) + "(){\n" + clean_up + "}\n";
+        write_to = "\n" + write_to + resource(template_name) + "(){\n" + init_buffer + "}\n" + "~" + resource(template_name) + "(){\n" + clean_up + "}\n";
 }

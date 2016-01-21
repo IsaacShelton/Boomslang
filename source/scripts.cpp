@@ -24,7 +24,7 @@ string to_string(double dec){
 bool file_exists(string filename){
     ifstream file;
     file.open(filename.c_str());
-    bool open = file.is_open();
+    bool open = file;
     file.close();
     return open;
 }

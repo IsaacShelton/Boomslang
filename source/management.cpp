@@ -32,6 +32,14 @@ string string_get_until(string parent_string, string character){
     }
 }
 
+unsigned int string_count(string a, string character){
+    unsigned int char_count = 0;
+    for(unsigned int i = 0; i < a.length(); i++){
+        if(a.substr(i,1)==character) char_count++;
+    }
+    return char_count;
+}
+
 //Deletes text until character
 string string_delete_until(string parent_string, string character){
     unsigned int index = 0;

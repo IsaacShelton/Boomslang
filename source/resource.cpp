@@ -25,10 +25,9 @@ Function::Function(string new_name, string new_type, string new_args, int new_pa
 
 //Variables
 void VariableHandler::add(string name, string type, int parent_id, int parent_type, unsigned int indent){
-    Variable* ptr_var = (new Variable(name,type,parent_id,parent_type,indent));
-    ptr_var->is_unique = false;
-    variables.push_back( *ptr_var );
-    delete ptr_var;
+    Variable var = Variable(name,type,parent_id,parent_type,indent);
+    var.is_unique = false;
+    variables.push_back( var );
 }
 
 bool VariableHandler::exists(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent){
@@ -107,9 +106,8 @@ int VariableHandler::find_in(string var_name, string var_type, int var_parent_id
 
 //Functions
 void FunctionHandler::add(string name, string type, string args, int parent_id, int parent_type){
-    Function* ptr_function = (new Function(name,type,args,parent_id,parent_type));
-    functions.push_back( *ptr_function );
-    delete ptr_function;
+    Function func = Function(name,type,args,parent_id,parent_type);
+    functions.push_back( func );
 }
 
 bool FunctionHandler::exists(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type){
@@ -194,9 +192,8 @@ int FunctionHandler::find_in(string func_name, string func_type, string func_arg
 
 //Classes
 void ClassHandler::add(string name){
-    Class* ptr_class = (new Class(name));
-    classes.push_back( *ptr_class );
-    delete ptr_class;
+    Class klass = Class(name);
+    classes.push_back( klass );
 }
 
 bool ClassHandler::exists(string name){

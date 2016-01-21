@@ -13,7 +13,7 @@
 
 using namespace std;
 
-int compile(int arg_count, char** arg){
+int compile(int arg_count, char** arg, string& write_to){
     string compile_prev = "";
     string method_name;
     string clean_up;
@@ -75,31 +75,6 @@ int compile(int arg_count, char** arg){
             compile_code = string_delete_amount(compile_code,1);
         }
 
-        //Is is raw C++?
-        if(compile_code.substr(0,2)=="/{"){
-            int balance = 0;
-            compile_code = string_delete_amount(compile_code,2);
-
-            while(!( balance==0 and compile_code.substr(0,1)=="}" )){
-                if(compile_code.substr(0,1)=="{"){
-                    balance+=1;
-                    write(compile_code.substr(0,1),true);
-                    compile_code = string_delete_amount(compile_code,1);
-                }
-                else
-                if(compile_code.substr(0,1)=="}"){
-                    balance-=1;
-                    write(compile_code.substr(0,1),true);
-                    compile_code = string_delete_amount(compile_code,1);
-                } else {
-                    write(compile_code.substr(0,1),true);
-                    compile_code = string_delete_amount(compile_code,1);
-                }
-            }
-
-            compile_code = string_delete_amount(compile_code,1);
-        }
-
         ///Check for before block clauses
 
         //else
@@ -119,7 +94,7 @@ int compile(int arg_count, char** arg){
 
                 if(code_harvest_value_type(compile_code,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
 
-                if(code_harvest_raw_expression(compile_code,expression,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
+                if(code_harvest_raw_expression(compile_code,expression,type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 ve_main_code += "if" + expression + ")";
 
@@ -139,7 +114,7 @@ int compile(int arg_count, char** arg){
 
             if(code_harvest_value_type(compile_code,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
 
-            if(code_harvest_raw_expression(compile_code,expression,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
+            if(code_harvest_raw_expression(compile_code,expression,type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
             ve_main_code += "if" + expression + ")";
 
@@ -208,7 +183,7 @@ int compile(int arg_count, char** arg){
             compile_code = string_kill_whitespace(compile_code);
             string type_of;
 
-            *write_to += "throw ";
+            write_to += "throw ";
 
             if(code_harvest_value_type(compile_code,type_of,"","")==EXIT_FAILURE){
                 error_fatal("Couldn't Determine type for throw statement");
@@ -216,11 +191,11 @@ int compile(int arg_count, char** arg){
                 return EXIT_FAILURE;
             }
 
-            if(code_harvest_value(compile_code,type_of,"","","")==EXIT_FAILURE){
+            if(code_harvest_value(compile_code,type_of,"","","",ve_main_code)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
-            *write_to += ";\n";
+            write_to += ";\n";
         }
 
         //Is it a keyword?
@@ -251,8 +226,8 @@ int compile(int arg_count, char** arg){
                 }
 
                 if(compile_code.substr(0,1)=="("){
-                    write_to = &buffer;
-                    if(code_parse_declaration_args(compile_code,method_name,"")==EXIT_FAILURE) return EXIT_FAILURE;
+                    //write_to = &buffer;
+                    if(code_parse_declaration_args(compile_code,method_name,"",buffer)==EXIT_FAILURE) return EXIT_FAILURE;
                 } else {
                     buffer = "()";
                 }
@@ -270,11 +245,15 @@ int compile(int arg_count, char** arg){
 
                 if(compile_function(arg_count,arg,indentation,method_name,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
+                write_buffer = write_buffer.substr(0,write_buffer.length()-1);
+                file_write << "#define boomslangMethod" + to_string(next_method_id) + " {\\\n" << string_replace_all(write_buffer,"\n","\\\n") << endl;
+
                 if(return_type!="none"){
-                    file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" << write_buffer;
+                    file_write << resource(return_type) + " " + resource(method_name) + buffer + " " << "boomslangMethod" + to_string(next_method_id) + ";\n";
                 } else {
-                    file_write << "void " + resource(method_name) + buffer + "{\n" << write_buffer;
+                    file_write << "void " + resource(method_name) + buffer + " " << "boomslangMethod" + to_string(next_method_id) + ";\n";
                 }
+                next_method_id++;
                 continue;
             }
             //Variable Declaration
@@ -392,8 +371,7 @@ int compile(int arg_count, char** arg){
             compile_code = string_delete_until_or(compile_code,"(");
 
             if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
-                write_to = &ve_main_code;
-                write(resource(function_name) + "(",true);
+                ve_main_code += resource(function_name) + "(";
 
                 string function_code_prev;
                 string argument_type;
@@ -407,7 +385,7 @@ int compile(int arg_count, char** arg){
                     function_code_prev = compile_code;
 
                     if(compile_code.substr(0,1)=="," and !first){
-                        write(",",true);
+                        ve_main_code += ",";
                         compile_code = string_delete_amount(compile_code,1);
                     }
 
@@ -421,7 +399,7 @@ int compile(int arg_count, char** arg){
                     }
 
                     //Handle Value
-                    if(code_harvest_value(compile_code,argument_type,",)","","")==EXIT_FAILURE) return EXIT_FAILURE;
+                    if(code_harvest_value(compile_code,argument_type,",)","","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
                     compile_code = string_kill_whitespace(compile_code);
                 }
@@ -446,26 +424,22 @@ int compile(int arg_count, char** arg){
 
         //Is it a variable?
         if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
-            write_to = &ve_main_code;
             string method_name = "";
             string template_name = "";
             string init_buffer;
-            if(compile_variable(method_name,template_name,init_buffer,clean_up)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_variable(method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 
         //Is it a value?
         if( rawvalue_exists(compile_code) ){
             error_debug("Found raw value exists");
-            write_to = &ve_main_code;
 
             if(compile_code.substr(0,1)=="("){//Expression
                 string raw_expression_type = S_NULL;
                 string raw_expression;
 
-                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
-
-                write_to = &ve_main_code;
+                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 ve_main_code += raw_expression;
                 compile_code = string_kill_whitespace(compile_code);
@@ -481,7 +455,7 @@ int compile(int arg_count, char** arg){
                 while(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE) return EXIT_FAILURE;
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
                         prev_return_type = return_type;
                     } else {
@@ -521,7 +495,7 @@ int compile(int arg_count, char** arg){
                 while(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE) return EXIT_FAILURE;
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
                         prev_return_type = return_type;
                     } else {
@@ -556,7 +530,7 @@ int compile(int arg_count, char** arg){
                 while(compile_code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
                         return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
-                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","")==EXIT_FAILURE) return EXIT_FAILURE;
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
                         prev_return_type = return_type;
                     } else {
