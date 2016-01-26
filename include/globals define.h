@@ -77,13 +77,13 @@ string ve_scope;
 string ve_context;
 
 //Unique Templates
-unsigned int next_unique_template;
+unsigned int next_unique_template = 0;
 
 //Embedded id
-unsigned int next_embedded_id;
+unsigned int next_embedded_id = 0;
 
 //Method Code
-unsigned int next_method_id;
+unsigned int next_method_id = 0;
 
 //Wait after compiled?
 bool waitafter;

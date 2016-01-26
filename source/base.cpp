@@ -823,40 +823,34 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             code = string_delete_until_or(code," ");
             code = string_kill_whitespace(code);
             string embedded_filename = code_harvest_string(code);
+            file_write << "boomslang_List<boomslang_Byte> boomslangEmbedded" + to_string(next_embedded_id) + " = boomslang_List<boomslang_Byte>({";
 
-            if(file_exists(embedded_filename)){
-                ifstream embedded_file;
+            streampos size;
+            char* data;
 
-                embedded_file.open(embedded_filename.c_str(),ios::binary);
+            ifstream file (embedded_filename.c_str(), ios::in|ios::binary|ios::ate);
+            if (file.is_open()){
+                size = file.tellg();
+                data = new char[size];
+                file.seekg(0, ios::beg);
+                file.read(data, size);
+                file.close();
 
-                if(embedded_file){
-                    embedded_file.seekg(0, std::ios::beg);
-                    file_write << "#define boomslangEmbedded" << next_embedded_id << " boomslang_List<boomslang_Byte>({";
-
-                    while(!embedded_file.eof()){
-                        char byte_data;
-                        embedded_file.read(&byte_data, 1);
-                        file_write << (unsigned int)((unsigned char)(byte_data));
-                        if(!embedded_file.eof()){
-                            file_write << ",";
-                        }
-                    }
-
-                    file_write << "})" << endl;
-                    write_to += "boomslangEmbedded" + to_string(next_embedded_id);
-                    next_embedded_id += 1;
-                } else {
-                    error_fatal("Failed to read embedded file '" + embedded_filename + "'");
-                    pend();
-                    return EXIT_FAILURE;
+                for(int i = 0; i < size; i++){
+                    file_write << (unsigned int)(unsigned char)data[i];
+                    if(i!=size-1) file_write << ",";
                 }
 
-                embedded_file.close();
+                delete[] data;
             } else {
-                error_fatal("The embedded file '" + embedded_filename + "' does not exist");
+                error_fatal("Failed to open embedded file " + embedded_filename);
                 pend();
                 return EXIT_FAILURE;
             }
+
+            file_write << "});\n";
+            write_to += "boomslangEmbedded" + to_string(next_embedded_id);
+            next_embedded_id++;
         }
         else if(code_arg_type(code)==ARGTYPE_STRING){
 

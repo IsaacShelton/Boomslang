@@ -70,8 +70,8 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
         compile_prev = compile_code;
 
         //Is is a line-comment?
-        if(compile_code.substr(0,2)=="//"){
-            compile_code = string_delete_amount(compile_code,2);
+        if(compile_code.substr(0,1)=="#"){
+            compile_code = string_delete_amount(compile_code,1);
             compile_code = string_delete_until(compile_code,"\n");
         }
 
