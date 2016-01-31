@@ -190,7 +190,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
 
             code = string_kill_whitespace(code);
 
-            string variable_class = string_get_until_or(code," ;\n+-*/()");
+            string variable_class = string_get_until_or(code," ;\n+-*/().");
 
             if(!class_handler.exists(variable_class)){
                 error_fatal("Undeclared Template '" + variable_class + "'");
@@ -202,7 +202,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
                 return EXIT_FAILURE;
             }
 
-            code = string_delete_until_or(code," ;\n+-*/()");
+            code = string_delete_until_or(code," ;\n+-*/().");
             exp += resource(variable_class);
             code = string_kill_whitespace(code);
 
@@ -794,7 +794,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             code = string_kill_whitespace(code);
 
-            string variable_class = string_get_until_or(code," ;\n+-*/(),");
+            string variable_class = string_get_until_or(code," ;\n+-*/(),.");
 
             if(!class_handler.exists(variable_class)){
                 error_fatal("Undeclared Template '" + variable_class + "'");
@@ -806,7 +806,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 return EXIT_FAILURE;
             }
 
-            code = string_delete_until_or(code," ;\n+-*/(),");
+            code = string_delete_until_or(code," ;\n+-*/(),.");
             write_to += resource(variable_class);
 
             code = string_kill_whitespace(code);
@@ -1177,7 +1177,7 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
 
         code = string_kill_whitespace(code);
 
-        string variable_class = string_get_until_or(code," ;\n+-*/(),");
+        string variable_class = string_get_until_or(code," ;\n+-*/(),.");
 
         if(!class_handler.exists(variable_class)){
             error_fatal("Undeclared Template '" + variable_class + "'");
@@ -1185,7 +1185,7 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
             return EXIT_FAILURE;
         }
 
-        code = string_delete_until_or(code," ;\n+-*/(),");
+        code = string_delete_until_or(code," ;\n+-*/(),.");
         type = variable_class;
 
         code = string_kill_whitespace(code);

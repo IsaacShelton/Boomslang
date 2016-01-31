@@ -263,53 +263,103 @@ int compile(int arg_count, char** arg, string& write_to){
 
                 compile_code = string_kill_whitespace(compile_code);
 
-                string class_name = string_get_until_or(compile_code," \n");
-                compile_code = string_delete_until_or(compile_code," \n");
+                string class_name = string_get_until_or(compile_code," \n(.");
+                compile_code = string_delete_until_or(compile_code," \n(.");
 
                 compile_code = string_kill_all_whitespace(compile_code);
 
-                string variable_name = string_get_until_or(compile_code," \n");
-                compile_code = string_delete_until_or(compile_code," \n");
+                if(compile_code.substr(0,1)=="." or compile_code.substr(0,1)=="("){
+                    if(!class_handler.exists(class_name)){
+                        error_fatal("Undeclared Template '" + class_name + "'");
+                        pend();
+                        return EXIT_FAILURE;
+                    }
 
-                string write_template_buffer;
+                    write_to += resource(class_name);
+                    compile_code = string_kill_whitespace(compile_code);
 
-                if(!class_handler.exists(class_name)){
-                    error_fatal("Undeclared Template '" + class_name + "'");
-                    pend();
-                    return EXIT_FAILURE;
-                }
+                    if(compile_code.substr(0,1)!="("){
+                        write_to += "()";
+                    } else {
+                        code_parse_args(compile_code,"","",write_to);
+                    }
 
-                if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
-                    error_fatal("The variable '" + variable_name + "' was already declared");
-                    pend();
-                    return EXIT_FAILURE;
-                }
+                    compile_code = string_kill_whitespace(compile_code);
 
-                compile_code = string_kill_whitespace(compile_code);
+                    if(compile_code.substr(0,1)=="."){
+                        string return_type = class_name;
+                        string prev_return_type = class_name;
 
-                if(compile_code.substr(0,1)!="\n"){
-                    error_fatal("Expected newline before '" + compile_code.substr(0,1) + "'");
-                    pend();
-                    return EXIT_FAILURE;
-                }
+                        while(compile_code.substr(0,1)=="."){
+                            if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+                                return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                                if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type),"","",write_to)==EXIT_FAILURE){
+                                    return EXIT_FAILURE;
+                                }
+                                prev_return_type = return_type;
+                                } else {
+                                if(prev_return_type!="none"){
+                                    error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
+                                    pend();
+                                    return EXIT_FAILURE;
+                                } else {
+                                    error_fatal("You Can't Call Functions of none");
+                                    pend();
+                                    return EXIT_FAILURE;
+                                }
+                            }
+                        }
 
-                compile_code = string_kill_newline(compile_code);
+                        compile_code = string_kill_whitespace(compile_code);
 
-                if(is_indent(compile_code)){
-                    string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
-                    class_handler.add(template_name);
+                        code_chop(compile_code);
 
-                    if(compile_template(arg_count,arg,indentation,true,"",template_name,write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
-
-                    file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_template_buffer + "};\n";
-                    ve_main_code += "boomslangUniqueTemplate" + to_string(next_unique_template) + " " + resource(variable_name) + ";";
-
-                    variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
-                    next_unique_template += 1;
-                    continue;
+                        write_to += ";\n";
+                    }
                 } else {
-                    ve_main_code += resource(class_name) + " " + resource(variable_name) + ";\n";
-                    variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
+                    string variable_name = string_get_until_or(compile_code," \n");
+                    compile_code = string_delete_until_or(compile_code," \n");
+
+                    string write_template_buffer;
+
+                    if(!class_handler.exists(class_name)){
+                        error_fatal("Undeclared Template '" + class_name + "'");
+                        pend();
+                        return EXIT_FAILURE;
+                    }
+
+                    if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                        error_fatal("The variable '" + variable_name + "' was already declared");
+                        pend();
+                        return EXIT_FAILURE;
+                    }
+
+                    compile_code = string_kill_whitespace(compile_code);
+
+                    if(compile_code.substr(0,1)!="\n"){
+                        error_fatal("Expected newline before '" + compile_code.substr(0,1) + "'");
+                        pend();
+                        return EXIT_FAILURE;
+                    }
+
+                    compile_code = string_kill_newline(compile_code);
+
+                    if(is_indent(compile_code)){
+                        string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
+                        class_handler.add(template_name);
+
+                        if(compile_template(arg_count,arg,indentation,true,"",template_name,write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
+
+                        file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_template_buffer + "};\n";
+                        ve_main_code += "boomslangUniqueTemplate" + to_string(next_unique_template) + " " + resource(variable_name) + ";";
+
+                        variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
+                        next_unique_template += 1;
+                        continue;
+                    } else {
+                        ve_main_code += resource(class_name) + " " + resource(variable_name) + ";\n";
+                        variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
+                    }
                 }
             }
             //Template Declaration

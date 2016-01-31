@@ -217,28 +217,78 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
 
                 compile_code = string_kill_whitespace(compile_code);
 
-                string class_name = string_get_until_or(compile_code," \n");
-                compile_code = string_delete_until_or(compile_code," \n");
+                string class_name = string_get_until_or(compile_code," \n(.");
+                compile_code = string_delete_until_or(compile_code," \n(.");
 
                 compile_code = string_kill_all_whitespace(compile_code);
 
-                string variable_name = string_get_until_or(compile_code," \n");
-                compile_code = string_delete_until_or(compile_code," \n");
+                if(compile_code.substr(0,1)=="." or compile_code.substr(0,1)=="("){
+                    if(!class_handler.exists(class_name)){
+                        error_fatal("Undeclared Template '" + class_name + "'");
+                        pend();
+                        return EXIT_FAILURE;
+                    }
 
-                if(!class_handler.exists(class_name)){
-                    error_fatal("Undeclared Template '" + class_name + "'");
-                    pend();
-                    return EXIT_FAILURE;
+                    write_to += resource(class_name);
+                    compile_code = string_kill_whitespace(compile_code);
+
+                    if(compile_code.substr(0,1)!="("){
+                        write_to += "()";
+                    } else {
+                        code_parse_args(compile_code,method_name,template_name,write_to);
+                    }
+
+                    compile_code = string_kill_whitespace(compile_code);
+
+                    if(compile_code.substr(0,1)=="."){
+                        string return_type = class_name;
+                        string prev_return_type = class_name;
+
+                        while(compile_code.substr(0,1)=="."){
+                            if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+                                return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                                if(code_parse_function_from(compile_code,true,class_handler.find(prev_return_type),method_name,template_name,write_to)==EXIT_FAILURE){
+                                    return EXIT_FAILURE;
+                                }
+                                prev_return_type = return_type;
+                                } else {
+                                if(prev_return_type!="none"){
+                                    error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
+                                    pend();
+                                    return EXIT_FAILURE;
+                                } else {
+                                    error_fatal("You Can't Call Functions of none");
+                                    pend();
+                                    return EXIT_FAILURE;
+                                }
+                            }
+                        }
+
+                        compile_code = string_kill_whitespace(compile_code);
+
+                        code_chop(compile_code);
+
+                        write_to += ";\n";
+                    }
+                } else {
+                    string variable_name = string_get_until_or(compile_code," \n");
+                    compile_code = string_delete_until_or(compile_code," \n");
+
+                    if(!class_handler.exists(class_name)){
+                        error_fatal("Undeclared Template '" + class_name + "'");
+                        pend();
+                        return EXIT_FAILURE;
+                    }
+
+                    compile_code = string_kill_whitespace(compile_code);
+
+                    code_chop(compile_code);
+
+                    compile_code = string_kill_whitespace(compile_code);
+
+                    write_to += resource(class_name) + " " + resource(variable_name) + ";";
+                    variable_handler.add(variable_name,class_name,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
                 }
-
-                compile_code = string_kill_whitespace(compile_code);
-
-                code_chop(compile_code);
-
-                compile_code = string_kill_whitespace(compile_code);
-
-                write_to += resource(class_name) + " " + resource(variable_name) + ";";
-                variable_handler.add(variable_name,class_name,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
             }
         }
 
