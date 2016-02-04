@@ -621,5 +621,5 @@ int compile(int arg_count, char** arg, string& write_to){
         return EXIT_FAILURE;
     }
 
-    file_write << "int main(int argument_count, char** argument){\nargc = &argument_count;\nargv = &argument;\n" + ve_main_code + "\n" + clean_up + "\nreturn 0;\n}";
+    file_write << "int main(int argument_count, char** argument){\nargc = &argument_count;\nargv = &argument;\n" << ve_main_code << "\n" + clean_up + "\nreturn 0;\n}";
 }
