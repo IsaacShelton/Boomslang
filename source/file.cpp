@@ -6,8 +6,9 @@
 using namespace std;
 
 //Imports boomslang package
-void import_boomslang(string name){
+void import_boomslang(string package_identifier){
     string package_filename;
+    string name = package_identifier;
 
     if (!ve_packages.exists(name)){
         package_filename = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\";
@@ -43,6 +44,7 @@ void import_boomslang(string name){
 
             compile_code = new_code + compile_code;
             importFile.close();
+            ve_packages.add(package_identifier);
         } else {
             error_show("Unknown Package '" + name + "'");
         }

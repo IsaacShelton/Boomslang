@@ -29,11 +29,20 @@ int boot(int arg_count, char** arg){
     ve_apptype = APPTYPE_LINUX;
     #endif
 
+    char* username;
     #if (BUILD_OS == WINDOWS)
-    USERNAME = getenv("USERNAME");
+    username = getenv("USERNAME");
     #elif (BUILD_OS == LINUX)
-    USERNAME = getlogin();
+    username = getlogin();
     #endif
+
+    if(username==NULL){
+        error_fatal("Failed to get username");
+        pend();
+        return EXIT_FAILURE;
+    } else {
+        USERNAME = username;
+    }
 
     console = false;
     indentation = 0;
@@ -52,14 +61,17 @@ int boot(int arg_count, char** arg){
 
     //Get current full path
     #ifndef DEBUG
-    _fullpath(terminal_complete_path, arg[0], sizeof(terminal_complete_path));
-    #endif
-
-    //Remove Filename from full path
-    #if (BUILD_OS == WINDOWS)
-    terminal_path = filename_path(terminal_complete_path);
-    #elif (BUILD_OS == LINUX)
-    terminal_path = linux_filename_path(terminal_complete_path);
+    if(_fullpath(terminal_complete_path, arg[0], sizeof(terminal_complete_path))==NULL){
+        error_fatal("Failed to get terminal path");
+        pend();
+        return EXIT_FAILURE;
+    } else {
+        #if (BUILD_OS == WINDOWS)
+        terminal_path = filename_path(terminal_complete_path);
+        #elif (BUILD_OS == LINUX)
+        terminal_path = linux_filename_path(terminal_complete_path);
+        #endif
+    }
     #endif
 
     //Check the argument count
@@ -83,11 +95,10 @@ int boot(int arg_count, char** arg){
 
     #include "../include/dash.h"
 
-    //Add Newline
-    if(!runafter) cout << endl;
-
-    if(!runafter)
+    if(!runafter){
+        cout << endl;
         error_log("Checking for basic errors");
+    }
 
     //Ensure Input Files Exists
     if (file_read_name==""){
@@ -113,4 +124,6 @@ int boot(int arg_count, char** arg){
     if(file_exists(terminal_path + file_read_name)){
         file_read_name = terminal_path + file_read_name;
     }
+
+    return EXIT_SUCCESS;
 }

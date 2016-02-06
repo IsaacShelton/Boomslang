@@ -825,20 +825,22 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             string embedded_filename = code_harvest_string(code);
             file_write << "boomslang_List<boomslang_Byte> boomslangEmbedded" + to_string(next_embedded_id) + " = boomslang_List<boomslang_Byte>({";
 
-            streampos size;
+            streampos file_size;
             char* data;
 
             ifstream file (embedded_filename.c_str(), ios::in|ios::binary|ios::ate);
             if (file.is_open()){
-                size = file.tellg();
-                data = new char[size];
+                file_size = file.tellg();
+                data = new char[file_size];
                 file.seekg(0, ios::beg);
-                file.read(data, size);
+                file.read(data, file_size);
                 file.close();
 
-                for(int i = 0; i < size; i++){
+                for(int i = 0; i < file_size; i++){
                     file_write << (unsigned int)(unsigned char)data[i];
-                    if(i!=size-1) file_write << ",";
+                    if(i!=file_size-1){
+                        file_write << ",";
+                    }
                 }
 
                 delete[] data;
