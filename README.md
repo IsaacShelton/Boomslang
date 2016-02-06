@@ -20,7 +20,7 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 <code>("You entered : " + userInput).output()</code><br>
 
 ###Displaying the current time
-<code>use library.time</code><br>
+<code>use org.boomslang.time</code><br>
 <br>
 <code>time = new Time</code><br>
 <code>time.now()</code><br>
@@ -28,19 +28,16 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 <code>time.output()</code>
 
 ###Creating a basic window
-<code>use library.interface</code><br>
+<code>use org.boomslang.window</code><br>
 <br>
-<code>window = new Interface</code><br>
-<code>window.show()</code><br>
+<code>application = new Window</code><br>
+<code>application.show()</code><br>
 
 ###Drawing a rectangle
-<code>use library.interface</code><br>
+<code>use org.boomslang.window</code><br>
 <br>
-<code>window = new Interface</code><br>
+<code>new Window application</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;on display</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new Rectangle(100,100).draw(Aqua(),0,0)</code><br>
 <br>
-<code>new Overseer overseer</code><br>
-<code>&nbsp;&nbsp;&nbsp;&nbsp;on display()</code><br>
-<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(new Rectangle(0,0,100,100)).draw()</code><br>
-<br>
-<code>overseer.bind(window)</code><br>
-<code>window.show()</code><br>
+<code>application.show()</code><br>

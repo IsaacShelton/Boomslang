@@ -33,7 +33,11 @@ int boot(int arg_count, char** arg){
     #if (BUILD_OS == WINDOWS)
     username = getenv("USERNAME");
     #elif (BUILD_OS == LINUX)
+<<<<<<< HEAD
     username = getlogin();
+=======
+    //username = getlogin();
+>>>>>>> d7d033f9bf9a0d9c4dd0c5cbbd900e8223c2006d
     #endif
 
     if(username==NULL){
