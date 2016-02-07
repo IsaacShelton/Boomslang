@@ -5,6 +5,7 @@
 #include "../include/file.h"
 #include "../include/management.h"
 #include "../include/resource.h"
+#include "../include/branch.h"
 
 using namespace std;
 
@@ -31,14 +32,23 @@ int action(string action_name){
         compile_code = string_delete_until_or(compile_code," \"");
         compile_code = string_delete_amount(compile_code,1);
 
-        if(file_exists(terminal_path + import_file_name)){
+        if(import_file_name.substr(import_file_name.length()-7,7)==".branch"){
+            if(file_exists(filename_path(file_read_name) + import_file_name)){
+                if(branch_load(filename_path(file_read_name) + import_file_name)==EXIT_FAILURE) return EXIT_FAILURE;
+            } else if(file_exists(import_file_name)){
+                if(branch_load(import_file_name)==EXIT_FAILURE) return EXIT_FAILURE;
+            } else {
+                error_fatal("The branch '" + import_file_name + "' does not exist");
+            }
+        }
+        else if(file_exists(filename_path(file_read_name) + import_file_name)){
             string read_line;
             ifstream import_file_stream;
             string imported_code;
-            import_file_stream.open((terminal_path + import_file_name).c_str());
+            import_file_stream.open((filename_path(file_read_name) + import_file_name).c_str());
 
             if(!import_file_stream){
-                error_fatal("Failed to open file '" + (terminal_path + import_file_name) + "'");
+                error_fatal("Failed to open file '" + (filename_path(file_read_name) + import_file_name) + "'");
                 pend();
                 return EXIT_FAILURE;
             }
@@ -57,7 +67,7 @@ int action(string action_name){
             import_file_stream.open(import_file_name.c_str());
 
             if(!import_file_stream){
-                error_fatal("Failed to open file '" + (terminal_path + import_file_name) + "'");
+                error_fatal("Failed to open file '" + (filename_path(file_read_name) + import_file_name) + "'");
                 pend();
                 return EXIT_FAILURE;
             }

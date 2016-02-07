@@ -5,6 +5,7 @@
 #include "../include/globals.h"
 #include "../include/management.h"
 #include "../include/file.h"
+#include "../include/branch.h"
 
 using namespace std;
 
@@ -33,11 +34,7 @@ int boot(int arg_count, char** arg){
     #if (BUILD_OS == WINDOWS)
     username = getenv("USERNAME");
     #elif (BUILD_OS == LINUX)
-<<<<<<< HEAD
     username = getlogin();
-=======
-    //username = getlogin();
->>>>>>> d7d033f9bf9a0d9c4dd0c5cbbd900e8223c2006d
     #endif
 
     if(username==NULL){
@@ -56,6 +53,7 @@ int boot(int arg_count, char** arg){
     next_unique_template = 0;
     next_embedded_id = 0;
     next_method_id = 0;
+    next_branch_id = 0;
     waitafter = false;
     runafter = false;
     compile_flags = "-std=c++11";

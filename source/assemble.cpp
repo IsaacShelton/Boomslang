@@ -8,7 +8,7 @@ int assemble(){
         #if (BUILD_OS == WINDOWS)
         //Compile without console unless specified
         if (!console){
-            linker_flags = "-Wl,--subsystem,windows " + linker_flags;
+            linker_flags += "-Wl,--subsystem,windows ";
         }
 
         //Remove old executable

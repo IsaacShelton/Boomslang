@@ -79,6 +79,9 @@ extern unsigned int next_embedded_id;
 //Method Code
 extern unsigned int next_method_id;
 
+//Branch Code
+extern unsigned int next_branch_id;
+
 //Wait after compiled?
 extern bool waitafter;
 

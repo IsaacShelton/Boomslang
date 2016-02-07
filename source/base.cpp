@@ -121,9 +121,8 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
                 exp += "boomslang_Number(" + code_harvest_decimal(code) + ")";
             }
             else if(accept_value==true){
-                error_fatal("Expected a value before '-'");
-                pend();
-                return EXIT_FAILURE;
+                code = string_delete_amount(code,1);
+                exp += "-";
             }
             else {
                 accept_value = true;
@@ -726,9 +725,8 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 write_to += "boomslang_Number(" + code_harvest_decimal(code) + ")";
             }
             else if(accept_value==true){
-                error_fatal("Expected a value before '-'");
-                pend();
-                return EXIT_FAILURE;
+                code = string_delete_amount(code,1);
+                write_to += "-";
             }
             else {
                 accept_value = true;
@@ -1149,9 +1147,7 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
     else if (code.substr(0,1)=="-"){
         if (code.substr(1,1)!="0" and code.substr(1,1)!="1" and code.substr(1,1)!="2" and code.substr(1,1)!="3" and code.substr(1,1)!="4"
         and code.substr(1,1)!="5" and code.substr(1,1)!="6" and code.substr(1,1)!="7" and code.substr(1,1)!="8" and code.substr(1,1)!="9"){
-            error_fatal("Expected a value before '-'");
-            pend();
-            return EXIT_FAILURE;
+            if(code_harvest_value_type(string_delete_amount(code,1), type, method_name, template_name)==EXIT_FAILURE) return EXIT_FAILURE;
         } else {
             type = "Number";
         }

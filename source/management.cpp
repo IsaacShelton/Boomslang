@@ -155,7 +155,7 @@ string resource(string a){
 
 //Deletes Backslash if there is one
 string delete_backslash(string a){
-    if (a.substr(0,1)=="\\")
+    if (a.substr(0,1)=="\\" or a.substr(0,1)=="/")
         return string_delete_amount(a,1);
     else
         return a;
