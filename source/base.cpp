@@ -89,7 +89,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
 
     code = string_kill_whitespace(code);
 
-    while( (( code.substr(0,1)!=")") or balance!=1 ) and (code.substr(0,1)!="\n" or accept_value!=false) and (code_prev!=code) ){
+    while( (( code.substr(0,1)!=")") or balance!=1 ) and (code.substr(0,1)!="\n" or (accept_value!=false and type!="Boolean")) and (code_prev!=code) ){
         //write_to = &exp;
         code_prev = code;
         code = string_kill_whitespace(code);
@@ -302,7 +302,6 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             exp += ">";
         }
         else if(code_arg_type(code)==ARGTYPE_STRING){
-
             if(accept_value==false){
                 error_fatal("Expected an operator before String");
                 pend();
@@ -341,6 +340,48 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
 
             exp += "boomslang_Number(" + code_harvest_decimal(code) + ")";
         }
+        else if(string_get_until_or(code,".=\n ")=="true"){
+            if(accept_value==false){
+                error_fatal("Expected an operator before Boolean");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = false;
+
+            code = string_delete_amount(code,4);
+
+            if(type==S_NULL){
+                type = "Boolean";
+            }
+            else if(type!="Boolean"){
+                error_fatal("Incompatible Templates '" + type + "' and 'Boolean'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            exp += "boomslang_Boolean(true)";
+        }
+        else if(string_get_until_or(code,".=\n ")=="false"){
+            if(accept_value==false){
+                error_fatal("Expected an operator before Boolean");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = false;
+
+            code = string_delete_amount(code,5);
+
+            if(type==S_NULL){
+                type = "Boolean";
+            }
+            else if(type!="Boolean"){
+                error_fatal("Incompatible Templates '" + type + "' and 'Boolean'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            exp += "boomslang_Boolean(false)";
+        }
         else if(code_arg_type(code)==ARGTYPE_VARIABLE){
             if(accept_value==false){
                 error_fatal("Expected an operator before variable");
@@ -349,9 +390,9 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             }
             accept_value = false;
 
-            string variable_name = string_get_until_or(code," =+-/*.)");
+            string variable_name = string_get_until_or(code," =+-/*.)\n");
 
-            code = string_delete_until_or(code," =+-/*.)");
+            code = string_delete_until_or(code," =+-/*.)\n");
 
             code = string_kill_whitespace(code);
 
@@ -892,6 +933,48 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             write_to += "boomslang_Number(" + code_harvest_decimal(code) + ")";
         }
+        else if(string_get_until_or(code,".=\n ")=="true"){
+            if(accept_value==false){
+                error_fatal("Expected an operator before Boolean");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = false;
+
+            code = string_delete_amount(code,4);
+
+            if(type==S_NULL){
+                type = "Boolean";
+            }
+            else if(type!="Boolean"){
+                error_fatal("Incompatible Templates '" + type + "' and 'Boolean'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            write_to += "boomslang_Boolean(true)";
+        }
+        else if(string_get_until_or(code,".=\n ")=="false"){
+            if(accept_value==false){
+                error_fatal("Expected an operator before Boolean");
+                pend();
+                return EXIT_FAILURE;
+            }
+            accept_value = false;
+
+            code = string_delete_amount(code,5);
+
+            if(type==S_NULL){
+                type = "Boolean";
+            }
+            else if(type!="Boolean"){
+                error_fatal("Incompatible Templates '" + type + "' and 'Boolean'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            write_to += "boomslang_Boolean(false)";
+        }
         else if(code_arg_type(code)==ARGTYPE_VARIABLE){
             if(accept_value==false){
                 error_fatal("Expected an operator before variable");
@@ -1136,7 +1219,6 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
         "Hello " + "World"\n
     */
 
-
     code = string_kill_all_whitespace(code);
 
     if (code.substr(0,1)=="+"){
@@ -1206,6 +1288,12 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
     }
     else if(code_arg_type(code)==ARGTYPE_NUMBER){
         type = "Number";
+    }
+    else if(string_get_until_or(code,".+-*/=();\n ")=="true"){
+        type = "Boolean";
+    }
+    else if(string_get_until_or(code,".+-*/=();\n ")=="false"){
+        type = "Boolean";
     }
     else if(code_arg_type(code)==ARGTYPE_VARIABLE){//Variable
         string variable_name = string_get_until_or(code," =+-/*.),\n");

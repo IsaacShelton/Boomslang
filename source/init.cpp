@@ -34,6 +34,7 @@ int init(int arg_count, char** arg){
     class_handler.add("String");
     class_handler.add("Number");
     class_handler.add("Byte");
+    class_handler.add("Boolean");
 
     //None
     variable_handler.add("none","",SCOPETYPE_GLOBAL,I_NULL);
@@ -46,10 +47,14 @@ int init(int arg_count, char** arg){
     function_handler.add("print","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
     function_handler.add("print","none","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
     function_handler.add("wait","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
-    function_handler.add("call","none","",class_handler.find("Callback"),SCOPETYPE_TEMPLATE);
 
     function_handler.add("string","String","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
     function_handler.add("number","Number","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
+
+    function_handler.add("string","String","",class_handler.find("Boolean"),SCOPETYPE_TEMPLATE);
+    function_handler.add("number","Number","",class_handler.find("Boolean"),SCOPETYPE_TEMPLATE);
+
+    function_handler.add("die","none","",I_NULL,SCOPETYPE_GLOBAL);
 
     //Open Read and Write Files
     file_read.open(file_read_name.c_str());
@@ -95,4 +100,6 @@ int init(int arg_count, char** arg){
     #include "../include/cleanup.h"
 
     error_log("Complete");
+
+    return EXIT_SUCCESS;
 }
