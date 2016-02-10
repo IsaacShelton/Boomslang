@@ -1,4 +1,4 @@
-#The Boomslang Programming Lanuage
+#The Boomslang Programming Language
 <br>
 
 ##What is boomslang?
