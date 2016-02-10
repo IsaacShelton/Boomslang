@@ -42,10 +42,12 @@ int init(int arg_count, char** arg){
     //Base Template Functions
     function_handler.add("output","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
     function_handler.add("output","none","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
+    function_handler.add("output","none","",class_handler.find("Boolean"),SCOPETYPE_TEMPLATE);
     function_handler.add("input","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
     function_handler.add("input","none","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
     function_handler.add("print","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
     function_handler.add("print","none","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);
+    function_handler.add("print","none","",class_handler.find("Boolean"),SCOPETYPE_TEMPLATE);
     function_handler.add("wait","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);
 
     function_handler.add("string","String","",class_handler.find("Number"),SCOPETYPE_TEMPLATE);

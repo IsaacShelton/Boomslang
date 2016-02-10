@@ -235,6 +235,27 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             code = string_delete_amount(code,1);
             exp += "==";
         }
+        else if (code.substr(0,1)=="!"){
+            if(accept_value==false){
+                error_fatal("Expected a operator before '!'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_amount(code,1);
+            exp += "!";
+        }
+        else if(string_get_until(code," ")=="not"){
+            if(accept_value==false){
+                error_fatal("Expected a operator before 'not'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_amount(code,3);
+            code = string_kill_whitespace(code);
+            exp += "!";
+        }
         else if (code.substr(0,2)=="or"){
             if(accept_value==true){
                 error_fatal("Expected a value before 'or'");
@@ -858,6 +879,27 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             code = string_kill_whitespace(code);
         }
+        else if (code.substr(0,1)=="!"){
+            if(accept_value==false){
+                error_fatal("Expected a operator before '!'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_amount(code,1);
+            write_to += "!";
+        }
+        else if(string_get_until(code," ")=="not"){
+            if(accept_value==false){
+                error_fatal("Expected a operator before 'not'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_amount(code,3);
+            code = string_kill_whitespace(code);
+            write_to += "!";
+        }
         else if(string_get_until_or(code," ")=="embedded"){
             code = string_delete_until_or(code," ");
             code = string_kill_whitespace(code);
@@ -1282,6 +1324,12 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
             pend();
             return EXIT_FAILURE;
         }
+    }
+    else if (code.substr(0,1)=="!"){
+        if(code_harvest_value_type(string_delete_amount(code,1),type,method_name,template_name)==EXIT_FAILURE) return EXIT_FAILURE;
+    }
+    else if (string_get_until(code," ")=="not"){
+        if(code_harvest_value_type(string_delete_amount(code,3),type,method_name,template_name)==EXIT_FAILURE) return EXIT_FAILURE;
     }
     else if(code_arg_type(code)==ARGTYPE_STRING){
         type = "String";
