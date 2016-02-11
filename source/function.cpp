@@ -132,6 +132,27 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
             continue;
         }
 
+        //while
+        if(string_get_until(compile_code," ")=="while"){
+            error_debug("Found while statement");
+            compile_code = string_delete_until(compile_code," ");
+
+            string expression;
+            string type = S_NULL;
+
+            if(code_harvest_value_type(compile_code,type,method_name,template_name)){
+                return EXIT_FAILURE;
+            }
+
+            if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name,write_to)){
+                return EXIT_FAILURE;
+            }
+
+            write_to += "while" + expression + ")";
+
+            continue;
+        }
+
         //try
         if(string_get_until_or(compile_code," \n")=="try"){
             error_debug("Found try statement");

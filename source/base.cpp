@@ -1351,15 +1351,15 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
             error_fatal("Undeclared Variable '" + variable_name + "'");
             pend();
             return EXIT_FAILURE;
-        } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){//Template non-methods
+        } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){//Template non-methods
             error_fatal("Undeclared Variable '" + variable_name + "'");
             pend();
             return EXIT_FAILURE;
-        } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION) and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){//Template method
+        } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation) and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){//Template method
             error_fatal("Undeclared Variable '" + variable_name + "'");
             pend();
             return EXIT_FAILURE;
-        } else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)){//Method
+        } else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation)){//Method
             error_fatal("Undeclared Variable '" + variable_name + "'");
             pend();
             return EXIT_FAILURE;

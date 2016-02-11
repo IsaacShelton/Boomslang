@@ -372,13 +372,13 @@ int compile_nonexisting_variable(string variable_name,string method_name, string
         if(template_name==""){
             variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
         } else {
-            variable_handler.add(variable_name,variable_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+            variable_handler.add(variable_name,variable_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation);
         }
     } else {
         if(template_name==""){
-            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION);
+            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
         } else {
-            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
+            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
         }
     }
 }
