@@ -8,7 +8,7 @@
 
 using namespace std;
 
-int compile_variable(string method_name, string template_name, string& init_buffer, string& clean_up, string& write_to){
+int compile_variable(string method_name, string template_name, string& init_buffer, string& clean_up, unsigned int indentation, string& write_to){
     error_debug("Found " + string_get_until_or(compile_code," =+-/*.") + " to be a variable.");
 
     string variable_name = string_get_until_or(compile_code," =+-/*.");
@@ -28,19 +28,19 @@ int compile_variable(string method_name, string template_name, string& init_buff
                 return EXIT_FAILURE;
             }
         } else if (template_name!="" and method_name==""){//Template non-methods
-            if(!variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
+            if(!variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){
                 error_fatal("Undeclared Variable '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
             }
         } else if (template_name!="" and method_name!=""){//Template method
-            if(!variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION) and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
+            if(!variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation) and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){
                 error_fatal("Undeclared Variable '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
             }
         } else if (template_name=="" and method_name!=""){//Method
-            if(!variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)){
+            if(!variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation)){
                 error_fatal("Undeclared Variable '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
@@ -118,14 +118,14 @@ int compile_variable(string method_name, string template_name, string& init_buff
                             first_funcloop = false;
 
                             //Get Value Type
-                            if(code_harvest_value_type(compile_code,argument_type,method_name,template_name)==EXIT_FAILURE){
+                            if(code_harvest_value_type(compile_code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
                                 error_fatal("Couldn't Determine Type for Argument in Method '" + function_name + "'");
                                 pend();
                                 return EXIT_FAILURE;
                             }
 
                             //Handle Value
-                            if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,init_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
+                            if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,indentation,init_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                             compile_code = string_kill_whitespace(compile_code);
                         }
@@ -204,14 +204,14 @@ int compile_variable(string method_name, string template_name, string& init_buff
                             first_funcloop = false;
 
                             //Get Value Type
-                            if(code_harvest_value_type(compile_code,argument_type,method_name,template_name)==EXIT_FAILURE){
+                            if(code_harvest_value_type(compile_code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
                                 error_fatal("Couldn't Determine Type for Argument in Method '" + function_name + "'");
                                 pend();
                                 return EXIT_FAILURE;
                             }
 
                             //Handle Value
-                            if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+                            if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
                             compile_code = string_kill_whitespace(compile_code);
                         }
@@ -276,13 +276,21 @@ int compile_variable(string method_name, string template_name, string& init_buff
 
         //Does the variable not exist?
         if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
+            //Main scope
             if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
-        } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){//Template method
+
+        } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){//Template method
+            //Template method scope
             if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
-        } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)){//Template non-methods
+
+        } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation)){//Template non-methods
+            //Template scope
             if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
-        }else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)){//Method
+
+        }else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation)){//Method
+            //Method scope
             if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+
         } else {//Variable is Declared
             string variable_type;
 
@@ -314,7 +322,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
             write_to += resource(variable_name) + "=";
 
             //Handle Value
-            if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,write_to)==EXIT_FAILURE){
+            if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,indentation,write_to)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
@@ -346,7 +354,7 @@ int compile_nonexisting_variable(string variable_name,string method_name, string
     compile_code = string_kill_all_whitespace(compile_code);
 
     //Get Value Type
-    if(code_harvest_value_type(compile_code,variable_type,method_name,template_name)==EXIT_FAILURE){
+    if(code_harvest_value_type(compile_code,variable_type,method_name,template_name,indentation)==EXIT_FAILURE){
         error_fatal("Couldn't Determine Type for Variable '" + variable_name + "'");
         pend();
         return EXIT_FAILURE;
@@ -354,13 +362,9 @@ int compile_nonexisting_variable(string variable_name,string method_name, string
 
     string value;
 
-    {
-        //write_to = &value;
-
-        //Handle Value
-        if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,value)==EXIT_FAILURE){
-            return EXIT_FAILURE;
-        }
+    //Handle Value
+    if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,indentation,value)==EXIT_FAILURE){
+        return EXIT_FAILURE;
     }
 
     write_to += resource(variable_type) + "& " + resource(variable_name) + " = *(new " + resource(variable_type) + "(" + value + "));\n";
@@ -376,9 +380,9 @@ int compile_nonexisting_variable(string variable_name,string method_name, string
         }
     } else {
         if(template_name==""){
-            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
-        } else {
             variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
+        } else {
+            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
         }
     }
 }

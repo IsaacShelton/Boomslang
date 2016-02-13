@@ -92,7 +92,7 @@ int compile(int arg_count, char** arg, string& write_to){
                 string expression;
                 string type = S_NULL;
 
-                if(code_harvest_value_type(compile_code,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
+                if(code_harvest_value_type(compile_code,type,"","",indentation)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 if(code_harvest_raw_expression(compile_code,expression,type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
@@ -112,7 +112,7 @@ int compile(int arg_count, char** arg, string& write_to){
             string expression;
             string type = S_NULL;
 
-            if(code_harvest_value_type(compile_code,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
+            if(code_harvest_value_type(compile_code,type,"","",indentation)==EXIT_FAILURE) return EXIT_FAILURE;
 
             if(code_harvest_raw_expression(compile_code,expression,type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
@@ -129,7 +129,7 @@ int compile(int arg_count, char** arg, string& write_to){
             string expression;
             string type = S_NULL;
 
-            if(code_harvest_value_type(compile_code,type,"","")==EXIT_FAILURE) return EXIT_FAILURE;
+            if(code_harvest_value_type(compile_code,type,"","",indentation)==EXIT_FAILURE) return EXIT_FAILURE;
 
             if(code_harvest_raw_expression(compile_code,expression,type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
@@ -202,13 +202,13 @@ int compile(int arg_count, char** arg, string& write_to){
 
             write_to += "throw ";
 
-            if(code_harvest_value_type(compile_code,type_of,"","")==EXIT_FAILURE){
+            if(code_harvest_value_type(compile_code,type_of,"","",indentation)==EXIT_FAILURE){
                 error_fatal("Couldn't Determine type for throw statement");
                 pend();
                 return EXIT_FAILURE;
             }
 
-            if(code_harvest_value(compile_code,type_of,"","","",ve_main_code)==EXIT_FAILURE){
+            if(code_harvest_value(compile_code,type_of,"","","",indentation,ve_main_code)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
@@ -459,14 +459,14 @@ int compile(int arg_count, char** arg, string& write_to){
                     first = false;
 
                     //Get Value Type
-                    if(code_harvest_value_type(compile_code,argument_type,"","")==EXIT_FAILURE){
+                    if(code_harvest_value_type(compile_code,argument_type,"","",indentation)==EXIT_FAILURE){
                         error_fatal("Couldn't Determine Type for Argument in Method '" + function_name + "'");
                         pend();
                         return EXIT_FAILURE;
                     }
 
                     //Handle Value
-                    if(code_harvest_value(compile_code,argument_type,",)","","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
+                    if(code_harvest_value(compile_code,argument_type,",)","","",indentation,ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
                     compile_code = string_kill_whitespace(compile_code);
                 }
@@ -494,7 +494,7 @@ int compile(int arg_count, char** arg, string& write_to){
             string method_name = "";
             string template_name = "";
             string init_buffer;
-            if(compile_variable(method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_variable(method_name,template_name,init_buffer,clean_up,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 

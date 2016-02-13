@@ -83,7 +83,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
         balance += 1;
     }
 
-    if(code_harvest_value_type(code,type,method_name,template_name)==EXIT_FAILURE){
+    if(code_harvest_value_type(code,type,method_name,template_name,indentation)==EXIT_FAILURE){
         return EXIT_FAILURE;
     }
 
@@ -512,12 +512,12 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
                 first = false;
 
                 //Get Value Type
-                if(code_harvest_value_type(code,argument_type,method_name,template_name)==EXIT_FAILURE){
+                if(code_harvest_value_type(code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
                 }
 
                 //Handle Value
-                if(code_harvest_value(code,argument_type,",)",method_name,template_name,exp)==EXIT_FAILURE){
+                if(code_harvest_value(code,argument_type,",)",method_name,template_name,indentation,exp)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
@@ -583,14 +583,14 @@ int code_parse_args(string& code, string method_name, string template_name, stri
         first = false;
 
         //Get Value Type
-        if(code_harvest_value_type(code,argument_type,method_name,template_name)==EXIT_FAILURE){
+        if(code_harvest_value_type(code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
             error_fatal("Couldn't Determine Type for Method Argument");
             pend();
             return EXIT_FAILURE;
         }
 
         //Handle Value
-        if(code_harvest_value(code,argument_type,",)",method_name,template_name,write_to)==EXIT_FAILURE){
+        if(code_harvest_value(code,argument_type,",)",method_name,template_name,indentation,write_to)==EXIT_FAILURE){
             return EXIT_FAILURE;
         }
 
@@ -654,7 +654,7 @@ int code_parse_declaration_args(string& code, string method_name, string templat
 
         if(character=="="){
             //Get Value Type
-            if(code_harvest_value_type(code,argument_type,method_name,template_name)==EXIT_FAILURE){
+            if(code_harvest_value_type(code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
                 error_fatal("Couldn't Determine Type for Method Argument Declaration");
                 pend();
                 return EXIT_FAILURE;
@@ -672,7 +672,7 @@ int code_parse_declaration_args(string& code, string method_name, string templat
             }
 
             //Handle Value
-            if(code_harvest_value(code,argument_type,",)",method_name,template_name,write_to)==EXIT_FAILURE){
+            if(code_harvest_value(code,argument_type,",)",method_name,template_name,indentation,write_to)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
             code = string_kill_whitespace(code);
@@ -743,7 +743,7 @@ void code_chop(string& code){
 }
 
 //Writes and removes the value in expressions
-int code_harvest_value(string& code, string &type, string additional_characters, string method_name, string template_name, string& write_to){
+int code_harvest_value(string& code, string &type, string additional_characters, string method_name, string template_name, unsigned int indentation, string& write_to){
     /*
         code - code
         type - variable type
@@ -1148,7 +1148,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 first = false;
 
                 //Get Value Type
-                if(code_harvest_value_type(code,argument_type,method_name,template_name)==EXIT_FAILURE){
+                if(code_harvest_value_type(code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in List");
                 }
 
@@ -1167,7 +1167,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 }
 
                 //Handle Value
-                if(code_harvest_value(code,argument_type,",}",method_name,template_name,list_data)==EXIT_FAILURE){
+                if(code_harvest_value(code,argument_type,",}",method_name,template_name,indentation,list_data)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
@@ -1216,12 +1216,12 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 first = false;
 
                 //Get Value Type
-                if(code_harvest_value_type(code,argument_type,method_name,template_name)==EXIT_FAILURE){
+                if(code_harvest_value_type(code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
                     error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
                 }
 
                 //Handle Value
-                if(code_harvest_value(code,argument_type,",)",method_name,template_name,write_to)==EXIT_FAILURE){
+                if(code_harvest_value(code,argument_type,",)",method_name,template_name,indentation,write_to)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
@@ -1252,7 +1252,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 }
 
 //Gets the first type in a expressions
-int code_harvest_value_type(string code, string &type, string method_name, string template_name){
+int code_harvest_value_type(string code, string &type, string method_name, string template_name,unsigned int indentation){
     /*
         code - code
         type - variable type return
@@ -1271,7 +1271,7 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
     else if (code.substr(0,1)=="-"){
         if (code.substr(1,1)!="0" and code.substr(1,1)!="1" and code.substr(1,1)!="2" and code.substr(1,1)!="3" and code.substr(1,1)!="4"
         and code.substr(1,1)!="5" and code.substr(1,1)!="6" and code.substr(1,1)!="7" and code.substr(1,1)!="8" and code.substr(1,1)!="9"){
-            if(code_harvest_value_type(string_delete_amount(code,1), type, method_name, template_name)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(code_harvest_value_type(string_delete_amount(code,1), type, method_name, template_name,indentation)==EXIT_FAILURE) return EXIT_FAILURE;
         } else {
             type = "Number";
         }
@@ -1326,10 +1326,10 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
         }
     }
     else if (code.substr(0,1)=="!"){
-        if(code_harvest_value_type(string_delete_amount(code,1),type,method_name,template_name)==EXIT_FAILURE) return EXIT_FAILURE;
+        if(code_harvest_value_type(string_delete_amount(code,1),type,method_name,template_name,indentation)==EXIT_FAILURE) return EXIT_FAILURE;
     }
     else if (string_get_until(code," ")=="not"){
-        if(code_harvest_value_type(string_delete_amount(code,3),type,method_name,template_name)==EXIT_FAILURE) return EXIT_FAILURE;
+        if(code_harvest_value_type(string_delete_amount(code,3),type,method_name,template_name,indentation)==EXIT_FAILURE) return EXIT_FAILURE;
     }
     else if(code_arg_type(code)==ARGTYPE_STRING){
         type = "String";
@@ -1443,7 +1443,7 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
 
         string argument_type;
 
-        if(code_harvest_value_type(code,argument_type,method_name,template_name)==EXIT_FAILURE){
+        if(code_harvest_value_type(code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
             error_fatal("Couldn't Determine Type for Argument in List");
         }
 

@@ -42,18 +42,25 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             }
         }
 
-
         //Check for blocks
         if(new_indentation > indentation){
             while(new_indentation > indentation){
                 indentation++;
-                write_buffer += "{\n";
+                if (indentation > before_indentation + 1){
+                    init_buffer += "{\n";
+                } else {
+                    write_buffer += "{\n";
+                }
             }
         }
         else if(indentation > new_indentation){
             while((indentation > new_indentation) and (indentation > before_indentation)){
                 indentation--;
-                write_buffer += "}\n";
+                if (indentation == before_indentation){
+                    write_buffer += "}\n";
+                } else {
+                    init_buffer += "}\n";
+                }
             }
         }
 
@@ -99,7 +106,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 string expression;
                 string type = S_NULL;
 
-                if(code_harvest_value_type(compile_code,type,method_name,template_name)){
+                if(code_harvest_value_type(compile_code,type,method_name,template_name,indentation)){
                     return EXIT_FAILURE;
                 }
 
@@ -123,7 +130,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             string expression;
             string type = S_NULL;
 
-            if(code_harvest_value_type(compile_code,type,method_name,template_name)){
+            if(code_harvest_value_type(compile_code,type,method_name,template_name,indentation)){
                 return EXIT_FAILURE;
             }
 
@@ -144,7 +151,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             string expression;
             string type = S_NULL;
 
-            if(code_harvest_value_type(compile_code,type,method_name,template_name)){
+            if(code_harvest_value_type(compile_code,type,method_name,template_name,indentation)){
                 return EXIT_FAILURE;
             }
 
@@ -221,13 +228,13 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
             write_to += "throw ";
 
-            if(code_harvest_value_type(compile_code,type_of,"",template_name)==EXIT_FAILURE){
+            if(code_harvest_value_type(compile_code,type_of,"",template_name,indentation)==EXIT_FAILURE){
                 error_fatal("Couldn't Determine type for throw statement");
                 pend();
                 return EXIT_FAILURE;
             }
 
-            if(code_harvest_value(compile_code,type_of,"","",template_name,write_to)==EXIT_FAILURE){
+            if(code_harvest_value(compile_code,type_of,"","",template_name,indentation,write_to)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
@@ -482,14 +489,14 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     first = false;
 
                     //Get Value Type
-                    if(code_harvest_value_type(compile_code,argument_type,method_name,template_name)==EXIT_FAILURE){
+                    if(code_harvest_value_type(compile_code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
                         error_fatal("Couldn't Determine Type for Argument in Function '" + function_name + "'");
                         pend();
                         return EXIT_FAILURE;
                     }
 
                     //Handle Value
-                    if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,init_buffer)==EXIT_FAILURE){
+                    if(code_harvest_value(compile_code,argument_type,",)",method_name,template_name,indentation,init_buffer)==EXIT_FAILURE){
                         return EXIT_FAILURE;
                     }
 
@@ -515,7 +522,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
         //Is it a variable?
         if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
             method_name = "";
-            if(compile_variable(method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_variable(method_name,template_name,init_buffer,clean_up,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 
@@ -666,7 +673,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     }
 
     if(unique_template)
-        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n" + "~" + template_name + "(){\n" + clean_up + "}\n";
+        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n/" + "~" + template_name + "(){\n" + clean_up + "}\n";
     else
         write_to = "\n" + write_to + resource(template_name) + "(){\n" + init_buffer + "}\n" + "~" + resource(template_name) + "(){\n" + clean_up + "}\n";
 }
