@@ -66,7 +66,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
         if(compile_code=="") continue;
         if(new_indentation<=before_indentation){
-            for(int i = 0; i < new_indentation;i++){
+            for(unsigned int i = 0; i < new_indentation;i++){
                 compile_code = "\t" + compile_code;
             }
             continue;
@@ -673,7 +673,9 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     }
 
     if(unique_template)
-        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n/" + "~" + template_name + "(){\n" + clean_up + "}\n";
+        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n" + "~" + template_name + "(){\n" + clean_up + "}\n";
     else
         write_to = "\n" + write_to + resource(template_name) + "(){\n" + init_buffer + "}\n" + "~" + resource(template_name) + "(){\n" + clean_up + "}\n";
+
+    return EXIT_SUCCESS;
 }

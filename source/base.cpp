@@ -411,6 +411,8 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             }
             accept_value = false;
 
+            cout << "var" << endl;
+
             string variable_name = string_get_until_or(code," =+-/*.)\n");
 
             code = string_delete_until_or(code," =+-/*.)\n");

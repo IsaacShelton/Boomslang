@@ -104,7 +104,6 @@ int compile_variable(string method_name, string template_name, string& init_buff
 
                         compile_code = string_delete_amount(compile_code,1);
                         compile_code = string_kill_all_whitespace(compile_code);
-                        bool first_funcloop = true;
 
                         while(compile_code.substr(0,1)!=")" and function_code_prev!=compile_code){
                             compile_code = string_kill_whitespace(compile_code);
@@ -115,7 +114,6 @@ int compile_variable(string method_name, string template_name, string& init_buff
                                 compile_code = string_delete_amount(compile_code,1);
                             }
 
-                            first_funcloop = false;
 
                             //Get Value Type
                             if(code_harvest_value_type(compile_code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
@@ -190,7 +188,6 @@ int compile_variable(string method_name, string template_name, string& init_buff
 
                         compile_code = string_delete_amount(compile_code,1);
                         compile_code = string_kill_all_whitespace(compile_code);
-                        bool first_funcloop = true;
 
                         while(compile_code.substr(0,1)!=")" and function_code_prev!=compile_code){
                             compile_code = string_kill_whitespace(compile_code);
@@ -200,8 +197,6 @@ int compile_variable(string method_name, string template_name, string& init_buff
                                 write_to += ",";
                                 compile_code = string_delete_amount(compile_code,1);
                             }
-
-                            first_funcloop = false;
 
                             //Get Value Type
                             if(code_harvest_value_type(compile_code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
@@ -347,6 +342,8 @@ int compile_variable(string method_name, string template_name, string& init_buff
     if(compile_code.substr(0,2)=="/="){
         //Divide
     }
+
+    return EXIT_SUCCESS;
 }
 
 int compile_nonexisting_variable(string variable_name,string method_name, string template_name, string& init_buffer, string& clean_up, string& write_to){
@@ -385,4 +382,6 @@ int compile_nonexisting_variable(string variable_name,string method_name, string
             variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
         }
     }
+
+    return EXIT_SUCCESS;
 }
