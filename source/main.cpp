@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include "../include/globals.h"
 
-#include <iostream>
-#include "../include/resource.h"
-
 using namespace std;
 
 int boot(int,char**);
