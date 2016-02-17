@@ -3,7 +3,11 @@ using namespace std;
 
 #include <string>
 #include <stdlib.h>
+#include <iostream>
 #include "../include/resource.h"
+#include "../include/management.h"
+
+using namespace std;
 
 Class::Class(string new_name){
     name = new_name;
@@ -219,3 +223,50 @@ int ClassHandler::find(string name){
 
     return EXIT_FAILURE;
 }
+
+string string_template(string template_name){
+    string output_template = resource(string_get_until(template_name,"("));
+
+    if(string_count(template_name,"(") > 0){
+        template_name = string_delete_until(template_name,"(");
+    } else {
+        return resource(template_name);
+    }
+
+    template_name = string_delete_amount(template_name,1);
+
+    string prev;
+    output_template += "<";
+
+    while(template_name!="" and prev!=template_name){
+        prev = template_name;
+
+        if(template_name.substr(0,1)==","){
+            template_name = string_delete_amount(template_name,1);
+            output_template += ",";
+        }
+
+        if(template_name.substr(0,1)==")"){
+            template_name = string_delete_amount(template_name,1);
+            break;
+        }
+
+        output_template += resource(string_get_until_or(template_name,",)"));
+
+        if(string_count(template_name,",") > 0){
+            template_name = string_delete_until_or(template_name,",)");
+        } else {
+            template_name = "";
+        }
+    }
+
+    output_template += ">";
+
+    if(template_name==prev){
+        error_fatal("Failed to parse internal sub templates");
+        return "";
+    }
+
+    return output_template;
+}
+

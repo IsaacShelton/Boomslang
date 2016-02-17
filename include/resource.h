@@ -10,6 +10,7 @@ using namespace std;
 class Class{
     public:
     string name = "";
+
     Class(string new_name);
 };
 class ClassHandler{
@@ -27,6 +28,7 @@ class Variable: public Resource{
 public:
     string name = "";
     string type = "";
+    string sub_types = "";
     int parent_id = -1;
     int parent_type = -1;
     unsigned int indent = 0;
@@ -69,5 +71,6 @@ extern ClassHandler class_handler;
 extern VariableHandler variable_handler;
 extern FunctionHandler function_handler;
 
+string string_template(string);
 
 #endif // RESOURCE_H_INCLUDED

@@ -364,7 +364,7 @@ int compile_nonexisting_variable(string variable_name,string method_name, string
         return EXIT_FAILURE;
     }
 
-    write_to += resource(variable_type) + "& " + resource(variable_name) + " = *(new " + resource(variable_type) + "(" + value + "));\n";
+    write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "(" + value + "));\n";
     clean_up += "delete &" + resource(variable_name) + ";\n";
 
     code_chop(compile_code);
