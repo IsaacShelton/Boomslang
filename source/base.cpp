@@ -185,13 +185,47 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             //Create new object
 
             code = string_delete_until(code," ");
-
             code = string_kill_whitespace(code);
 
-            string variable_class = string_get_until_or(code," ;\n+-*/().");
+            string variable_class;
 
-            if(!class_handler.exists(variable_class)){
-                error_fatal("Undeclared Template '" + variable_class + "'");
+            if(code.substr(0,1)=="("){
+                string prev;
+                variable_class += "(";
+
+                code = string_delete_amount(code,1);
+                code = string_kill_whitespace(code);
+
+                while(code.substr(0,1)!=")" and code!=prev){
+                    prev = code;
+
+                    if(code.substr(0,1)==","){
+                        code = string_delete_amount(code,1);
+                    }
+
+                    variable_class += string_get_until_or(code," ,)");
+
+                    code = string_delete_until_or(code," ,)");
+                    code = string_kill_whitespace(code);
+
+                    if(code.substr(0,1)!=")") variable_class += ",";
+                }
+
+                variable_class += ")";
+
+                if(code==prev){
+                    error_fatal("Internal Parse Error");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+                code = string_delete_amount(code,1);
+                code = string_kill_whitespace(code);
+            }
+
+            variable_class = string_get_until_or(code," ;\n+-*/().") + variable_class;
+
+            if(!class_handler.exists( string_get_until(variable_class,"(") )){
+                error_fatal("Undeclared Template '" + string_get_until(variable_class,"(") + "'");
                 pend();
                 return EXIT_FAILURE;
             } else if(type!=variable_class){
@@ -201,7 +235,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             }
 
             code = string_delete_until_or(code," ;\n+-*/().");
-            exp += resource(variable_class);
+            exp += string_template(variable_class);
             code = string_kill_whitespace(code);
 
             if(code.substr(0,1)!="("){
@@ -850,12 +884,47 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             //Create new object
 
             code = string_delete_until_or(code," ");
-
             code = string_kill_whitespace(code);
 
-            string variable_class = string_get_until_or(code," ;\n+-*/(),.");
+            string variable_class;
 
-            if(!class_handler.exists(variable_class)){
+            if(code.substr(0,1)=="("){
+                string prev;
+                variable_class += "(";
+
+                code = string_delete_amount(code,1);
+                code = string_kill_whitespace(code);
+
+                while(code.substr(0,1)!=")" and code!=prev){
+                    prev = code;
+
+                    if(code.substr(0,1)==","){
+                        code = string_delete_amount(code,1);
+                    }
+
+                    variable_class += string_get_until_or(code," ,)");
+
+                    code = string_delete_until_or(code," ,)");
+                    code = string_kill_whitespace(code);
+
+                    if(code.substr(0,1)!=")") variable_class += ",";
+                }
+
+                variable_class += ")";
+
+                if(code==prev){
+                    error_fatal("Internal Parse Error");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                code = string_delete_amount(code,1);
+                code = string_kill_whitespace(code);
+            }
+
+            variable_class = string_get_until_or(code," ;\n+-*/(),.") + variable_class;
+
+            if(!class_handler.exists( string_get_until(variable_class,"(") )){
                 error_fatal("Undeclared Template '" + variable_class + "'");
                 pend();
                 return EXIT_FAILURE;
@@ -866,7 +935,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             }
 
             code = string_delete_until_or(code," ;\n+-*/(),.");
-            write_to += resource(variable_class);
+            write_to += string_template(variable_class);
 
             code = string_kill_whitespace(code);
 
@@ -1326,14 +1395,49 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
     else if(string_get_until_or(code," ")=="new"){
         //Create new object
 
-        code = string_delete_until_or(code," ");
-
+        code = string_delete_until(code," ");
         code = string_kill_whitespace(code);
 
-        string variable_class = string_get_until_or(code," ;\n+-*/(),.");
+        string variable_class;
 
-        if(!class_handler.exists(variable_class)){
-            error_fatal("Undeclared Template '" + variable_class + "'");
+        if(code.substr(0,1)=="("){
+            string prev;
+            variable_class += "(";
+
+            code = string_delete_amount(code,1);
+            code = string_kill_whitespace(code);
+
+            while(code.substr(0,1)!=")" and code!=prev){
+                prev = code;
+
+                if(code.substr(0,1)==","){
+                    code = string_delete_amount(code,1);
+                }
+
+                variable_class += string_get_until_or(code," ,)");
+
+                code = string_delete_until_or(code," ,)");
+                code = string_kill_whitespace(code);
+
+                if(code.substr(0,1)!=")") variable_class += ",";
+            }
+
+            variable_class += ")";
+
+            if(code==prev){
+                error_fatal("Internal Parse Error");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_amount(code,1);
+            code = string_kill_whitespace(code);
+        }
+
+        variable_class = string_get_until_or(code," ;\n+-*/().") + variable_class;
+
+        if(!class_handler.exists(string_get_until(variable_class,"("))){
+            error_fatal("Undeclared Template '" + string_get_until(variable_class,"(") + "'");
             pend();
             return EXIT_FAILURE;
         }
