@@ -478,9 +478,32 @@ int compile(int arg_count, char** arg, string& write_to){
                 }
 
                 compile_code = string_delete_amount(compile_code,1);
-                code_chop(compile_code);
+                ve_main_code += ")";
 
-                ve_main_code += ");\n";
+                string prev_return_type = function_handler.functions[function_handler.find(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type;
+                string return_type;
+
+                while(compile_code.substr(0,1)=="."){
+                    if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+                        return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
+
+                        prev_return_type = return_type;
+                    } else {
+                        if(prev_return_type!="none"){
+                            error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
+                            pend();
+                            return EXIT_FAILURE;
+                        } else {
+                            error_fatal("none does not have methods");
+                            pend();
+                            return EXIT_FAILURE;
+                        }
+                    }
+                }
+
+                code_chop(compile_code);
+                ve_main_code+=";\n";
             } else {
                 error_fatal("The Method '" + function_name + "' does not exist.");
                 pend();
@@ -571,7 +594,7 @@ int compile(int arg_count, char** arg, string& write_to){
                             pend();
                             return EXIT_FAILURE;
                         } else {
-                            error_fatal("none does not have Methods");
+                            error_fatal("none does not have methods");
                             pend();
                             return EXIT_FAILURE;
                         }
@@ -639,4 +662,6 @@ int compile(int arg_count, char** arg, string& write_to){
     }
 
     file_write << "int main(int argument_count, char** argument){\nargc = &argument_count;\nargv = &argument;\n" << ve_main_code << "\n" + clean_up + "\nreturn 0;\n}";
+
+    return EXIT_SUCCESS;
 }

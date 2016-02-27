@@ -524,7 +524,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             }
 
             code = string_delete_until_or(code,"(");
-            write_to += resource(function_name) + "(";
+            exp += resource(function_name) + "(";
 
             string function_code_prev;
             string argument_type;
@@ -557,7 +557,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
                 code = string_kill_whitespace(code);
             }
 
-            write_to += ")";//exp
+            exp += ")";
 
             if(function_code_prev==code){
                 error_fatal("Internal Function Error");

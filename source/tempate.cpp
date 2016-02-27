@@ -466,8 +466,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             string function_name = string_get_until_or(compile_code,"(");
             compile_code = string_delete_until_or(compile_code,"(");
 
-            if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_FUNCTION) ){
-
+            if( function_handler.exists(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL) ){
                 init_buffer += resource(function_name) + "(";
 
                 string function_code_prev;
@@ -510,9 +509,34 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 }
 
                 compile_code = string_delete_amount(compile_code,1);
+                init_buffer += ")";
+
+                string prev_return_type = function_handler.functions[function_handler.find(function_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL)].type;
+                string return_type;
+
+                while(compile_code.substr(0,1)=="."){
+                    if(function_handler.exists(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+                        return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(compile_code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                        if(code_parse_function_from(compile_code,false,class_handler.find(prev_return_type),"","",init_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
+
+                        prev_return_type = return_type;
+                    } else {
+                        if(prev_return_type!="none"){
+                            error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(compile_code,1)," (") + "' of template '" + prev_return_type + "'.");
+                            pend();
+                            return EXIT_FAILURE;
+                        } else {
+                            error_fatal("none does not have methods");
+                            pend();
+                            return EXIT_FAILURE;
+                        }
+                    }
+                }
+
                 code_chop(compile_code);
+                init_buffer+=";\n";
             } else {
-                error_fatal("The Function '" + function_name + "' does not exist.");
+                error_fatal("The Function '" + function_name + "' does not exist");
                 pend();
                 return EXIT_FAILURE;
             }
