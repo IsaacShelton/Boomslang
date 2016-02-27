@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string>
+#include "../include/file.h"
+#include "../include/dash.h"
 #include "../include/globals.h"
 #include "../include/management.h"
-#include "../include/file.h"
 #include "../include/branch.h"
 
 using namespace std;
@@ -98,7 +99,7 @@ int boot(int arg_count, char** arg){
         file_read_name = "";
     }
 
-    #include "../include/dash.h"
+    if(parse_compiler_flags(arg_count,arg)==EXIT_FAILURE) return EXIT_FAILURE;
 
     if(!runafter){
         cout << endl;
