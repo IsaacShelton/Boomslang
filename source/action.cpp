@@ -178,11 +178,11 @@ int action(string action_name){
             compile_code = string_delete_amount(compile_code,2);
             compile_code = string_kill_whitespace(compile_code);
 
-            string return_type = string_get_until_or(compile_code," \n");
-            compile_code = string_delete_until_or(compile_code," \n");
+            string return_type = string_get_until_or(compile_code," \n\r");
+            compile_code = string_delete_until_or(compile_code," \n\r");
 
             if(!class_handler.exists(return_type) and return_type!="none"){
-                error_fatal("Unknown Template '" + string_get_until_or(compile_code," ,)") + "' in register method return type");
+                error_fatal("Unknown Template '' in register method return type");
                 pend();
                 return EXIT_FAILURE;
             }

@@ -130,7 +130,7 @@ string string_kill_whitespace(string str){
 string string_kill_all_whitespace(string str){
     int n = 0;
 
-    while(!(str.substr(n,1)!=" " and str.substr(n,1)!="\t" and str.substr(n,1)!="\n")){
+    while(!(str.substr(n,1)!=" " and str.substr(n,1)!="\t" and str.substr(n,1)!="\n"  and str.substr(n,1)!="\r")){
         n++;
     }
 
@@ -141,7 +141,7 @@ string string_kill_all_whitespace(string str){
 string string_kill_newline(string str){
     int n = 0;
 
-    while((str.substr(n,1)=="\n")){
+    while((str.substr(n,1)=="\n" and str.substr(n,1)!="\r")){
         n++;
     }
 

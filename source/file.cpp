@@ -53,8 +53,6 @@ void import_boomslang(string package_identifier){
 
 //Runs a program silently
 int execute_silent(string strFunct, string strParams){
-    system((strFunct + " " + strParams).c_str());
-    /*
     #if (BUILD_OS == WINDOWS)
 	STARTUPINFO StartupInfo;
 	PROCESS_INFORMATION ProcessInfo;
@@ -100,7 +98,6 @@ int execute_silent(string strFunct, string strParams){
 	CloseHandle(ProcessInfo.hThread);
 	CloseHandle(ProcessInfo.hProcess);
     #endif
-    */
 
 	//return rc;
     return EXIT_SUCCESS;

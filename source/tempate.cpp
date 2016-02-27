@@ -253,10 +253,10 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 string buffer;
                 string return_type = "none";
 
-                string method_name = string_get_until_or(compile_code," (\n-");
+                string method = string_get_until_or(compile_code," (\n-");
                 compile_code = string_delete_until_or(compile_code," (\n-");
 
-                function_handler.add(method_name,"none","",class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+                function_handler.add(method,"none","",class_handler.find(template_name),SCOPETYPE_TEMPLATE);
 
                 //Expect opening parenthesis
                 if(compile_code.substr(0,1)!="(" and compile_code.substr(0,1)!="\n" and compile_code.substr(0,2)!="->"){
@@ -280,24 +280,21 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     return_type = string_get_until_or(compile_code," \n");
                     compile_code = string_delete_until_or(compile_code," \n");
                     compile_code = string_kill_whitespace(compile_code);
-                    function_handler.functions[function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type = return_type;
+                    function_handler.functions[function_handler.find(method,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type = return_type;
                 }
 
-                if(compile_function(arg_count,args,indentation,method_name,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
-
-                write_buffer = write_buffer.substr(0,write_buffer.length()-1);
-                file_write << "#define boomslangMethod" + to_string(next_method_id) + " {\\\n" << string_replace_all(write_buffer,"\n","\\\n") << endl;
+                if(compile_function(arg_count,args,indentation,method,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 if(return_type!="none"){
-                    if(method_name=="")
-                        file_write << resource(return_type) + " " + resource(method_name) + buffer + " boomslangMethod" + to_string(next_method_id) + ";\n";
+                    if(method=="")
+                        file_write << resource(return_type) + " " + resource(method) + buffer + "{\n" + write_buffer;
                     else
-                        write_to += resource(return_type) + " " + resource(method_name) + buffer + " boomslangMethod" + to_string(next_method_id) + ";\n";
+                        write_to += resource(return_type) + " " + resource(method) + buffer + "{\n" + write_buffer;
                 } else {
-                    if(method_name=="")
-                        file_write << "void " + resource(method_name) + buffer + " boomslangMethod" + to_string(next_method_id) + ";\n";
+                    if(method=="")
+                        file_write << "void " + resource(method) + buffer + "{\n" + write_buffer;
                     else
-                        write_to += "void " + resource(method_name) + buffer + " boomslangMethod" + to_string(next_method_id) + ";\n";
+                        write_to += "void " + resource(method) + buffer + "{\n" + write_buffer;
                 }
 
                 next_method_id++;

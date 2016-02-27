@@ -59,7 +59,9 @@ int boot(int arg_count, char** arg){
     compile_flags = "-std=c++11";
     ve_context = S_NULL;
     compile_code = "";
-    file_write_name = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\first native.cpp";
+    file_write_name = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\draft.cpp";
+    file_write_header_name = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\draft.h";
+    file_write_register_name = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.boomslang";
 
     //Get current full path
     #ifndef DEBUG
@@ -84,6 +86,7 @@ int boot(int arg_count, char** arg){
         cout << " -help     | help" << endl;
         cout << " -version  | version info" << endl;
         cout << " -console  | uses the console" << endl;
+        cout << " -branch   | creates branch file" << endl;
         cout << " -wait     | wait after complete" << endl;
         cout << " -run      | run after compiled" << endl;
         cout << " -windows  | compile for windows" << endl;

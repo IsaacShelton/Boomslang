@@ -262,13 +262,20 @@ int compile(int arg_count, char** arg, string& write_to){
 
                 if(compile_function(arg_count,arg,indentation,method_name,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
-                write_buffer = write_buffer.substr(0,write_buffer.length()-1);
-                file_write << "#define boomslangMethod" + to_string(next_method_id) + " {\\\n" << string_replace_all(write_buffer,"\n","\\\n") << endl;
-
                 if(return_type!="none"){
-                    file_write << resource(return_type) + " " + resource(method_name) + buffer + " " << "boomslangMethod" + to_string(next_method_id) + ";\n";
+                    file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
                 } else {
-                    file_write << "void " + resource(method_name) + buffer + " " << "boomslangMethod" + to_string(next_method_id) + ";\n";
+                    file_write << "void " + resource(method_name) + buffer + "{\n" + write_buffer;
+                }
+
+                if(package){
+                    if(return_type!="none"){
+                        file_write_header << resource(return_type) + " " + resource(method_name) + buffer + ";";
+                        file_write_register << "register method " + method_name + "()->" + return_type << endl;
+                    } else {
+                        file_write_header << "void " + resource(method_name) + buffer + ";";
+                        file_write_register << "register method " + method_name + "()->none" << endl;
+                    }
                 }
                 next_method_id++;
                 continue;
@@ -661,7 +668,11 @@ int compile(int arg_count, char** arg, string& write_to){
         return EXIT_FAILURE;
     }
 
-    file_write << "int main(int argument_count, char** argument){\nargc = &argument_count;\nargv = &argument;\n" << ve_main_code << "\n" + clean_up + "\nreturn 0;\n}";
+    if(package){
+
+    } else {
+        file_write << "int main(int argument_count, char** argument){\nargc = &argument_count;\nargv = &argument;\n" << ve_main_code << "\n" + clean_up + "\nreturn 0;\n}";
+    }
 
     return EXIT_SUCCESS;
 }

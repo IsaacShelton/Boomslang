@@ -36,12 +36,17 @@ extern string USERNAME;
 //Names of read and write files
 extern string file_read_name;
 extern string file_write_name;
+extern string file_write_header_name;
+extern string file_write_register_name;
 
 //Platform to compile to
 extern int ve_apptype;
 
 //Does the program use the console?
 extern bool console;
+
+//Do we need to package our output?
+extern bool package;
 
 //Current Line Indentation
 extern unsigned int indentation;
@@ -102,6 +107,8 @@ extern string compile_code;
 //Input and Output files
 extern ifstream file_read;
 extern ofstream file_write;
+extern ofstream file_write_header;
+extern ofstream file_write_register;
 
 //Number of Errors and Warnings
 extern unsigned int errors;
