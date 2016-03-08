@@ -1434,7 +1434,7 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
             code = string_kill_whitespace(code);
         }
 
-        variable_class = string_get_until_or(code," ;\n+-*/().") + variable_class;
+        variable_class = string_get_until_or(code," ;\n+-*/(),.") + variable_class;
 
         if(!class_handler.exists(string_get_until(variable_class,"("))){
             error_fatal("Undeclared Template '" + string_get_until(variable_class,"(") + "'");

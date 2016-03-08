@@ -317,8 +317,9 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
         }
 
         //Return statement?
-        if(compile_code.substr(0,7)=="return "){
-            compile_code = string_delete_amount(compile_code,7);
+        if(compile_code.substr(0,2)=="->"){
+            compile_code = string_delete_amount(compile_code,2);
+            compile_code = string_kill_whitespace(compile_code);
 
             string new_return_type;
 
