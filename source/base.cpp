@@ -1209,8 +1209,8 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             }
             accept_value = false;
 
-            if(code.substr(0,1)!="{"){
-                error_fatal("Expected '{' before '" + code.substr(0,1) + "'");
+            if(code.substr(0,1)!="["){
+                error_fatal("Expected '[' before '" + code.substr(0,1) + "'");
                 pend();
                 return EXIT_FAILURE;
             }
@@ -1225,7 +1225,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             string argument_type;
             bool first = true;
 
-            while(code.substr(0,1)!="}" and list_code_prev!=code){
+            while(code.substr(0,1)!="]" and list_code_prev!=code){
                 code = string_kill_all_whitespace(code);
                 list_code_prev = code;
 
@@ -1258,7 +1258,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 }
 
                 //Handle Value
-                if(code_harvest_value(code,argument_type,",}",method_name,template_name,indentation,list_data)==EXIT_FAILURE){
+                if(code_harvest_value(code,argument_type,",]",method_name,template_name,indentation,list_data)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 
@@ -1566,8 +1566,8 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
         }
     }
     else if(code_arg_type(code)==ARGTYPE_LIST){
-        if(code.substr(0,1)!="{"){
-            error_fatal("Expected '{' before '" + code.substr(0,1) + "'");
+        if(code.substr(0,1)!="["){
+            error_fatal("Expected '[' before '" + code.substr(0,1) + "'");
             pend();
             return EXIT_FAILURE;
         }
@@ -1606,7 +1606,7 @@ int code_arg_type(string code){
         //Number
         return ARGTYPE_NUMBER;
     }
-    else if(code.substr(0,1)=="{"){//List
+    else if(code.substr(0,1)=="["){//List
         return ARGTYPE_LIST;
     }
     else if(is_identifier(string_get_until_or(code,"("))){//Function or Variable

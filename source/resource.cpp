@@ -270,3 +270,12 @@ string string_template(string template_name){
     return output_template;
 }
 
+string string_base_template(string template_name){
+    return string_get_until(template_name,"(");
+}
+
+string string_sub_template(string template_name){
+    template_name = string_delete_until(template_name,"(");
+    template_name = string_delete_amount(template_name,1);
+    return string_get_until_or(template_name,",)");
+}

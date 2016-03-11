@@ -87,6 +87,9 @@ extern unsigned int next_method_id;
 //Branch Code
 extern unsigned int next_branch_id;
 
+//For In Id
+extern unsigned int next_for_in_id;
+
 //Wait after compiled?
 extern bool waitafter;
 

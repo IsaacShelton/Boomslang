@@ -52,6 +52,11 @@ int init(int arg_count, char** arg){
     function_handler.add("string","String","",class_handler.find("Boolean"),SCOPETYPE_TEMPLATE);
     function_handler.add("number","Number","",class_handler.find("Boolean"),SCOPETYPE_TEMPLATE);
 
+    function_handler.add("append","none","",class_handler.find("List"),SCOPETYPE_TEMPLATE);
+    function_handler.add("prepend","none","",class_handler.find("List"),SCOPETYPE_TEMPLATE);
+    function_handler.add("remove","none","",class_handler.find("List"),SCOPETYPE_TEMPLATE);
+    function_handler.add("insert","none","",class_handler.find("List"),SCOPETYPE_TEMPLATE);
+
     function_handler.add("die","none","",I_NULL,SCOPETYPE_GLOBAL);
 
     //Open Read and Write Files

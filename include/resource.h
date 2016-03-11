@@ -72,5 +72,7 @@ extern VariableHandler variable_handler;
 extern FunctionHandler function_handler;
 
 string string_template(string);
+string string_base_template(string);
+string string_sub_template(string);
 
 #endif // RESOURCE_H_INCLUDED

@@ -18,6 +18,10 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     unsigned int before_indentation = indentation;
     indentation += 1;
 
+    bool new_for_in = false;
+    string new_for_in_var = "";
+    string new_for_in_var_type = "";
+
     ///Method Code Compile Loop
     while(compile_code!=compile_prev and indentation>0){
         compile_code = string_kill_newline(compile_code);
@@ -48,6 +52,17 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 indentation++;
                 if (indentation > before_indentation + 1){
                     init_buffer += "{\n";
+
+                    if(new_for_in and new_indentation == indentation){
+                        init_buffer += string_template(new_for_in_var_type) + " " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
+
+                        variable_handler.add(new_for_in_var,new_for_in_var_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+
+                        new_for_in = false;
+                        new_for_in_var = "";
+                        new_for_in_var_type = "";
+                        next_for_in_id++;
+                    }
                 } else {
                     write_buffer += "{\n";
                 }
@@ -162,6 +177,46 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             init_buffer += "while" + expression + ")";
 
             continue;
+        }
+
+        //for
+        if(string_get_until_or(compile_code," ")=="for"){
+            compile_code = string_delete_until(compile_code," ");
+            compile_code = string_kill_whitespace(compile_code);
+
+            string variable_name = string_get_until(compile_code," ");
+
+            compile_code = string_delete_until(compile_code," ");
+            compile_code = string_kill_whitespace(compile_code);
+
+            if(string_get_until(compile_code," ")=="in"){
+                string variable_list_type;
+                compile_code = string_delete_until(compile_code," ");
+                compile_code = string_kill_whitespace(compile_code);
+
+                string variable_list_name = string_get_until_or(compile_code," \n\r");
+                compile_code = string_delete_until_or(compile_code," \n\r");
+                compile_code = string_kill_whitespace(compile_code);
+                compile_code = string_kill_newline(compile_code);
+
+                if(!variable_handler.exists(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
+                    error_fatal("Undeclared variable '" + variable_list_name + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE) ].type;
+
+                init_buffer += "for(" + resource(string_sub_template(variable_list_type)) + "* boomslangForIn" + to_string(next_for_in_id) + " : " + resource(variable_list_name) + ")";
+                new_for_in = true;
+                new_for_in_var = variable_name;
+                new_for_in_var_type = string_sub_template(variable_list_type);
+                continue;
+            } else {
+                error_fatal("Classic for loop not supported yet");
+                pend();
+                return EXIT_FAILURE;
+            }
         }
 
         //try
