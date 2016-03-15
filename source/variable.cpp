@@ -9,13 +9,45 @@
 using namespace std;
 
 int compile_variable(string method_name, string template_name, string& init_buffer, string& clean_up, unsigned int indentation, string& write_to){
-    error_debug("Found " + string_get_until_or(compile_code," =+-/*.") + " to be a variable.");
+    error_debug("Found " + string_get_until_or(compile_code," =+-/*.[") + " to be a variable.");
 
-    string variable_name = string_get_until_or(compile_code," =+-/*.");
+    string variable_name = string_get_until_or(compile_code," =+-/*.[");
     string variable_buffer;
+    string array_indexing = "";
 
-    compile_code = string_delete_until_or(compile_code," =+-/*.");
+    compile_code = string_delete_until_or(compile_code," =+-/*.[");
     compile_code = string_kill_whitespace(compile_code);
+
+    if(compile_code.substr(0,1)=="["){
+        array_indexing += "[";
+        compile_code = string_delete_amount(compile_code,1);
+
+        //Get Value Type
+        string argument_type;
+
+        if(code_harvest_value_type(compile_code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
+            error_fatal("Couldn't Determine Type for Method Argument");
+            pend();
+            return EXIT_FAILURE;
+        }
+
+        //Handle Value
+        if(code_harvest_value(compile_code,argument_type,"]",method_name,template_name,indentation,array_indexing)==EXIT_FAILURE){
+            return EXIT_FAILURE;
+        }
+
+        compile_code = string_kill_whitespace(compile_code);
+
+        if(compile_code.substr(0,1)!="]"){
+            error_fatal("Expected ']' before '" + compile_code.substr(0,1) + "'");
+            pend();
+            return EXIT_FAILURE;
+        }
+
+        array_indexing += "]";
+        compile_code = string_delete_amount(compile_code,1);
+        compile_code = string_kill_whitespace(compile_code);
+    }
 
     if(compile_code.substr(0,1)=="."){
         error_debug("Found " + variable_name + " to contain a method.");
@@ -73,13 +105,17 @@ int compile_variable(string method_name, string template_name, string& init_buff
             }
         }
 
+        if(array_indexing!=""){
+            return_type = string_sub_template(return_type);
+        }
+
         string prev_return_type = return_type;
         bool first = true;
 
         if(template_name!="" and method_name==""){
-            init_buffer += resource(variable_name);
+            init_buffer += resource(variable_name) + array_indexing;
         } else {
-            write_to += resource(variable_name);
+            write_to += resource(variable_name) + array_indexing;
         }
 
         //init_buffer or write_to for while loop
@@ -312,9 +348,13 @@ int compile_variable(string method_name, string template_name, string& init_buff
                 }
             }
 
+            if(array_indexing!=""){
+                variable_type = string_sub_template(variable_type);
+            }
+
             compile_code = string_kill_whitespace(compile_code);
 
-            write_to += resource(variable_name) + "=";
+            write_to += resource(variable_name) + array_indexing + "=";
 
             //Handle Value
             if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,indentation,write_to)==EXIT_FAILURE){

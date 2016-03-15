@@ -53,7 +53,7 @@ int compile(int arg_count, char** arg, string& write_to){
                 write("{\n",true);
 
                 if(new_for_in and new_indentation == indentation){
-                    ve_main_code += string_template(new_for_in_var_type) + " " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
+                    ve_main_code += string_template(new_for_in_var_type) + "& " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
                     variable_handler.add(new_for_in_var,new_for_in_var_type,I_NULL,SCOPETYPE_MAIN);
 
                     new_for_in = false;
@@ -445,7 +445,7 @@ int compile(int arg_count, char** arg, string& write_to){
                 compile_code = string_delete_until_or(compile_code," ");
                 compile_code = string_kill_whitespace(compile_code);
 
-                string template_name = string_get_until_or(compile_code," \n");
+                string template_name = string_get_until_or(compile_code," \n<");
                 string write_template_buffer;
                 string parent_list = "";
                 bool unique_template = false;
@@ -456,16 +456,25 @@ int compile(int arg_count, char** arg, string& write_to){
                     return EXIT_FAILURE;
                 }
 
-                compile_code = string_delete_until_or(compile_code," \n");
+                compile_code = string_delete_until_or(compile_code," \n<");
                 compile_code = string_kill_whitespace(compile_code);
 
-                while(compile_code.substr(0,1)!="\n"){
+                if(compile_code.substr(0,1)=="<"){
+                    compile_code = string_delete_amount(compile_code,1);
+                    compile_code = string_kill_whitespace(compile_code);
+
                     if(parent_list==""){
                         parent_list = ":";
+                        parent_list += " public " + resource(string_get_until_or(compile_code," \n"));
+                        compile_code = string_delete_until_or(compile_code," \n");
+                        compile_code = string_kill_whitespace(compile_code);
                     }
-                    parent_list += "public " + resource(string_get_until_or(compile_code," \n"));
-                    compile_code = string_delete_until_or(compile_code," \n");
-                    compile_code = string_kill_whitespace(compile_code);
+
+                    while(compile_code.substr(0,1)!="\n"){
+                        parent_list += ", public " + resource(string_get_until_or(compile_code," \n"));
+                        compile_code = string_delete_until_or(compile_code," \n");
+                        compile_code = string_kill_whitespace(compile_code);
+                    }
                 }
 
                 class_handler.add(template_name);
@@ -573,7 +582,7 @@ int compile(int arg_count, char** arg, string& write_to){
         }
 
         //Is it a variable?
-        if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
+        if( is_identifier(string_get_until_or(compile_code," =+-/*.[")) ){
             string method_name = "";
             string template_name = "";
             string init_buffer;

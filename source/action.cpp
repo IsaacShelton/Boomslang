@@ -222,14 +222,14 @@ int action(string action_name){
             compile_code = string_delete_until(compile_code," ");
             compile_code = string_kill_whitespace(compile_code);
 
-            string header_to_include = string_get_until_or(compile_code,";\n");
+            string library_to_include = string_get_until_or(compile_code,";\n");
 
-            header_to_include = delete_backslash(header_to_include);
+            library_to_include = delete_backslash(library_to_include);
 
-            if(file_exists("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + header_to_include)){
-                linker_flags += " \"" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + header_to_include + "\" ";
+            if(file_exists("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + library_to_include)){
+                linker_flags += " \"" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + library_to_include + "\" ";
             } else {
-                error_show("Couldn't find Native Header '" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + header_to_include + "'");
+                error_show("Couldn't find Native Library '" + string("C:\\Users\\") + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + library_to_include + "'");
             }
 
             compile_code = string_delete_until_or(compile_code,";\n");

@@ -307,14 +307,16 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
                 string buffer;
                 string return_type = "none";
+                string attributes = "";
 
                 string method = string_get_until_or(compile_code," (\n-");
                 compile_code = string_delete_until_or(compile_code," (\n-");
+                compile_code = string_kill_whitespace(compile_code);
 
                 function_handler.add(method,"none","",class_handler.find(template_name),SCOPETYPE_TEMPLATE);
 
                 //Expect opening parenthesis
-                if(compile_code.substr(0,1)!="(" and compile_code.substr(0,1)!="\n" and compile_code.substr(0,2)!="->"){
+                if(compile_code.substr(0,1)!="(" and compile_code.substr(0,1)!="\n" and compile_code.substr(0,2)!="->" and !is_identifier(string_get_until_or(compile_code," \n-")) ){
                     error_fatal("Expected '(' or '->' or newline before '" + compile_code.substr(0,1) + "' in Method Argument Declaration");
                     pend();
                     return EXIT_FAILURE;
@@ -329,6 +331,14 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
                 compile_code = string_kill_whitespace(compile_code);
 
+                while(compile_code.substr(0,1)!="\n" and compile_code.substr(0,2)!="->"){
+                    if(string_get_until_or(compile_code," \n-")=="mutable"){
+                        attributes += "virtual ";
+                        compile_code = string_delete_until_or(compile_code," \n-");
+                        compile_code = string_kill_whitespace(compile_code);
+                    }
+                }
+
                 if(compile_code.substr(0,2)=="->"){
                     compile_code = string_delete_amount(compile_code,2);
                     compile_code = string_kill_whitespace(compile_code);
@@ -342,14 +352,14 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
                 if(return_type!="none"){
                     if(method=="")
-                        file_write << resource(return_type) + " " + resource(method) + buffer + "{\n" + write_buffer;
+                        file_write << attributes + resource(return_type) + " " + resource(method) + buffer + "{\n" + write_buffer;
                     else
-                        write_to += resource(return_type) + " " + resource(method) + buffer + "{\n" + write_buffer;
+                        write_to += attributes + resource(return_type) + " " + resource(method) + buffer + "{\n" + write_buffer;
                 } else {
                     if(method=="")
-                        file_write << "void " + resource(method) + buffer + "{\n" + write_buffer;
+                        file_write << attributes + "void " + resource(method) + buffer + "{\n" + write_buffer;
                     else
-                        write_to += "void " + resource(method) + buffer + "{\n" + write_buffer;
+                        write_to += attributes + "void " + resource(method) + buffer + "{\n" + write_buffer;
                 }
 
                 next_method_id++;
@@ -596,7 +606,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
         }
 
         //Is it a variable?
-        if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
+        if( is_identifier(string_get_until_or(compile_code," =+-/*.[")) ){
             method_name = "";
             if(compile_variable(method_name,template_name,init_buffer,clean_up,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
@@ -749,9 +759,9 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     }
 
     if(unique_template)
-        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n" + "~" + template_name + "(){\n" + clean_up + "}\n";
+        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n" + "virtual ~" + template_name + "(){\n" + clean_up + "}\n";
     else
-        write_to = "\n" + write_to + resource(template_name) + "(){\n" + init_buffer + "}\n" + "~" + resource(template_name) + "(){\n" + clean_up + "}\n";
+        write_to = "\n" + write_to + resource(template_name) + "(){\n" + init_buffer + "}\n" + "virtual ~" + resource(template_name) + "(){\n" + clean_up + "}\n";
 
     return EXIT_SUCCESS;
 }

@@ -444,13 +444,44 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             }
             accept_value = false;
 
-            string variable_name = string_get_until_or(code," =+-/*.)\n");
+            string variable_name = string_get_until_or(code," =+-/*.)[\n");
 
-            code = string_delete_until_or(code," =+-/*.)\n");
+            code = string_delete_until_or(code," =+-/*.)[\n");
 
             code = string_kill_whitespace(code);
 
             exp += resource(variable_name);
+
+            if(code.substr(0,1)=="["){
+                exp += "[";
+                code = string_delete_amount(code,1);
+
+                //Get Value Type
+                string argument_type;
+
+                if(code_harvest_value_type(code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
+                    error_fatal("Couldn't Determine Type for Method Argument");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                //Handle Value
+                if(code_harvest_value(code,argument_type,"]",method_name,template_name,indentation,exp)==EXIT_FAILURE){
+                    return EXIT_FAILURE;
+                }
+
+                code = string_kill_whitespace(code);
+
+                if(code.substr(0,1)!="]"){
+                    error_fatal("Expected ']' before '" + code.substr(0,1) + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                exp += "]";
+                code = string_delete_amount(code,1);
+
+            }
 
             if(code.substr(0,1)=="."){
 
@@ -1093,7 +1124,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             }
             accept_value = false;
 
-            string variable_name = string_get_until_or(code," =+-/*.),\n");
+            string variable_name = string_get_until_or(code," =+-/*.)[,\n");
 
             if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
                 error_fatal("Undeclared Variable '" + variable_name + "'");
@@ -1141,7 +1172,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 }
             }
 
-            code = string_delete_until_or(code," =+-/*.),\n");
+            code = string_delete_until_or(code," =+-/*.)[,\n");
             code = string_kill_whitespace(code);
 
             string variable_type;
@@ -1162,6 +1193,39 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type;
             }
 
+            write_to += resource(variable_name);
+
+            if(code.substr(0,1)=="["){
+                write_to += "[";
+                code = string_delete_amount(code,1);
+
+                //Get Value Type
+                string argument_type;
+
+                if(code_harvest_value_type(code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
+                    error_fatal("Couldn't Determine Type for Method Argument");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                //Handle Value
+                if(code_harvest_value(code,argument_type,"]",method_name,template_name,indentation,write_to)==EXIT_FAILURE){
+                    return EXIT_FAILURE;
+                }
+
+                code = string_kill_whitespace(code);
+
+                if(code.substr(0,1)!="]"){
+                    error_fatal("Expected ']' before '" + code.substr(0,1) + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                write_to += "]";
+                code = string_delete_amount(code,1);
+                variable_type = string_sub_template(variable_type);
+            }
+
             if(type==S_NULL){
                 type = variable_type;
             }
@@ -1170,8 +1234,6 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 pend();
                 return EXIT_FAILURE;
             }
-
-            write_to += resource(variable_name);
 
             if(code.substr(0,1)=="."){
                 string return_type = variable_type;
@@ -1472,14 +1534,14 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
     else if(code_arg_type(code)==ARGTYPE_NUMBER){
         type = "Number";
     }
-    else if(string_get_until_or(code,".+-*/=();\n ")=="true"){
+    else if(string_get_until_or(code,".+-*/=()[];\n ")=="true"){
         type = "Boolean";
     }
-    else if(string_get_until_or(code,".+-*/=();\n ")=="false"){
+    else if(string_get_until_or(code,".+-*/=()[];\n ")=="false"){
         type = "Boolean";
     }
     else if(code_arg_type(code)==ARGTYPE_VARIABLE){//Variable
-        string variable_name = string_get_until_or(code," =+-/*.),\n");
+        string variable_name = string_get_until_or(code," =+-/*.)[,\n");
 
         //Exists
         if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
@@ -1544,6 +1606,13 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
             type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type;
         } else {
             type = "none";
+        }
+
+        code = string_delete_until_or(code," =+-/*.)[,\n");
+        code = string_kill_whitespace(code);
+
+        if(code.substr(0,1)=="["){
+            type = string_sub_template(type);
         }
 
         //Could add more functionality

@@ -544,7 +544,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
         }
 
         //Is it a variable?
-        if( is_identifier(string_get_until_or(compile_code," =+-/*.")) ){
+        if( is_identifier(string_get_until_or(compile_code," =+-/*.[")) ){
             string init_buffer;
             if(compile_variable(method_name,template_name,init_buffer,clean_up,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
