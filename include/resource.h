@@ -10,6 +10,7 @@ using namespace std;
 class Class{
     public:
     string name = "";
+    vector<unsigned int> parents;
 
     Class(string new_name);
 };
@@ -19,6 +20,7 @@ public:
     void add(string name);
     bool exists(string name);
     int find(string name);
+    Class get(string name);
 };
 
 class Resource{};
@@ -41,8 +43,11 @@ class VariableHandler{
     vector<Variable> variables;
     void add(string name, string type, int parent_id, int parent_type, unsigned int indent = 0);
     bool exists(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent = 0);
+    bool available(string var_name, string var_type, string method_name, string template_name);
+    Variable available_get(string var_name, string var_type, string method_name, string template_name);
     bool exists_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables, unsigned int var_indent = 0);
     int find(string var_name, string var_type, int var_parent_id, int var_parent_type);
+    Variable get(string var_name, string var_type, int var_parent_id, int var_parent_type);
     int find_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables);
 };
 
@@ -65,6 +70,7 @@ class FunctionHandler{
     bool exists_in(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type, vector<Function> your_functions);
     int find(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type);
     int find_in(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type, vector<Function> your_functions);
+    Function get(string func_name, string func_type, string func_args, int func_parent_id, int func_parent_type);
 };
 
 extern ClassHandler class_handler;

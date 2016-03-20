@@ -446,8 +446,28 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
 
             string variable_name = string_get_until_or(code," =+-/*.)[\n");
 
-            code = string_delete_until_or(code," =+-/*.)[\n");
+            if(!variable_handler.available(variable_name,S_NULL,method_name,template_name)){
+                error_fatal("Undeclared Variable '" + variable_name + "'");
+                pend();
+                return EXIT_FAILURE;
+            }
 
+            if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).is_unique){
+                error_fatal("Couldn't pass unique object '" + variable_name + "'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            if(type==S_NULL){
+                type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
+            }
+            else if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type!="String"){
+                error_fatal("Incompatible Templates '" + variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type + "' and 'String'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            code = string_delete_until_or(code," =+-/*.)[\n");
             code = string_kill_whitespace(code);
 
             exp += resource(variable_name);
@@ -977,6 +997,34 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             }
 
             code = string_kill_whitespace(code);
+
+            if(code.substr(0,1)=="."){
+                string return_type = variable_class;
+                string prev_return_type = variable_class;
+
+                while(code.substr(0,1)=="."){
+                    if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+                        return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+
+                        if(code_parse_function_from(code,false,class_handler.find(prev_return_type),"","",write_to)==EXIT_FAILURE){
+                            return EXIT_FAILURE;
+                        }
+                        prev_return_type = return_type;
+                    } else {
+                        if(prev_return_type!="none"){
+                            error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(code,1)," (") + "' of template '" + prev_return_type + "'.");
+                            pend();
+                            return EXIT_FAILURE;
+                        } else {
+                            error_fatal("You Can't Call Functions of none");
+                            pend();
+                            return EXIT_FAILURE;
+                        }
+                    }
+                }
+
+                code = string_kill_whitespace(code);
+            }
         }
         else if (code.substr(0,1)=="!"){
             if(accept_value==false){
@@ -1126,72 +1174,23 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             string variable_name = string_get_until_or(code," =+-/*.)[,\n");
 
-            if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
-                error_fatal("Undeclared Variable '" + variable_name + "'");
-                pend();
-                return EXIT_FAILURE;
-            } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){//Template non-methods
-                error_fatal("Undeclared Variable '" + variable_name + "'");
-                pend();
-                return EXIT_FAILURE;
-            } else if (template_name!="" and method_name!="" and !(variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION) or variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE))){//Template method
-                error_fatal("Undeclared Variable '" + variable_name + "'");
-                pend();
-                return EXIT_FAILURE;
-            } else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)){//Method
+            if(!variable_handler.available(variable_name,S_NULL,method_name,template_name)){
                 error_fatal("Undeclared Variable '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
             }
 
-            if(method_name=="" and template_name=="" and variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].is_unique){
+            if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).is_unique){
                 error_fatal("Couldn't pass unique object '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
-            } else if(method_name!="" and template_name=="" and variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].is_unique){
-                error_fatal("Couldn't pass unique object '" + variable_name + "'");
-                pend();
-                return EXIT_FAILURE;
-            } else if(method_name=="" and template_name!="" and variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].is_unique){
-                error_fatal("Couldn't pass unique object '" + variable_name + "'");
-                pend();
-                return EXIT_FAILURE;
-            } else if(method_name=="" and template_name=="" and (variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION) or variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE))){
-                if(variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
-                    if(variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].is_unique){
-                        error_fatal("Couldn't pass unique object '" + variable_name + "'");
-                        pend();
-                        return EXIT_FAILURE;
-                    }
-                } else if(variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)){
-                    if(variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)].is_unique){
-                        error_fatal("Couldn't pass unique object '" + variable_name + "'");
-                        pend();
-                        return EXIT_FAILURE;
-                    }
-                }
             }
 
             code = string_delete_until_or(code," =+-/*.)[,\n");
             code = string_kill_whitespace(code);
 
             string variable_type;
-
-            if(template_name=="" and method_name=="" and variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
-                variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
-            } else if (template_name!="" and method_name=="" and variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){//Template non-methods
-                variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type;
-            } else if (template_name!="" and method_name!=""){//Template method
-                if(variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
-                    //Template method template variable
-                    variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type;
-                } else if(variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)){
-                    //Template method method variable
-                    variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)].type;
-                }
-            } else if (template_name=="" and method_name!="" and variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)){//Method
-                variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type;
-            }
+            variable_type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
 
             write_to += resource(variable_name);
 
@@ -1544,69 +1543,21 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
         string variable_name = string_get_until_or(code," =+-/*.)[,\n");
 
         //Exists
-        if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
-            error_fatal("Undeclared Variable '" + variable_name + "'");
-            pend();
-            return EXIT_FAILURE;
-        } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){//Template non-methods
-            error_fatal("Undeclared Variable '" + variable_name + "'");
-            pend();
-            return EXIT_FAILURE;
-        } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation) and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){//Template method
-            error_fatal("Undeclared Variable '" + variable_name + "'");
-            pend();
-            return EXIT_FAILURE;
-        } else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation)){//Method
+        if(!variable_handler.available(variable_name,S_NULL,method_name,template_name)){
             error_fatal("Undeclared Variable '" + variable_name + "'");
             pend();
             return EXIT_FAILURE;
         }
 
         //Unique
-        if(method_name=="" and template_name=="" and variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].is_unique){
+        if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).is_unique){
             error_fatal("Couldn't pass unique object '" + variable_name + "'");
             pend();
             return EXIT_FAILURE;
-        } else if(method_name!="" and template_name=="" and variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].is_unique){
-            error_fatal("Couldn't pass unique object '" + variable_name + "'");
-            pend();
-            return EXIT_FAILURE;
-        } else if(method_name=="" and template_name!="" and variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].is_unique){
-            error_fatal("Couldn't pass unique object '" + variable_name + "'");
-            pend();
-            return EXIT_FAILURE;
-        } else if(method_name=="" and template_name=="" and (variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION) or variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE))){
-            if(variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
-                if(variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].is_unique){
-                    error_fatal("Couldn't pass unique object '" + variable_name + "'");
-                    pend();
-                    return EXIT_FAILURE;
-                }
-            } else if(variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)){
-                if(variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)].is_unique){
-                    error_fatal("Couldn't pass unique object '" + variable_name + "'");
-                    pend();
-                    return EXIT_FAILURE;
-                }
-            }
         }
 
         //Get type
-        if(template_name=="" and method_name=="" and variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
-            type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
-        } else if (template_name!="" and method_name=="" and variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){//Template non-methods
-            type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type;
-        } else if (template_name!="" and method_name!="" and (variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION) or variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE))){//Template method
-            if(variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
-                type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type;
-            } else if(variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)){
-                type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)].type;
-            }
-        } else if (template_name=="" and method_name!="" and variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)){//Method
-            type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type;
-        } else {
-            type = "none";
-        }
+        type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
 
         code = string_delete_until_or(code," =+-/*.)[,\n");
         code = string_kill_whitespace(code);
