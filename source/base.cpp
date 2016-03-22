@@ -60,7 +60,7 @@ string code_harvest_decimal(string& code){
 }
 
 //Harvests a raw expression
-int code_harvest_raw_expression(string& code, string& exp, string& type, string method_name, string template_name, string& write_to){
+int code_harvest_raw_expression(string& code, string& exp, string type, string method_name, string template_name, string& write_to){
     /*
         code - code to harvest raw expression from
             example: ("Hello" + " World")blah blah blah
@@ -297,6 +297,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             }
             accept_value = true;
 
+            type = S_NULL;
             code = string_delete_amount(code,2);
             exp += "||";
         }
@@ -308,6 +309,7 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             }
             accept_value = true;
 
+            type = S_NULL;
             code = string_delete_amount(code,3);
             exp += "&&";
         }
