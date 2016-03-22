@@ -461,8 +461,8 @@ int code_harvest_raw_expression(string& code, string& exp, string& type, string 
             if(type==S_NULL){
                 type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
             }
-            else if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type!="String"){
-                error_fatal("Incompatible Templates '" + variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type + "' and 'String'");
+            else if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type!=type){
+                error_fatal("Incompatible Templates '" + variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type + "' and '" + type + "'");
                 pend();
                 return EXIT_FAILURE;
             }
@@ -826,7 +826,7 @@ void code_chop(string& code){
     }
 }
 
-//Writes and removes the value in expressions
+//Writes and removes the value in expression
 int code_harvest_value(string& code, string &type, string additional_characters, string method_name, string template_name, unsigned int indentation, string& write_to){
     /*
         code - code
@@ -1412,7 +1412,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
     return EXIT_SUCCESS;
 }
 
-//Gets the first type in a expressions
+//Gets the first type in a expression
 int code_harvest_value_type(string code, string &type, string method_name, string template_name,unsigned int indentation){
     /*
         code - code

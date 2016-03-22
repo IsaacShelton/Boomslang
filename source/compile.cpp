@@ -448,7 +448,6 @@ int compile(int arg_count, char** arg, string& write_to){
                 string template_name = string_get_until_or(compile_code," \n<");
                 string write_template_buffer;
                 string parent_list = "";
-                bool unique_template = false;
 
                 if(class_handler.exists(template_name)){
                     error_fatal("The template '" + template_name + "' was already declared");
