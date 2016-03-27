@@ -37,6 +37,62 @@ int compile_variable(string method_name, string template_name, string& init_buff
     compile_code = string_delete_until_or(compile_code," =+-/*.[");
     compile_code = string_kill_whitespace(compile_code);
 
+    if(class_handler.exists(variable_name)){
+        string variable_type = variable_name;
+        variable_name = string_get_until_or(compile_code," =+-/*.[\n");
+
+        compile_code = string_delete_until_or(compile_code," =+-/*.[\n");
+        compile_code = string_kill_whitespace(compile_code);
+
+        if(compile_code.substr(0,1)=="="){
+            compile_code = string_delete_amount(compile_code,1);
+            compile_code = string_kill_whitespace(compile_code);
+            string value = "";
+
+            //Handle Value
+            if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,indentation,value)==EXIT_FAILURE){
+                return EXIT_FAILURE;
+            }
+
+            write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "(" + value + "));\n";
+            clean_up += "delete &" + resource(variable_name) + ";\n";
+
+            code_chop(compile_code);
+
+            if(method_name==""){
+                if(template_name==""){
+                    variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
+                } else {
+                    variable_handler.add(variable_name,variable_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation);
+                }
+            } else {
+                if(template_name==""){
+                    variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
+                } else {
+                    variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
+                }
+            }
+        } else {
+            write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "());\n";
+            clean_up += "delete &" + resource(variable_name) + ";\n";
+            code_chop(compile_code);
+
+            if(method_name==""){
+                if(template_name==""){
+                    variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
+                } else {
+                    variable_handler.add(variable_name,variable_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation);
+                }
+            } else {
+                if(template_name==""){
+                    variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
+                } else {
+                    variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
+                }
+            }
+        }
+    }
+
     if(compile_code.substr(0,1)=="["){
         array_indexing += "[";
         compile_code = string_delete_amount(compile_code,1);
@@ -373,16 +429,30 @@ int compile_variable(string method_name, string template_name, string& init_buff
 
             compile_code = string_kill_whitespace(compile_code);
 
-            write_to += resource(variable_name) + array_indexing + "=";
+            if(template_name!="" and method_name==""){
+                init_buffer += resource(variable_name) + array_indexing + "=";
+            } else {
+                write_to += resource(variable_name) + array_indexing + "=";
+            }
 
             //Handle Value
-            if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,indentation,write_to)==EXIT_FAILURE){
-                return EXIT_FAILURE;
+            if(template_name!="" and method_name==""){
+                if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,indentation,init_buffer)==EXIT_FAILURE){
+                    return EXIT_FAILURE;
+                }
+            } else {
+                if(code_harvest_value(compile_code,variable_type,"",method_name,template_name,indentation,write_to)==EXIT_FAILURE){
+                    return EXIT_FAILURE;
+                }
             }
 
             code_chop(compile_code);
 
-            write_to += ";\n";
+            if(template_name!="" and method_name==""){
+                init_buffer += ";\n";
+            } else {
+                write_to += ";\n";
+            }
         }
     }
 

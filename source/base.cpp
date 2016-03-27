@@ -704,9 +704,9 @@ int code_parse_declaration_args(string& code, string method_name, string templat
     code = string_kill_all_whitespace(code);
     bool first = true;
     string function_code_prev;
-    string argument_type;
 
     while(code.substr(0,1)!=")" and function_code_prev!=code){
+        string argument_type = S_NULL;
         code = string_kill_whitespace(code);
         function_code_prev = code;
 
@@ -720,23 +720,41 @@ int code_parse_declaration_args(string& code, string method_name, string templat
         first = false;
 
         //Get Variable
-        string parameter_name = string_get_until_or(code," =");
-        code = string_delete_until_or(code," =");
+        string parameter_name = string_get_until_or(code," =,)");
+        code = string_delete_until_or(code," =,)");
         code = string_kill_whitespace(code);
 
-        if(code.substr(0,1)!="="){
+        if(class_handler.exists(parameter_name)){
+            argument_type = parameter_name;
+
+            parameter_name = string_get_until_or(code," =,)");
+            code = string_delete_until_or(code," =,)");
+            code = string_kill_whitespace(code);
+        }
+
+        if(code.substr(0,1)!="=" and argument_type==S_NULL){
             error_fatal("Expected '=' before '" + code.substr(0,1) + "' in Method Argument Declaration");
             pend();
             return EXIT_FAILURE;
         }
 
-        string character = code.substr(0,1);
-        code = string_delete_amount(code,1);
+        if(code.substr(0,1)=="="){
+            string type_of_value;
+            code = string_delete_amount(code,1);
 
-        if(character=="="){
             //Get Value Type
-            if(code_harvest_value_type(code,argument_type,method_name,template_name,indentation)==EXIT_FAILURE){
+            if(code_harvest_value_type(code,type_of_value,method_name,template_name,indentation)==EXIT_FAILURE){
                 error_fatal("Couldn't Determine Type for Method Argument Declaration");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+            if(argument_type==S_NULL){
+                argument_type = type_of_value;
+            }
+
+            if(argument_type!=type_of_value){
+                error_fatal("Incompatible templates '" + argument_type + "' and '" + type_of_value + "'");
                 pend();
                 return EXIT_FAILURE;
             }
@@ -756,6 +774,19 @@ int code_parse_declaration_args(string& code, string method_name, string templat
             if(code_harvest_value(code,argument_type,",)",method_name,template_name,indentation,write_to)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
+            code = string_kill_whitespace(code);
+        } else {
+            write_to += string_template(argument_type) + " " + resource(parameter_name);
+
+            //Add the variable
+            if (template_name!="" and method_name==""){//Template non-methods
+                variable_handler.add(parameter_name,argument_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+            } else if (template_name!="" and method_name!=""){//Template method
+                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION);
+            } else if (template_name=="" and method_name!=""){//Method
+                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
+            }
+
             code = string_kill_whitespace(code);
         }
     }
