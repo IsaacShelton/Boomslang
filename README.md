@@ -41,3 +41,6 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new Rectangle(100,100).draw(Aqua(),0,0)</code><br>
 <br>
 <code>application.show()</code><br>
+
+##Contacting Us
+develop.dockysoft@gmail.com

@@ -52,7 +52,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                 write_to += "{\n";
 
                 if(new_for_in and new_indentation == indentation){
-                    write_to += string_template(new_for_in_var_type) + " " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
+                    write_to += string_template(new_for_in_var_type) + "& " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
 
                     if(template_name==""){
                         variable_handler.add(new_for_in_var,new_for_in_var_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);

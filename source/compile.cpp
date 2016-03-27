@@ -316,7 +316,7 @@ int compile(int arg_count, char** arg, string& write_to){
                 if(compile_function(arg_count,arg,indentation,method_name,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 if(return_type!="none"){
-                    file_write << resource(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
+                    file_write << string_template(return_type) + " " + resource(method_name) + buffer + "{\n" + write_buffer;
                 } else {
                     file_write << "void " + resource(method_name) + buffer + "{\n" + write_buffer;
                 }
@@ -333,6 +333,7 @@ int compile(int arg_count, char** arg, string& write_to){
                 next_method_id++;
                 continue;
             }
+
             //Variable Declaration
             if(string_get_until_or(compile_code," ")=="new"){
                 error_debug("Found new");
@@ -420,25 +421,66 @@ int compile(int arg_count, char** arg, string& write_to){
                     }
 
                     compile_code = string_kill_newline(compile_code);
-
-                    if(is_indent(compile_code)){
-                        string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
-                        class_handler.add(template_name);
-
-                        if(compile_template(arg_count,arg,indentation,true,"",template_name,write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
-
-                        file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_template_buffer + "};\n";
-                        ve_main_code += "boomslangUniqueTemplate" + to_string(next_unique_template) + " " + resource(variable_name) + ";";
-
-                        variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
-                        next_unique_template += 1;
-                        continue;
-                    } else {
-                        ve_main_code += resource(class_name) + " " + resource(variable_name) + ";\n";
-                        variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
-                    }
                 }
             }
+
+            //Unique object declaration
+            if(string_get_until_or(compile_code," ")=="unique"){
+                error_debug("Found new");
+                compile_code = string_delete_until_or(compile_code," ");
+
+                compile_code = string_kill_whitespace(compile_code);
+
+                string class_name = string_get_until_or(compile_code," \n(.");
+                compile_code = string_delete_until_or(compile_code," \n(.");
+
+                compile_code = string_kill_all_whitespace(compile_code);
+
+                string variable_name = string_get_until_or(compile_code," \n");
+                compile_code = string_delete_until_or(compile_code," \n");
+
+                string write_template_buffer;
+
+                if(!class_handler.exists(class_name)){
+                    error_fatal("Undeclared Template '" + class_name + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                    error_fatal("The variable '" + variable_name + "' was already declared");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                compile_code = string_kill_whitespace(compile_code);
+
+                if(compile_code.substr(0,1)!="\n"){
+                    error_fatal("Expected newline before '" + compile_code.substr(0,1) + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                compile_code = string_kill_newline(compile_code);
+
+                if(is_indent(compile_code)){
+                    string template_name = "boomslangUniqueTemplate" + to_string(next_unique_template);
+                    class_handler.add(template_name);
+
+                    if(compile_template(arg_count,arg,indentation,true,"",template_name,write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
+
+                    file_write << "class boomslangUniqueTemplate" + to_string(next_unique_template) + ":public " + resource(class_name) + "{\npublic:\n" + write_template_buffer + "};\n";
+                    ve_main_code += "boomslangUniqueTemplate" + to_string(next_unique_template) + " " + resource(variable_name) + ";";
+
+                    variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
+                    next_unique_template += 1;
+                    continue;
+                } else {
+                    ve_main_code += resource(class_name) + " " + resource(variable_name) + ";\n";
+                    variable_handler.add(variable_name,class_name,I_NULL,SCOPETYPE_MAIN,indentation);
+                }
+            }
+
             //Template Declaration
             if(string_get_until_or(compile_code," ")=="template"){
                 error_debug("Found Template Declaration");

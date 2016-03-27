@@ -460,15 +460,6 @@ int code_harvest_raw_expression(string& code, string& exp, string type, string m
                 return EXIT_FAILURE;
             }
 
-            if(type==S_NULL){
-                type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
-            }
-            else if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type!=type){
-                error_fatal("Incompatible Templates '" + variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type + "' and '" + type + "'");
-                pend();
-                return EXIT_FAILURE;
-            }
-
             code = string_delete_until_or(code," =+-/*.)[\n");
             code = string_kill_whitespace(code);
 
@@ -505,35 +496,19 @@ int code_harvest_raw_expression(string& code, string& exp, string type, string m
 
             }
 
+            if(type==S_NULL){
+                type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
+            }
+            else if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type!=type and code.substr(0,1)!="."){
+                error_fatal("Incompatible Templates '" + variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type + "' and '" + type + "'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
+
             if(code.substr(0,1)=="."){
-
-                string return_type;
-
-                if(method_name==""){
-                    if(template_name==""){
-                        //In main scope
-                        return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
-                    } else {
-                        //In a template scope
-                        return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type;
-                    }
-                } else {
-                    if(template_name==""){
-                        //Non-template methods
-                        return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type;
-                    } else {
-                        //The variable is part of the template
-                        if(variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
-                            return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type;
-                        } else {
-                            //The variable is in a method of the template
-                            return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)].type;
-                        }
-                    }
-                }
-
+                string return_type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
                 string prev_return_type = return_type;
-                //write_to = &exp;
 
                 while(code.substr(0,1)=="."){
                     if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
@@ -556,6 +531,7 @@ int code_harvest_raw_expression(string& code, string& exp, string type, string m
                 }
 
                 code = string_kill_whitespace(code);
+                type = return_type;
             }
         }
         else if(code_arg_type(code)==ARGTYPE_FUNCTION){
@@ -1230,7 +1206,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             if(type==S_NULL){
                 type = variable_type;
             }
-            else if(type!=variable_type){
+            else if(type!=variable_type and code.substr(0,1)!="."){
                 error_fatal("Incompatible Templates '" + type + "' and '" + variable_type + "'");
                 pend();
                 return EXIT_FAILURE;
@@ -1238,7 +1214,6 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             if(code.substr(0,1)=="."){
                 string return_type = variable_type;
-
                 string prev_return_type = return_type;
 
                 while(code.substr(0,1)=="."){
@@ -1261,6 +1236,15 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                     }
                 }
 
+                variable_type = return_type;
+                if(type==S_NULL){
+                    type = variable_type;
+                }
+                else if(type!=variable_type){
+                    error_fatal("Incompatible Templates '" + type + "' and '" + variable_type + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
                 code = string_kill_whitespace(code);
             }
         }
@@ -1568,6 +1552,35 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
             type = string_sub_template(type);
         }
 
+        if(code.substr(0,1)=="."){
+            string return_type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
+            string prev_return_type = return_type;
+
+            while(code.substr(0,1)=="."){
+                string trash_buffer;
+
+                if(function_handler.exists(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE) and prev_return_type!="none"){
+                    return_type = function_handler.functions[function_handler.find(string_get_until_or(string_delete_amount(code,1)," ("),S_NULL,S_NULL,class_handler.find(prev_return_type),SCOPETYPE_TEMPLATE)].type;
+                    if(code_parse_function_from(code,false,class_handler.find(prev_return_type),method_name,template_name,trash_buffer)==EXIT_FAILURE){
+                        return EXIT_FAILURE;
+                    }
+                    prev_return_type = return_type;
+                } else {
+                    if(prev_return_type!="none"){
+                        error_fatal("Undeclared Function '" + string_get_until_or(string_delete_amount(code,1)," (") + "' of template '" + prev_return_type + "'.");
+                        pend();
+                        return EXIT_FAILURE;
+                    } else {
+                        error_fatal("You Can't Call Functions of none");
+                        pend();
+                        return EXIT_FAILURE;
+                    }
+                }
+            }
+
+            code = string_kill_whitespace(code);
+            type = return_type;
+        }
         //Could add more functionality
     }
     else if(code_arg_type(code)==ARGTYPE_FUNCTION){

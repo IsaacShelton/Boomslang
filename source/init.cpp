@@ -14,7 +14,6 @@ int init(int arg_count, char** arg){
     error_log("Initializing");
 
     //Actions
-    ve_actions.add("use");
     ve_actions.add("import");
     ve_actions.add("native");
     ve_actions.add("register");
@@ -23,6 +22,7 @@ int init(int arg_count, char** arg){
     ve_keywords.add("on");
     ve_keywords.add("when");
     ve_keywords.add("new");
+    ve_keywords.add("unique");
     ve_keywords.add("template");
 
     //Base Templates

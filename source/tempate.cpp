@@ -54,7 +54,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     init_buffer += "{\n";
 
                     if(new_for_in and new_indentation == indentation){
-                        init_buffer += string_template(new_for_in_var_type) + " " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
+                        init_buffer += string_template(new_for_in_var_type) + "& " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
 
                         variable_handler.add(new_for_in_var,new_for_in_var_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
 

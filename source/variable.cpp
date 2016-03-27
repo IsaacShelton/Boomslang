@@ -310,11 +310,11 @@ int compile_variable(string method_name, string template_name, string& init_buff
             //Main scope
             if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
-        } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){//Template method
+        } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation)){//Template method
             //Template method scope
             if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
-        } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation)){//Template non-methods
+        } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) ){//Template non-methods
             //Template scope
             if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 

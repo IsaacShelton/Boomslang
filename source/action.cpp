@@ -10,75 +10,69 @@
 using namespace std;
 
 int action(string action_name){
-    if(action_name=="use"){
-        string package_to_import = string_get_until_or(compile_code,";\n");
-
-        compile_code = string_delete_until_or(compile_code,";\n");
-        compile_code = string_delete_amount(compile_code,1);
-
-        import_boomslang(package_to_import);
-    }
-
     if(action_name=="import"){
         if(compile_code.substr(0,1)!="\""){
-            error_fatal("Expected '\"' before '" + compile_code.substr(0,1) + "' in import statement");
-            pend();
-            return EXIT_FAILURE;
-        }
+            string package_to_import = string_get_until_or(compile_code,";\n");
 
-        compile_code = string_delete_amount(compile_code,1);
+            compile_code = string_delete_until_or(compile_code,";\n");
+            compile_code = string_delete_amount(compile_code,1);
 
-        string import_file_name = string_get_until_or(compile_code,"\"");
-        compile_code = string_delete_until_or(compile_code," \"");
-        compile_code = string_delete_amount(compile_code,1);
+            import_boomslang(package_to_import);
+        } else {
+            compile_code = string_delete_amount(compile_code,1);
 
-        if(import_file_name.substr(import_file_name.length()-7,7)==".branch"){
-            if(file_exists(filename_path(file_read_name) + import_file_name)){
-                if(branch_load(filename_path(file_read_name) + import_file_name)==EXIT_FAILURE) return EXIT_FAILURE;
+            string import_file_name = string_get_until_or(compile_code,"\"");
+            compile_code = string_delete_until_or(compile_code," \"");
+            compile_code = string_delete_amount(compile_code,1);
+
+            if(import_file_name.substr(import_file_name.length()-7,7)==".branch"){
+                if(file_exists(filename_path(file_read_name) + import_file_name)){
+                    if(branch_load(filename_path(file_read_name) + import_file_name)==EXIT_FAILURE) return EXIT_FAILURE;
+                } else if(file_exists(import_file_name)){
+                    if(branch_load(import_file_name)==EXIT_FAILURE) return EXIT_FAILURE;
+                } else {
+                    error_fatal("The branch '" + import_file_name + "' does not exist");
+                }
+            }
+            else if(file_exists(filename_path(file_read_name) + import_file_name)){
+                string read_line;
+                ifstream import_file_stream;
+                string imported_code;
+                import_file_stream.open((filename_path(file_read_name) + import_file_name).c_str());
+
+                if(!import_file_stream){
+                    error_fatal("Failed to open file '" + (filename_path(file_read_name) + import_file_name) + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                while(getline(import_file_stream,read_line)){
+                    imported_code += read_line + "\n";
+                }
+
+                compile_code = imported_code + compile_code;
+
+                import_file_stream.close();
             } else if(file_exists(import_file_name)){
-                if(branch_load(import_file_name)==EXIT_FAILURE) return EXIT_FAILURE;
-            } else {
-                error_fatal("The branch '" + import_file_name + "' does not exist");
+                string read_line;
+                ifstream import_file_stream;
+                string imported_code;
+                import_file_stream.open(import_file_name.c_str());
+
+                if(!import_file_stream){
+                    error_fatal("Failed to open file '" + (filename_path(file_read_name) + import_file_name) + "'");
+                    pend();
+                    return EXIT_FAILURE;
+                }
+
+                while(getline(import_file_stream,read_line)){
+                    imported_code += read_line + "\n";
+                }
+
+                compile_code = imported_code + compile_code;
+
+                import_file_stream.close();
             }
-        }
-        else if(file_exists(filename_path(file_read_name) + import_file_name)){
-            string read_line;
-            ifstream import_file_stream;
-            string imported_code;
-            import_file_stream.open((filename_path(file_read_name) + import_file_name).c_str());
-
-            if(!import_file_stream){
-                error_fatal("Failed to open file '" + (filename_path(file_read_name) + import_file_name) + "'");
-                pend();
-                return EXIT_FAILURE;
-            }
-
-            while(getline(import_file_stream,read_line)){
-                imported_code += read_line + "\n";
-            }
-
-            compile_code = imported_code + compile_code;
-
-            import_file_stream.close();
-        } else if(file_exists(import_file_name)){
-            string read_line;
-            ifstream import_file_stream;
-            string imported_code;
-            import_file_stream.open(import_file_name.c_str());
-
-            if(!import_file_stream){
-                error_fatal("Failed to open file '" + (filename_path(file_read_name) + import_file_name) + "'");
-                pend();
-                return EXIT_FAILURE;
-            }
-
-            while(getline(import_file_stream,read_line)){
-                imported_code += read_line + "\n";
-            }
-
-            compile_code = imported_code + compile_code;
-
-            import_file_stream.close();
         }
     }
 
