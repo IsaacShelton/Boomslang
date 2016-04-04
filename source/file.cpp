@@ -20,6 +20,7 @@
 
 #include <string>
 #include <iostream>
+#include <direct.h>
 #include "../include/globals.h"
 
 using namespace std;
@@ -29,9 +30,7 @@ void import_boomslang(string package_identifier){
     string package_filename;
     string name = package_identifier;
 
-    if (!ve_packages.exists(name)){
-        package_filename = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\";
-
+    if (!ve_packages.exists(package_identifier)){
         if (string_contains(name,".")){
             while(string_contains(name,".")){
                 package_filename += string_get_until(name,".") + "\\";
@@ -44,8 +43,28 @@ void import_boomslang(string package_identifier){
 
         package_filename = package_filename + name + ".boomslang";
 
-        if (file_exists(package_filename)){
-            ve_packages.add(name);
+        if (file_exists("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + package_filename)){
+            package_filename ="C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\packages\\" + package_filename;
+
+            ifstream importFile;
+            importFile.open(package_filename.c_str());
+
+            string line;
+            string new_code = "";
+
+            if(importFile){
+                while(getline(importFile,line)){
+                    new_code += line + "\n";
+                }
+            } else {
+                error_show("Failed to Import Package '" + name + "'");
+            }
+
+            compile_code = new_code + compile_code;
+            importFile.close();
+            ve_packages.add(package_identifier);
+        } else if (file_exists(terminal_path + package_filename)){
+            package_filename = terminal_path + package_filename;
 
             ifstream importFile;
             importFile.open(package_filename.c_str());
@@ -65,7 +84,7 @@ void import_boomslang(string package_identifier){
             importFile.close();
             ve_packages.add(package_identifier);
         } else {
-            error_show("Unknown Package '" + name + "'");
+            error_show("Unknown Package '" + package_identifier + "'");
         }
     }
 }
@@ -144,6 +163,29 @@ string filename_path(string a){
 string filename_change_ext(string filename, string ext_without_dot){
     string file_no_ext = string_get_until(filename,".");
     return file_no_ext + "." + ext_without_dot;
+}
+
+int file_create_path(const string& filename){
+    string path = string_replace_all(filename,"\\","/");
+    size_t pre = 0, pos;
+    string folder;
+    int error;
+
+    if(path[path.size()-1]!='/'){
+        // force trailing / so we can handle everything in loop
+        path+='/';
+    }
+
+    while( (pos = path.find_first_of('/',pre))!=string::npos ){
+        folder = path.substr(0,pos++);
+        pre = pos;
+        if(folder.size()==0) continue;
+
+        if( (error = mkdir(folder.c_str())) && errno!=EEXIST ){
+            return error;
+        }
+    }
+    return error;
 }
 
 ifstream::pos_type file_size(string size_filename){

@@ -31,6 +31,7 @@ int execute_silent(string, string);
 string filename_name(string);
 string filename_path(string);
 string filename_change_ext(string, string);
+int file_create_path(const string&);
 ifstream::pos_type file_size(string);
 void write(string, int);
 

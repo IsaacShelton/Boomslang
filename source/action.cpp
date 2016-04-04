@@ -20,9 +20,9 @@
 
 #include <string>
 #include <iostream>
-#include "../include/globals.h"
 #include "../include/file.h"
 #include "../include/management.h"
+#include "../include/globals.h"
 #include "../include/resource.h"
 #include "../include/branch.h"
 
@@ -30,6 +30,8 @@ using namespace std;
 
 int action(string action_name){
     if(action_name=="import"){
+        compile_code = string_kill_whitespace(compile_code);
+
         if(compile_code.substr(0,1)!="\""){
             string package_to_import = string_get_until_or(compile_code,";\n");
 
@@ -37,6 +39,7 @@ int action(string action_name){
             compile_code = string_delete_amount(compile_code,1);
 
             import_boomslang(package_to_import);
+
         } else {
             compile_code = string_delete_amount(compile_code,1);
 

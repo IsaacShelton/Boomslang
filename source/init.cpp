@@ -50,6 +50,7 @@ int init(int arg_count, char** arg){
     class_handler.add("Byte");
     class_handler.add("Boolean");
     class_handler.add("List");
+    class_handler.add("Map");
 
     //None
     variable_handler.add("none","",SCOPETYPE_GLOBAL,I_NULL);

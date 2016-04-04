@@ -360,10 +360,8 @@ int compile(int arg_count, char** arg, string& write_to){
 
                 compile_code = string_kill_whitespace(compile_code);
 
-                string class_name = string_get_until_or(compile_code," \n(.");
-                compile_code = string_delete_until_or(compile_code," \n(.");
-
-                compile_code = string_kill_all_whitespace(compile_code);
+                string class_name;
+                code_harvest_class(compile_code, class_name);
 
                 if(compile_code.substr(0,1)=="." or compile_code.substr(0,1)=="("){
                     if(!class_handler.exists(class_name)){

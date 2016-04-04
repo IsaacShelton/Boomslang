@@ -719,12 +719,16 @@ int code_parse_declaration_args(string& code, string method_name, string templat
 
         first = false;
 
-        //Get Variable
-        string parameter_name = string_get_until_or(code," =,)");
-        code = string_delete_until_or(code," =,)");
+        if(code.substr(0,1)=="{" and argument_type==S_NULL){
+            code_harvest_class(code,argument_type);
+        }
+
+        code = string_kill_whitespace(code);
+        string parameter_name = string_get_until_or(code," =,){");
+        code = string_delete_until_or(code," =,){");
         code = string_kill_whitespace(code);
 
-        if(class_handler.exists(parameter_name)){
+        if(class_handler.exists(parameter_name) and argument_type==S_NULL){
             argument_type = parameter_name;
 
             parameter_name = string_get_until_or(code," =,)");
@@ -737,8 +741,7 @@ int code_parse_declaration_args(string& code, string method_name, string templat
             pend();
             return EXIT_FAILURE;
         }
-
-        if(code.substr(0,1)=="="){
+        else if(code.substr(0,1)=="="){
             string type_of_value;
             code = string_delete_amount(code,1);
 
@@ -966,42 +969,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             code = string_kill_whitespace(code);
 
             string variable_class;
-
-            if(code.substr(0,1)=="("){
-                string prev;
-                variable_class += "(";
-
-                code = string_delete_amount(code,1);
-                code = string_kill_whitespace(code);
-
-                while(code.substr(0,1)!=")" and code!=prev){
-                    prev = code;
-
-                    if(code.substr(0,1)==","){
-                        code = string_delete_amount(code,1);
-                    }
-
-                    variable_class += string_get_until_or(code," ,)");
-
-                    code = string_delete_until_or(code," ,)");
-                    code = string_kill_whitespace(code);
-
-                    if(code.substr(0,1)!=")") variable_class += ",";
-                }
-
-                variable_class += ")";
-
-                if(code==prev){
-                    error_fatal("Internal Parse Error");
-                    pend();
-                    return EXIT_FAILURE;
-                }
-
-                code = string_delete_amount(code,1);
-                code = string_kill_whitespace(code);
-            }
-
-            variable_class = string_get_until_or(code," ;\n+-*/(),.") + variable_class;
+            code_harvest_class(code,variable_class);
 
             if(!class_handler.exists( string_get_until(variable_class,"(") )){
                 error_fatal("Undeclared Template '" + variable_class + "'");
@@ -1013,7 +981,6 @@ int code_harvest_value(string& code, string &type, string additional_characters,
                 return EXIT_FAILURE;
             }
 
-            code = string_delete_until_or(code," ;\n+-*/(),.");
             write_to += string_template(variable_class);
 
             code = string_kill_whitespace(code);
@@ -1495,52 +1462,13 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
         code = string_delete_until(code," ");
         code = string_kill_whitespace(code);
 
-        string variable_class;
+        code_harvest_class(code, type);
 
-        if(code.substr(0,1)=="("){
-            string prev;
-            variable_class += "(";
-
-            code = string_delete_amount(code,1);
-            code = string_kill_whitespace(code);
-
-            while(code.substr(0,1)!=")" and code!=prev){
-                prev = code;
-
-                if(code.substr(0,1)==","){
-                    code = string_delete_amount(code,1);
-                }
-
-                variable_class += string_get_until_or(code," ,)");
-
-                code = string_delete_until_or(code," ,)");
-                code = string_kill_whitespace(code);
-
-                if(code.substr(0,1)!=")") variable_class += ",";
-            }
-
-            variable_class += ")";
-
-            if(code==prev){
-                error_fatal("Internal Parse Error");
-                pend();
-                return EXIT_FAILURE;
-            }
-
-            code = string_delete_amount(code,1);
-            code = string_kill_whitespace(code);
-        }
-
-        variable_class = string_get_until_or(code," ;\n+-*/(),.") + variable_class;
-
-        if(!class_handler.exists(string_get_until(variable_class,"("))){
-            error_fatal("Undeclared Template '" + string_get_until(variable_class,"(") + "'");
+        if(!class_handler.exists(string_get_until(type,"("))){
+            error_fatal("Undeclared Template '" + string_get_until(type,"(") + "'");
             pend();
             return EXIT_FAILURE;
         }
-
-        code = string_delete_until_or(code," ;\n+-*/(),.");
-        type = variable_class;
 
         code = string_kill_whitespace(code);
     }
@@ -1676,6 +1604,47 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
     code = string_kill_whitespace(code);
 
     return EXIT_SUCCESS;
+}
+
+int code_harvest_class(string& code, string& type){
+    type = "";
+
+    if(code.substr(0,1)=="{"){
+        string prev;
+        type += "(";
+
+        code = string_delete_amount(code,1);
+        code = string_kill_whitespace(code);
+
+        while(code.substr(0,1)!="}" and code!=prev){
+            prev = code;
+
+            if(code.substr(0,1)==","){
+                code = string_delete_amount(code,1);
+                code = string_kill_whitespace(code);
+            }
+
+            type += string_get_until_or(code," ,}");
+            code = string_delete_until_or(code," ,}");
+            code = string_kill_whitespace(code);
+
+            if(code.substr(0,1)!="}") type += ",";
+        }
+
+        type += ")";
+
+        if(code==prev){
+            error_fatal("Internal Parse Error");
+            pend();
+            return EXIT_FAILURE;
+        }
+
+        code = string_delete_amount(code,1);
+        code = string_kill_whitespace(code);
+    }
+
+    type = string_get_until_or(code," ;\n+-*/(),.") + type;
+    code = string_delete_until_or(code," ;\n+-*/(),.");
 }
 
 //Function to Determine what data type is at the beginning of the string
