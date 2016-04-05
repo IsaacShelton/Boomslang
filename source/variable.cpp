@@ -30,19 +30,15 @@ using namespace std;
 int compile_variable(string method_name, string template_name, string& init_buffer, string& clean_up, unsigned int indentation, string& write_to){
     error_debug("Found " + string_get_until_or(compile_code," =+-/*.[") + " to be a variable.");
 
-    string variable_name = string_get_until_or(compile_code," =+-/*.[");
-    string variable_buffer;
-    string array_indexing = "";
-
-    compile_code = string_delete_until_or(compile_code," =+-/*.[");
-    compile_code = string_kill_whitespace(compile_code);
-
-    if(class_handler.exists(variable_name)){
-        string variable_type = variable_name;
-        variable_name = string_get_until_or(compile_code," =+-/*.[\n");
-
-        compile_code = string_delete_until_or(compile_code," =+-/*.[\n");
+    if(class_handler.exists(string_get_until_or(compile_code," =+-/*.[")) or compile_code.substr(0,1)=="{"){
+        string variable_type;
+        code_harvest_class(compile_code,variable_type);
         compile_code = string_kill_whitespace(compile_code);
+
+        string variable_name = string_get_until_or(compile_code," =+-/*\n");
+        compile_code = string_delete_until_or(compile_code," =+-/*\n");
+        compile_code = string_kill_whitespace(compile_code);
+        compile_code = string_kill_newline(compile_code);
 
         if(compile_code.substr(0,1)=="="){
             compile_code = string_delete_amount(compile_code,1);
@@ -91,7 +87,16 @@ int compile_variable(string method_name, string template_name, string& init_buff
                 }
             }
         }
+
+        return EXIT_SUCCESS;
     }
+
+    string variable_name = string_get_until_or(compile_code," =+-/*.[");
+    string variable_buffer;
+    string array_indexing = "";
+
+    compile_code = string_delete_until_or(compile_code," =+-/*.[");
+    compile_code = string_kill_whitespace(compile_code);
 
     if(compile_code.substr(0,1)=="["){
         array_indexing += "[";

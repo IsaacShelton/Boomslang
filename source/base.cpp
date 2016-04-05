@@ -1624,9 +1624,9 @@ int code_harvest_class(string& code, string& type){
                 code = string_kill_whitespace(code);
             }
 
-            type += string_get_until_or(code," ,}");
-            code = string_delete_until_or(code," ,}");
-            code = string_kill_whitespace(code);
+            string group_type;
+            code_harvest_class(code,group_type);
+            type += group_type;
 
             if(code.substr(0,1)!="}") type += ",";
         }
@@ -1643,8 +1643,8 @@ int code_harvest_class(string& code, string& type){
         code = string_kill_whitespace(code);
     }
 
-    type = string_get_until_or(code," ;\n+-*/(),.") + type;
-    code = string_delete_until_or(code," ;\n+-*/(),.");
+    type = string_get_until_or(code," ;\n+-*/(),.}") + type;
+    code = string_delete_until_or(code," ;\n+-*/(),.}");
 }
 
 //Function to Determine what data type is at the beginning of the string

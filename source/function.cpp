@@ -239,7 +239,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                     }
                 }
 
-                write_to += "for(" + resource(string_sub_template(variable_list_type)) + "* boomslangForIn" + to_string(next_for_in_id) + " : " + resource(variable_list_name) + ")";
+                write_to += "for(" + string_template(string_sub_template(variable_list_type)) + "* boomslangForIn" + to_string(next_for_in_id) + " : " + resource(variable_list_name) + ")";
                 new_for_in = true;
                 new_for_in_var = variable_name;
                 new_for_in_var_type = string_sub_template(variable_list_type);
@@ -563,7 +563,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
         }
 
         //Is it a variable?
-        if( is_identifier(string_get_until_or(compile_code," =+-/*.[")) ){
+        if( is_identifier(string_get_until_or(compile_code," =+-/*.["))  or compile_code.substr(0,1)=="{" ){
             string init_buffer;
             if(compile_variable(method_name,template_name,init_buffer,clean_up,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;

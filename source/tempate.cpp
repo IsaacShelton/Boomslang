@@ -226,7 +226,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
                 variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE) ].type;
 
-                init_buffer += "for(" + resource(string_sub_template(variable_list_type)) + "* boomslangForIn" + to_string(next_for_in_id) + " : " + resource(variable_list_name) + ")";
+                init_buffer += "for(" + string_template(string_sub_template(variable_list_type)) + "* boomslangForIn" + to_string(next_for_in_id) + " : " + resource(variable_list_name) + ")";
                 new_for_in = true;
                 new_for_in_var = variable_name;
                 new_for_in_var_type = string_sub_template(variable_list_type);
@@ -625,7 +625,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
         }
 
         //Is it a variable?
-        if( is_identifier(string_get_until_or(compile_code," =+-/*.[")) ){
+        if( is_identifier(string_get_until_or(compile_code," =+-/*.["))  or compile_code.substr(0,1)=="{" ){
             method_name = "";
             if(compile_variable(method_name,template_name,init_buffer,clean_up,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;

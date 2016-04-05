@@ -341,32 +341,31 @@ string string_template(string template_name){
     while(template_name!="" and prev!=template_name){
         prev = template_name;
 
+        if(template_name.substr(0,1)=="("){
+            template_name = string_delete_amount(template_name,1);
+            output_template += "<";
+            continue;
+        }
+
+        if(template_name.substr(0,1)==")"){
+            template_name = string_delete_amount(template_name,1);
+            output_template += ">";
+            continue;
+        }
+
         if(template_name.substr(0,1)==","){
             template_name = string_delete_amount(template_name,1);
             output_template += ",";
         }
 
-        if(template_name.substr(0,1)==")"){
-            template_name = string_delete_amount(template_name,1);
-            break;
-        }
-
-        output_template += resource(string_get_until_or(template_name,",)"));
-
-        if(string_count(template_name,",") > 0){
-            template_name = string_delete_until_or(template_name,",)");
-        } else {
-            template_name = "";
-        }
+        output_template += resource(string_get_until_or(template_name,",()"));
+        template_name = string_delete_until_or(template_name,",()");
     }
-
-    output_template += ">";
 
     if(template_name==prev){
         error_fatal("Failed to parse internal sub templates");
         return "";
     }
-
     return output_template;
 }
 
@@ -375,7 +374,36 @@ string string_base_template(string template_name){
 }
 
 string string_sub_template(string template_name){
+    string sub_template;
     template_name = string_delete_until(template_name,"(");
     template_name = string_delete_amount(template_name,1);
-    return string_get_until_or(template_name,",)");
+
+    int balance = 0;
+    while(balance!=0 or (template_name.substr(0,1)!=")" and template_name.substr(0,1)!=",")){
+        if(template_name.substr(0,1)=="("){
+            template_name = string_delete_amount(template_name,1);
+            balance += 1;
+            sub_template += "(";
+            continue;
+        }
+
+        if(template_name.substr(0,1)==")"){
+            template_name = string_delete_amount(template_name,1);
+            balance -= 1;
+            sub_template += ")";
+            continue;
+        }
+
+        if(template_name.substr(0,1)==","){
+            template_name = string_delete_amount(template_name,1);
+            sub_template += ",";
+        }
+
+        string class_name = string_get_until_or(template_name, ",()");
+        template_name = string_delete_until_or(template_name, ",()");
+        sub_template += class_name;
+    }
+
+    cout << sub_template << endl;
+    return sub_template;
 }

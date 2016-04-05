@@ -198,7 +198,7 @@ int compile(int arg_count, char** arg, string& write_to){
                 }
 
                 variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,I_NULL,SCOPETYPE_MAIN) ].type;
-                write_to += "for(" + resource(string_sub_template(variable_list_type)) + "* boomslangForIn" + to_string(next_for_in_id) + " : " + resource(variable_list_name) + ")";
+                write_to += "for(" + string_template(string_sub_template(variable_list_type)) + "* boomslangForIn" + to_string(next_for_in_id) + " : " + resource(variable_list_name) + ")";
                 new_for_in = true;
                 new_for_in_var = variable_name;
                 new_for_in_var_type = string_sub_template(variable_list_type);
@@ -640,7 +640,7 @@ int compile(int arg_count, char** arg, string& write_to){
         }
 
         //Is it a variable?
-        if( is_identifier(string_get_until_or(compile_code," =+-/*.[")) ){
+        if( is_identifier(string_get_until_or(compile_code," =+-/*.[")) or compile_code.substr(0,1)=="{"){
             string method_name = "";
             string template_name = "";
             string init_buffer;
