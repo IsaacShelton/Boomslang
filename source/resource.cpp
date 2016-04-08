@@ -403,7 +403,5 @@ string string_sub_template(string template_name){
         template_name = string_delete_until_or(template_name, ",()");
         sub_template += class_name;
     }
-
-    cout << sub_template << endl;
     return sub_template;
 }

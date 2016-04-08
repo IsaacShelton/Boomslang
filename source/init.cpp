@@ -52,8 +52,26 @@ int init(int arg_count, char** arg){
     class_handler.add("List");
     class_handler.add("Map");
 
+    //Base Exceptions
+    class_handler.add("Error");
+    class_handler.add("Exception");
+    class_handler.add("NotFound");
+    class_handler.add("Invalid");
+    class_handler.add("OutOfIndex");
+    class_handler.add("MemoryFailure");
+    class_handler.add("ZeroDivision");
+
+    function_handler.add("getCause","String","",class_handler.find("Error"),SCOPETYPE_TEMPLATE);
+    function_handler.add("getCause","String","",class_handler.find("Exception"),SCOPETYPE_TEMPLATE);
+    function_handler.add("getCause","String","",class_handler.find("NotFound"),SCOPETYPE_TEMPLATE);
+    function_handler.add("getCause","String","",class_handler.find("Invalid"),SCOPETYPE_TEMPLATE);
+    function_handler.add("getCause","String","",class_handler.find("OutOfIndex"),SCOPETYPE_TEMPLATE);
+    function_handler.add("getCause","String","",class_handler.find("MemoryFailure"),SCOPETYPE_TEMPLATE);
+    function_handler.add("getCause","String","",class_handler.find("ZeroDivision"),SCOPETYPE_TEMPLATE);
+
     //None
-    variable_handler.add("none","",SCOPETYPE_GLOBAL,I_NULL);
+    variable_handler.add("none","",I_NULL,SCOPETYPE_GLOBAL);
+    variable_handler.add("Arguments","List(String)",I_NULL,SCOPETYPE_MAIN);
 
     //Base Template Functions
     function_handler.add("output","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);

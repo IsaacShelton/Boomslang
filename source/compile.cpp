@@ -791,7 +791,7 @@ int compile(int arg_count, char** arg, string& write_to){
     if(package){
 
     } else {
-        file_write << "int main(int argument_count, char** argument){\nargc = &argument_count;\nargv = &argument;\n" << ve_main_code << "\n" + clean_up + "\nreturn 0;\n}";
+        file_write << "int main(int argument_count, char** argument){\nboomslang_List<boomslang_String> boomslang_Arguments;\nargc = &argument_count;\nargv = &argument;\nfor(int _i = 0; _i < argument_count; _i++){\nboomslang_Arguments.boomslang_append(boomslang_String(argument[_i]));\n}\n" << ve_main_code << "\n" + clean_up + "\nreturn 0;\n}";
     }
 
     return EXIT_SUCCESS;
