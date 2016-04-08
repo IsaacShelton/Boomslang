@@ -36,6 +36,8 @@ int init(int arg_count, char** arg){
     ve_actions.add("import");
     ve_actions.add("native");
     ve_actions.add("register");
+    ve_actions.add("module");
+    ve_actions.add("boomslang");
 
     //Keywords
     ve_keywords.add("on");
@@ -100,6 +102,7 @@ int init(int arg_count, char** arg){
     //Open Read and Write Files
     file_read.open(file_read_name.c_str());
     file_write.open(file_write_name.c_str());
+    current_filename = file_read_name;
 
     if(package){
         file_write_header.open(file_write_header_name.c_str());
@@ -126,6 +129,8 @@ int init(int arg_count, char** arg){
     while(getline(file_read,line)){
         compile_code += line + "\n";
     }
+
+    compile_code += "module *\n";
 
     //Close the Input File
     file_read.close();

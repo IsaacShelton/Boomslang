@@ -127,7 +127,7 @@ int compile(int arg_count, char** arg, string& write_to){
 
                 if(code_harvest_value_type(compile_code,type,"","",indentation)==EXIT_FAILURE) return EXIT_FAILURE;
 
-                if(code_harvest_raw_expression(compile_code,expression,type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
+                if(code_harvest_raw_expression(compile_code,expression,type,"","",indentation,ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 ve_main_code += "if" + expression + ")";
 
@@ -147,7 +147,7 @@ int compile(int arg_count, char** arg, string& write_to){
 
             if(code_harvest_value_type(compile_code,type,"","",indentation)==EXIT_FAILURE) return EXIT_FAILURE;
 
-            if(code_harvest_raw_expression(compile_code,expression,type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(code_harvest_raw_expression(compile_code,expression,type,"","",indentation,ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
             ve_main_code += "if" + expression + ")";
 
@@ -164,7 +164,7 @@ int compile(int arg_count, char** arg, string& write_to){
 
             if(code_harvest_value_type(compile_code,type,"","",indentation)==EXIT_FAILURE) return EXIT_FAILURE;
 
-            if(code_harvest_raw_expression(compile_code,expression,type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(code_harvest_raw_expression(compile_code,expression,type,"","",indentation,ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
             ve_main_code += "while" + expression + ")";
 
@@ -546,11 +546,11 @@ int compile(int arg_count, char** arg, string& write_to){
         }
 
         //Is it a action?
-        if( ve_actions.exists(string_get_until(compile_code," ")) ){
-            error_debug("Found " + string_get_until(compile_code," ") + " to be a action.");
+        if( ve_actions.exists(string_get_until_or(compile_code," \n")) ){
+            error_debug("Found " + string_get_until_or(compile_code," \n") + " to be a action.");
 
-            string action_name = string_get_until(compile_code," ");
-            compile_code = string_delete_until(compile_code," ");
+            string action_name = string_get_until_or(compile_code," \n");
+            compile_code = string_delete_until_or(compile_code," \n");
             compile_code = string_kill_whitespace(compile_code);
 
             if(action(action_name)==EXIT_FAILURE) return EXIT_FAILURE;
@@ -656,7 +656,7 @@ int compile(int arg_count, char** arg, string& write_to){
                 string raw_expression_type = S_NULL;
                 string raw_expression;
 
-                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"","",ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
+                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,"","",indentation,ve_main_code)==EXIT_FAILURE) return EXIT_FAILURE;
 
                 ve_main_code += raw_expression;
                 compile_code = string_kill_whitespace(compile_code);

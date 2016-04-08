@@ -33,7 +33,7 @@ void code_chop(string& code);
 int code_harvest_value(string& code, string &, string, string, string ,unsigned int, string& output);
 int code_harvest_value_type(string code, string &, string , string, unsigned int);
 int code_harvest_class(string& code, string&);
-int code_harvest_raw_expression(string& code, string&, string, string, string, string& output);
+int code_harvest_raw_expression(string& code, string&, string, string, string, unsigned int, string& output);
 string code_harvest_string(string& code);
 string code_harvest_decimal(string& code);
 int code_arg_type(string);

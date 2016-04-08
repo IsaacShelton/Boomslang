@@ -79,7 +79,7 @@ string code_harvest_decimal(string& code){
 }
 
 //Harvests a raw expression
-int code_harvest_raw_expression(string& code, string& exp, string type, string method_name, string template_name, string& write_to){
+int code_harvest_raw_expression(string& code, string& exp, string type, string method_name, string template_name, unsigned int indentation, string& write_to){
     /*
         code - code to harvest raw expression from
             example: ("Hello" + " World")blah blah blah
@@ -467,13 +467,13 @@ int code_harvest_raw_expression(string& code, string& exp, string type, string m
 
             string variable_name = string_get_until_or(code," =+-/*.)[\n");
 
-            if(!variable_handler.available(variable_name,S_NULL,method_name,template_name)){
+            if(!variable_handler.available(variable_name,S_NULL,method_name,template_name,indentation)){
                 error_fatal("Undeclared Variable '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
             }
 
-            if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).is_unique){
+            if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).is_unique){
                 error_fatal("Couldn't pass unique object '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
@@ -518,8 +518,8 @@ int code_harvest_raw_expression(string& code, string& exp, string type, string m
             if(type==S_NULL){
                 type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
             }
-            else if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type!=type and code.substr(0,1)!="."){
-                error_fatal("Incompatible Templates '" + variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type + "' and '" + type + "'");
+            else if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).type!=type and code.substr(0,1)!="."){
+                error_fatal("Incompatible Templates '" + variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).type + "' and '" + type + "'");
                 pend();
                 return EXIT_FAILURE;
             }

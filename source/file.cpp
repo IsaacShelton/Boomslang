@@ -21,6 +21,7 @@
 #include <string>
 #include <iostream>
 #include <direct.h>
+#include "../include/file.h"
 #include "../include/globals.h"
 
 using namespace std;
@@ -63,8 +64,8 @@ void import_boomslang(string package_identifier){
             compile_code = new_code + compile_code;
             importFile.close();
             ve_packages.add(package_identifier);
-        } else if (file_exists(terminal_path + package_filename)){
-            package_filename = terminal_path + package_filename;
+        } else if (file_exists(filename_path(current_filename) + package_filename)){
+            package_filename = filename_path(current_filename) + package_filename;
 
             ifstream importFile;
             importFile.open(package_filename.c_str());
@@ -80,7 +81,9 @@ void import_boomslang(string package_identifier){
                 error_show("Failed to Import Package '" + name + "'");
             }
 
-            compile_code = new_code + compile_code;
+            compile_code = new_code + "boomslang filename " + current_filename + "\nmodule *\n" + compile_code;
+            current_filename = package_filename;
+
             importFile.close();
             ve_packages.add(package_identifier);
         } else {

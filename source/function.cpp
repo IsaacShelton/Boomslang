@@ -142,7 +142,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                     return EXIT_FAILURE;
                 }
 
-                if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name,write_to)){
+                if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name,indentation,write_to)){
                     return EXIT_FAILURE;
                 }
 
@@ -166,7 +166,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                 return EXIT_FAILURE;
             }
 
-            if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name,write_to)){
+            if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name,indentation,write_to)){
                 return EXIT_FAILURE;
             }
 
@@ -187,7 +187,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                 return EXIT_FAILURE;
             }
 
-            if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name,write_to)){
+            if(code_harvest_raw_expression(compile_code,expression,type,method_name,template_name,indentation,write_to)){
                 return EXIT_FAILURE;
             }
 
@@ -578,7 +578,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                 string raw_expression_type = S_NULL;
                 string raw_expression;
 
-                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,method_name,template_name,write_to)==EXIT_FAILURE){
+                if (code_harvest_raw_expression(compile_code,raw_expression,raw_expression_type,method_name,template_name,indentation,write_to)==EXIT_FAILURE){
                     return EXIT_FAILURE;
                 }
 

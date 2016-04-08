@@ -78,6 +78,7 @@ int boot(int arg_count, char** arg){
     runafter = false;
     compile_flags = "-std=c++11";
     ve_context = S_NULL;
+    current_module = "";
     compile_code = "";
     file_write_name = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\draft.cpp";
     file_write_header_name = "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\draft.h";

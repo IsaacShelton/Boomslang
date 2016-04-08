@@ -94,6 +94,12 @@ extern string ve_scope;
 //Current Context
 extern string ve_context;
 
+//Current Module
+extern string current_module;
+
+//Current Filename
+extern string current_filename;
+
 //Unique Templates
 extern unsigned int next_unique_template;
 

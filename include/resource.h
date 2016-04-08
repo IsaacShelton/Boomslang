@@ -62,11 +62,11 @@ class VariableHandler{
     vector<Variable> variables;
     void add(string name, string type, int parent_id, int parent_type, unsigned int indent = 0);
     bool exists(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent = 0);
-    bool available(string var_name, string var_type, string method_name, string template_name);
-    Variable available_get(string var_name, string var_type, string method_name, string template_name);
+    bool available(string var_name, string var_type, string method_name, string template_name, unsigned int new_indent = 0);
+    Variable available_get(string var_name, string var_type, string method_name, string template_name, unsigned int new_indent = 0);
     bool exists_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables, unsigned int var_indent = 0);
-    int find(string var_name, string var_type, int var_parent_id, int var_parent_type);
-    Variable get(string var_name, string var_type, int var_parent_id, int var_parent_type);
+    int find(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent = 0);
+    Variable get(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int new_indent = 0);
     int find_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables);
 };
 

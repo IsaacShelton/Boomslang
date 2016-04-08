@@ -48,19 +48,20 @@ int action(string action_name){
             compile_code = string_delete_amount(compile_code,1);
 
             if(import_file_name.substr(import_file_name.length()-7,7)==".branch"){
-                if(file_exists(filename_path(file_read_name) + import_file_name)){
-                    if(branch_load(filename_path(file_read_name) + import_file_name)==EXIT_FAILURE) return EXIT_FAILURE;
+                if(file_exists(filename_path(current_filename) + import_file_name)){
+                    if(branch_load(filename_path(current_filename) + import_file_name)==EXIT_FAILURE) return EXIT_FAILURE;
                 } else if(file_exists(import_file_name)){
                     if(branch_load(import_file_name)==EXIT_FAILURE) return EXIT_FAILURE;
                 } else {
                     error_fatal("The branch '" + import_file_name + "' does not exist");
                 }
             }
-            else if(file_exists(filename_path(file_read_name) + import_file_name)){
+            else if(file_exists(filename_path(current_filename) + import_file_name)){
                 string read_line;
                 ifstream import_file_stream;
                 string imported_code;
-                import_file_stream.open((filename_path(file_read_name) + import_file_name).c_str());
+                import_file_stream.open((filename_path(current_filename) + import_file_name).c_str());
+                string newCurrentFile = (filename_path(current_filename) + import_file_name);
 
                 if(!import_file_stream){
                     error_fatal("Failed to open file '" + (filename_path(file_read_name) + import_file_name) + "'");
@@ -72,7 +73,8 @@ int action(string action_name){
                     imported_code += read_line + "\n";
                 }
 
-                compile_code = imported_code + compile_code;
+                compile_code = imported_code + "boomslang filename " + current_filename + "\nmodule *\n" + compile_code;
+                current_filename = (filename_path(current_filename) + import_file_name);
 
                 import_file_stream.close();
             } else if(file_exists(import_file_name)){
@@ -91,10 +93,41 @@ int action(string action_name){
                     imported_code += read_line + "\n";
                 }
 
-                compile_code = imported_code + compile_code;
+                compile_code = imported_code + "boomslang filename " + current_filename + "\nmodule *\n" + compile_code;
+                current_filename = import_file_name;
 
                 import_file_stream.close();
             }
+        }
+    }
+
+    if(action_name=="module"){
+        compile_code = string_kill_whitespace(compile_code);
+
+        if(compile_code.substr(0,1) == "*"){
+            current_module = "";
+
+            compile_code = string_delete_amount(compile_code,1);
+            compile_code = string_kill_whitespace(compile_code);
+        } else {
+            current_module = string_get_until_or(compile_code," \n");
+
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+        }
+    }
+
+    if(action_name=="boomslang"){
+        compile_code = string_kill_whitespace(compile_code);
+
+        if(string_get_until(compile_code," ")=="filename"){
+            compile_code = string_delete_until(compile_code," ");
+
+            compile_code = string_kill_whitespace(compile_code);
+            current_filename = string_get_until(compile_code,"\n");
+
+            compile_code = string_delete_until(compile_code,"\n");
+            compile_code = string_kill_whitespace(compile_code);
         }
     }
 
