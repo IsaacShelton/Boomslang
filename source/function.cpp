@@ -32,6 +32,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
     unsigned int before_indentation = indentation;
     string compile_prev;
     string clean_up;
+    string copying;
     write_to = "";
     indentation += 1;
 
@@ -74,12 +75,12 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                     write_to += string_template(new_for_in_var_type) + "& " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
 
                     if(template_name==""){
-                        variable_handler.add(new_for_in_var,new_for_in_var_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
+                        variable_handler.add(new_for_in_var,new_for_in_var_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
                     } else {
                         if(method_name==""){
-                            variable_handler.add(new_for_in_var,new_for_in_var_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+                            variable_handler.add(new_for_in_var,new_for_in_var_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation);
                         } else {
-                            variable_handler.add(new_for_in_var,new_for_in_var_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION);
+                            variable_handler.add(new_for_in_var,new_for_in_var_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
                         }
                     }
 
@@ -216,9 +217,9 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                 compile_code = string_kill_whitespace(compile_code);
                 compile_code = string_kill_newline(compile_code);
 
-                if(!variable_handler.exists(variable_list_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)
-                    and !variable_handler.exists(variable_list_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION)
-                    and !variable_handler.exists(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
+                if(!variable_handler.exists(variable_list_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation)
+                    and !variable_handler.exists(variable_list_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation)
+                    and !variable_handler.exists(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){
 
                     error_fatal("Undeclared variable '" + variable_list_name + "'");
                     pend();
@@ -226,15 +227,15 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                 }
 
                 if(template_name==""){
-                    variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION) ].type;
+                    variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation) ].type;
                 } else {
                     if(method_name==""){
-                        variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE) ].type;
+                        variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) ].type;
                     } else {
-                        if(variable_handler.exists(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
-                            variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE) ].type;
+                        if(variable_handler.exists(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){
+                            variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) ].type;
                         } else {
-                            variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION) ].type;
+                            variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation) ].type;
                         }
                     }
                 }
@@ -294,7 +295,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                     compile_code = string_kill_whitespace(compile_code);
 
                     write_to += "catch(" + resource(catch_template) + " " + resource(catch_variable) + ") ";
-                    variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN);
+                    variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN,indentation);
                     continue;
                 } else {
                     error_fatal("Expected 'as' before '" + compile_code.substr(0,1) + "' after template in catch statement");
@@ -408,7 +409,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
                     compile_code = string_kill_whitespace(compile_code);
 
                     write_to += resource(class_name) + " " + resource(variable_name) + ";";
-                    variable_handler.add(variable_name,class_name,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
+                    variable_handler.add(variable_name,class_name,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
                 }
             }
         }
@@ -565,7 +566,7 @@ int compile_function(int arg_count,char** args, unsigned int indentation,string 
         //Is it a variable?
         if( is_identifier(string_get_until_or(compile_code," =+-/*.["))  or compile_code.substr(0,1)=="{" ){
             string init_buffer;
-            if(compile_variable(method_name,template_name,init_buffer,clean_up,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_variable(method_name,template_name,init_buffer,clean_up,copying,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 

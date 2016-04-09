@@ -27,7 +27,7 @@
 
 using namespace std;
 
-int compile_variable(string method_name, string template_name, string& init_buffer, string& clean_up, unsigned int indentation, string& write_to){
+int compile_variable(string method_name, string template_name, string& init_buffer, string& clean_up, string& copying, unsigned int indentation, string& write_to){
     error_debug("Found " + string_get_until_or(compile_code," =+-/*.[") + " to be a variable.");
 
     if(class_handler.exists(string_get_until_or(compile_code," =+-/*.[")) or compile_code.substr(0,1)=="{"){
@@ -53,6 +53,8 @@ int compile_variable(string method_name, string template_name, string& init_buff
             write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "(" + value + "));\n";
             clean_up += "delete &" + resource(variable_name) + ";\n";
 
+            copying += resource(variable_name) + " = *(new " + string_template(variable_type) + "(t." + resource(variable_name) + "));\n";
+
             code_chop(compile_code);
 
             if(method_name==""){
@@ -71,6 +73,9 @@ int compile_variable(string method_name, string template_name, string& init_buff
         } else {
             write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "());\n";
             clean_up += "delete &" + resource(variable_name) + ";\n";
+
+            copying += resource(variable_name) + " = *(new " + string_template(variable_type) + "(t." + resource(variable_name) + "));\n";
+
             code_chop(compile_code);
 
             if(method_name==""){
@@ -166,15 +171,15 @@ int compile_variable(string method_name, string template_name, string& init_buff
         else if(method_name==""){
             if(template_name==""){
                 //In main scope
-                return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)].type;
+                return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)].type;
             } else {
                 //In a template scope
-                return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)].type;
+                return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)].type;
             }
         } else {
             if(template_name==""){
                 //Non-template methods
-                return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION)].type;
+                return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation)].type;
             } else {
                 //The variable is part of the template
                 if(variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){
@@ -391,19 +396,19 @@ int compile_variable(string method_name, string template_name, string& init_buff
         //Does the variable not exist?
         if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
             //Main scope
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
         } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation)){//Template method
             //Template method scope
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
         } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) ){//Template non-methods
             //Template scope
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
         }else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation)){//Method
             //Method scope
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
         } else {//Variable is Declared
             string variable_type;
@@ -483,7 +488,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
     return EXIT_SUCCESS;
 }
 
-int compile_nonexisting_variable(string variable_name,string method_name, string template_name, string& init_buffer, string& clean_up, string& write_to){
+int compile_nonexisting_variable(string variable_name,string method_name, string template_name, string& init_buffer, string& clean_up, string& copying, string& write_to){
     string variable_type = S_NULL;
     compile_code = string_kill_all_whitespace(compile_code);
 
@@ -504,19 +509,21 @@ int compile_nonexisting_variable(string variable_name,string method_name, string
     write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "(" + value + "));\n";
     clean_up += "delete &" + resource(variable_name) + ";\n";
 
+    copying += resource(variable_name) + " = *(new " + string_template(variable_type) + "(t." + resource(variable_name) + "));\n";
+
     code_chop(compile_code);
 
     if(method_name==""){
         if(template_name==""){
-            variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN);
+            variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
         } else {
-            variable_handler.add(variable_name,variable_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+            variable_handler.add(variable_name,variable_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation);
         }
     } else {
         if(template_name==""){
-            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
+            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
         } else {
-            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION);
+            variable_handler.add(variable_name,variable_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
         }
     }
 

@@ -72,8 +72,8 @@ int init(int arg_count, char** arg){
     function_handler.add("getCause","String","",class_handler.find("ZeroDivision"),SCOPETYPE_TEMPLATE);
 
     //None
-    variable_handler.add("none","",I_NULL,SCOPETYPE_GLOBAL);
-    variable_handler.add("Arguments","List(String)",I_NULL,SCOPETYPE_MAIN);
+    variable_handler.add("none","",I_NULL,SCOPETYPE_GLOBAL,0);
+    variable_handler.add("Arguments","List(String)",I_NULL,SCOPETYPE_MAIN,0);
 
     //Base Template Functions
     function_handler.add("output","none","",class_handler.find("String"),SCOPETYPE_TEMPLATE);

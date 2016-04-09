@@ -34,6 +34,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     string init_buffer = "";
     string compile_prev;
     string clean_up;
+    string copying;
     unsigned int before_indentation = indentation;
     indentation += 1;
 
@@ -75,7 +76,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     if(new_for_in and new_indentation == indentation){
                         init_buffer += string_template(new_for_in_var_type) + "& " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
 
-                        variable_handler.add(new_for_in_var,new_for_in_var_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+                        variable_handler.add(new_for_in_var,new_for_in_var_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation);
 
                         new_for_in = false;
                         new_for_in_var = "";
@@ -218,13 +219,13 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 compile_code = string_kill_whitespace(compile_code);
                 compile_code = string_kill_newline(compile_code);
 
-                if(!variable_handler.exists(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE)){
+                if(!variable_handler.exists(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)){
                     error_fatal("Undeclared variable '" + variable_list_name + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
 
-                variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE) ].type;
+                variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) ].type;
 
                 init_buffer += "for(" + string_template(string_sub_template(variable_list_type)) + "* boomslangForIn" + to_string(next_for_in_id) + " : " + resource(variable_list_name) + ")";
                 new_for_in = true;
@@ -281,7 +282,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     compile_code = string_kill_whitespace(compile_code);
 
                     write_to += "catch(" + resource(catch_template) + " " + resource(catch_variable) + ") ";
-                    variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN);
+                    variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN,indentation);
                     continue;
                 } else {
                     error_fatal("Expected 'as' before '" + compile_code.substr(0,1) + "' after template in catch statement");
@@ -332,6 +333,10 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 compile_code = string_delete_until_or(compile_code," (\n-");
                 compile_code = string_kill_whitespace(compile_code);
 
+                if(method=="new"){
+                    method = "new operator";
+                }
+
                 function_handler.add(method,"none","",class_handler.find(template_name),SCOPETYPE_TEMPLATE);
 
                 //Expect opening parenthesis
@@ -369,16 +374,12 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
 
                 if(compile_function(arg_count,args,indentation,method,template_name,return_type,write_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
-                if(return_type!="none"){
-                    if(method=="")
-                        file_write << attributes + resource(return_type) + " " + resource(method) + buffer + "{\n" + write_buffer;
-                    else
-                        write_to += attributes + resource(return_type) + " " + resource(method) + buffer + "{\n" + write_buffer;
+                if(method == "new operator"){
+                    write_to += resource(template_name) + buffer + "{\n" + write_buffer;
+                } else if(return_type!="none"){
+                    write_to += attributes + resource(return_type) + " " + resource(method) + buffer + "{\n" + write_buffer;
                 } else {
-                    if(method=="")
-                        file_write << attributes + "void " + resource(method) + buffer + "{\n" + write_buffer;
-                    else
-                        write_to += attributes + "void " + resource(method) + buffer + "{\n" + write_buffer;
+                    write_to += attributes + "void " + resource(method) + buffer + "{\n" + write_buffer;
                 }
 
                 next_method_id++;
@@ -522,7 +523,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     compile_code = string_kill_whitespace(compile_code);
 
                     write_to += resource(class_name) + " " + resource(variable_name) + ";";
-                    variable_handler.add(variable_name,class_name,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
+                    variable_handler.add(variable_name,class_name,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
                 }
             }
         }
@@ -627,7 +628,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
         //Is it a variable?
         if( is_identifier(string_get_until_or(compile_code," =+-/*.["))  or compile_code.substr(0,1)=="{" ){
             method_name = "";
-            if(compile_variable(method_name,template_name,init_buffer,clean_up,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_variable(method_name,template_name,init_buffer,clean_up,copying,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 
@@ -778,9 +779,9 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     }
 
     if(unique_template)
-        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n" + "virtual ~" + template_name + "(){\n" + clean_up + "}\n";
+        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n" + "virtual ~" + template_name + "(){\n" + clean_up + "}\n" + resource(template_name) + "(const " + resource(template_name) + "&t){\n" + copying + "}\n";
     else
-        write_to = "\n" + write_to + resource(template_name) + "(){\n" + init_buffer + "}\n" + "virtual ~" + resource(template_name) + "(){\n" + clean_up + "}\n";
+        write_to = "\n" + write_to + resource(template_name) + "(){\n" + init_buffer + "}\n" + "virtual ~" + resource(template_name) + "(){\n" + clean_up + "}\n" + resource(template_name) + "(const " + resource(template_name) + "& t){\n" + copying + "}\n";
 
     return EXIT_SUCCESS;
 }

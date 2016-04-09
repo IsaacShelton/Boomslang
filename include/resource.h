@@ -60,14 +60,14 @@ public:
 class VariableHandler{
     public:
     vector<Variable> variables;
-    void add(string name, string type, int parent_id, int parent_type, unsigned int indent = 0);
-    bool exists(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent = 0);
-    bool available(string var_name, string var_type, string method_name, string template_name, unsigned int new_indent = 0);
-    Variable available_get(string var_name, string var_type, string method_name, string template_name, unsigned int new_indent = 0);
-    bool exists_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables, unsigned int var_indent = 0);
-    int find(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent = 0);
-    Variable get(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int new_indent = 0);
-    int find_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables);
+    void add(string name, string type, int parent_id, int parent_type, unsigned int indent);
+    bool exists(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent);
+    bool available(string var_name, string var_type, string method_name, string template_name, unsigned int new_indent);
+    Variable available_get(string var_name, string var_type, string method_name, string template_name, unsigned int new_indent);
+    bool exists_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables, unsigned int var_indent);
+    int find(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int var_indent);
+    Variable get(string var_name, string var_type, int var_parent_id, int var_parent_type, unsigned int new_indent);
+    int find_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables, unsigned int var_indent);
 };
 
 class Function: public Resource{

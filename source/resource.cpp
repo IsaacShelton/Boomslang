@@ -160,7 +160,7 @@ Variable VariableHandler::get(string var_name, string var_type, int var_parent_i
     return Variable(S_NULL,S_NULL,I_NULL,I_NULL);
 }
 
-int VariableHandler::find_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables){
+int VariableHandler::find_in(string var_name, string var_type, int var_parent_id, int var_parent_type, vector<Variable> your_variables, unsigned int var_indent){
         bool name_null = (var_name==" ");//" " == none
         bool type_null = (var_type==" ");//" " == none
         bool parent_id_null = (var_parent_id==-1);
@@ -172,6 +172,7 @@ int VariableHandler::find_in(string var_name, string var_type, int var_parent_id
                 and (your_variables[i].type == var_type or type_null)
                 and (your_variables[i].parent_id == var_parent_id or parent_id_null)
                 and (your_variables[i].parent_type == var_parent_type or parent_type_null)
+                and (variables[i].indent <= var_indent)
             ) return i;
         }
 

@@ -23,7 +23,7 @@
 
 using namespace std;
 
-int compile_variable(string,string,string&,string&,unsigned int,string& output);
-int compile_nonexisting_variable(string,string,string,string&,string&,string& output);
+int compile_variable(string,string,string&,string&,string&,unsigned int,string& output);
+int compile_nonexisting_variable(string,string,string,string&,string&,string&,string& output);
 
 #endif // VARIABLE_H_INCLUDED

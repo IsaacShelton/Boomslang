@@ -36,6 +36,7 @@ int compile(int arg_count, char** arg, string& write_to){
     string compile_prev = "";
     string method_name;
     string clean_up;
+    string copying;
 
     bool new_for_in = false;
     string new_for_in_var = "";
@@ -73,7 +74,7 @@ int compile(int arg_count, char** arg, string& write_to){
 
                 if(new_for_in and new_indentation == indentation){
                     ve_main_code += string_template(new_for_in_var_type) + "& " + resource(new_for_in_var) + "=*boomslangForIn" + to_string(next_for_in_id) + ";\n";
-                    variable_handler.add(new_for_in_var,new_for_in_var_type,I_NULL,SCOPETYPE_MAIN);
+                    variable_handler.add(new_for_in_var,new_for_in_var_type,I_NULL,SCOPETYPE_MAIN,indentation);
 
                     new_for_in = false;
                     new_for_in_var = "";
@@ -191,13 +192,13 @@ int compile(int arg_count, char** arg, string& write_to){
                 compile_code = string_kill_whitespace(compile_code);
                 compile_code = string_kill_newline(compile_code);
 
-                if(!variable_handler.exists(variable_list_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                if(!variable_handler.exists(variable_list_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){
                     error_fatal("Undeclared variable '" + variable_list_name + "'");
                     pend();
                     return EXIT_FAILURE;
                 }
 
-                variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,I_NULL,SCOPETYPE_MAIN) ].type;
+                variable_list_type = variable_handler.variables[ variable_handler.find(variable_list_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation) ].type;
                 write_to += "for(" + string_template(string_sub_template(variable_list_type)) + "* boomslangForIn" + to_string(next_for_in_id) + " : " + resource(variable_list_name) + ")";
                 new_for_in = true;
                 new_for_in_var = variable_name;
@@ -253,7 +254,7 @@ int compile(int arg_count, char** arg, string& write_to){
                     compile_code = string_kill_whitespace(compile_code);
 
                     ve_main_code += "catch(" + resource(catch_template) + " " + resource(catch_variable) + ") ";
-                    variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN);
+                    variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN,indentation);
                     continue;
                 } else {
                     error_fatal("Expected 'as' before '" + compile_code.substr(0,1) + "' after template in catch statement");
@@ -423,7 +424,7 @@ int compile(int arg_count, char** arg, string& write_to){
                         return EXIT_FAILURE;
                     }
 
-                    if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                    if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){
                         error_fatal("The variable '" + variable_name + "' was already declared");
                         pend();
                         return EXIT_FAILURE;
@@ -464,7 +465,7 @@ int compile(int arg_count, char** arg, string& write_to){
                     return EXIT_FAILURE;
                 }
 
-                if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN)){
+                if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){
                     error_fatal("The variable '" + variable_name + "' was already declared");
                     pend();
                     return EXIT_FAILURE;
@@ -536,7 +537,7 @@ int compile(int arg_count, char** arg, string& write_to){
                 }
 
                 class_handler.add(template_name);
-                variable_handler.add("self",template_name,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+                variable_handler.add("self",template_name,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation);
 
                 if(compile_template(arg_count,arg,indentation,false,"",template_name,write_template_buffer)==EXIT_FAILURE) return EXIT_FAILURE;
 
@@ -644,7 +645,7 @@ int compile(int arg_count, char** arg, string& write_to){
             string method_name = "";
             string template_name = "";
             string init_buffer;
-            if(compile_variable(method_name,template_name,init_buffer,clean_up,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_variable(method_name,template_name,init_buffer,clean_up,copying,indentation,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
             continue;
         }
 

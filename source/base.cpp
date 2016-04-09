@@ -516,7 +516,7 @@ int code_harvest_raw_expression(string& code, string& exp, string type, string m
             }
 
             if(type==S_NULL){
-                type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
+                type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).type;
             }
             else if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).type!=type and code.substr(0,1)!="."){
                 error_fatal("Incompatible Templates '" + variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).type + "' and '" + type + "'");
@@ -526,7 +526,7 @@ int code_harvest_raw_expression(string& code, string& exp, string type, string m
 
 
             if(code.substr(0,1)=="."){
-                string return_type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
+                string return_type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).type;
                 string prev_return_type = return_type;
 
                 while(code.substr(0,1)=="."){
@@ -766,11 +766,11 @@ int code_parse_declaration_args(string& code, string method_name, string templat
 
             //Add the variable
             if (template_name!="" and method_name==""){//Template non-methods
-                variable_handler.add(parameter_name,argument_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+                variable_handler.add(parameter_name,argument_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation);
             } else if (template_name!="" and method_name!=""){//Template method
-                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION);
+                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
             } else if (template_name=="" and method_name!=""){//Method
-                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
+                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
             }
 
             //Handle Value
@@ -783,11 +783,11 @@ int code_parse_declaration_args(string& code, string method_name, string templat
 
             //Add the variable
             if (template_name!="" and method_name==""){//Template non-methods
-                variable_handler.add(parameter_name,argument_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE);
+                variable_handler.add(parameter_name,argument_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation);
             } else if (template_name!="" and method_name!=""){//Template method
-                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION);
+                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation);
             } else if (template_name=="" and method_name!=""){//Method
-                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION);
+                variable_handler.add(parameter_name,argument_type,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation);
             }
 
             code = string_kill_whitespace(code);
@@ -1169,13 +1169,13 @@ int code_harvest_value(string& code, string &type, string additional_characters,
 
             string variable_name = string_get_until_or(code," =+-/*.)[,\n");
 
-            if(!variable_handler.available(variable_name,S_NULL,method_name,template_name)){
+            if(!variable_handler.available(variable_name,S_NULL,method_name,template_name,indentation)){
                 error_fatal("Undeclared Variable '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
             }
 
-            if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).is_unique){
+            if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).is_unique){
                 error_fatal("Couldn't pass unique object '" + variable_name + "'");
                 pend();
                 return EXIT_FAILURE;
@@ -1185,7 +1185,7 @@ int code_harvest_value(string& code, string &type, string additional_characters,
             code = string_kill_whitespace(code);
 
             string variable_type;
-            variable_type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
+            variable_type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).type;
 
             write_to += resource(variable_name);
 
@@ -1507,21 +1507,21 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
         string variable_name = string_get_until_or(code," =+-/*.)[,\n");
 
         //Exists
-        if(!variable_handler.available(variable_name,S_NULL,method_name,template_name)){
+        if(!variable_handler.available(variable_name,S_NULL,method_name,template_name,indentation)){
             error_fatal("Undeclared Variable '" + variable_name + "'");
             pend();
             return EXIT_FAILURE;
         }
 
         //Unique
-        if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name).is_unique){
+        if(variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).is_unique){
             error_fatal("Couldn't pass unique object '" + variable_name + "'");
             pend();
             return EXIT_FAILURE;
         }
 
         //Get type
-        type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
+        type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).type;
 
         code = string_delete_until_or(code," =+-/*.)[,\n");
         code = string_kill_whitespace(code);
@@ -1531,7 +1531,7 @@ int code_harvest_value_type(string code, string &type, string method_name, strin
         }
 
         if(code.substr(0,1)=="."){
-            string return_type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name).type;
+            string return_type = variable_handler.available_get(variable_name,S_NULL,method_name,template_name,indentation).type;
             string prev_return_type = return_type;
 
             while(code.substr(0,1)=="."){
