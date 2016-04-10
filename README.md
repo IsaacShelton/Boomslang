@@ -20,7 +20,7 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 <code>("You entered : " + userInput).output()</code><br>
 
 ###Displaying the current time
-<code>import org.boomslang.time</code><br>
+<code>import boomslang.time</code><br>
 <br>
 <code>time = new Time</code><br>
 <code>time.now()</code><br>
@@ -28,16 +28,16 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 <code>time.output()</code>
 
 ###Creating a basic window
-<code>import org.boomslang.window</code><br>
+<code>import boomslang.window</code><br>
 <br>
 <code>application = new Window</code><br>
 <code>application.show()</code><br>
 
 ###Drawing a rectangle
-<code>import org.boomslang.window</code><br>
+<code>import boomslang.window</code><br>
 <br>
 <code>unique Window application</code><br>
-<code>&nbsp;&nbsp;&nbsp;&nbsp;on display</code><br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;on display()</code><br>
 <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new Rectangle(100,100).draw(0,0)</code><br>
 <br>
 <code>application.show()</code><br>
