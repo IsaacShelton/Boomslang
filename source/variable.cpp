@@ -31,6 +31,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
     error_debug("Found " + string_get_until_or(compile_code," =+-/*.[") + " to be a variable.");
 
     if(class_handler.exists(string_get_until_or(compile_code," =+-/*.[")) or compile_code.substr(0,1)=="{"){
+        bool global = false;
         string variable_type;
         code_harvest_class(compile_code,variable_type);
         compile_code = string_kill_whitespace(compile_code);
@@ -39,6 +40,21 @@ int compile_variable(string method_name, string template_name, string& init_buff
         compile_code = string_delete_until_or(compile_code," =+-/*\n");
         compile_code = string_kill_whitespace(compile_code);
         compile_code = string_kill_newline(compile_code);
+
+        while(is_identifier(string_get_until_or(compile_code," \n"))){
+            string attribute = string_get_until_or(compile_code," \n");
+
+            compile_code = string_delete_until_or(compile_code," \n");
+            compile_code = string_kill_whitespace(compile_code);
+
+            if(attribute=="global"){
+                global = true;
+            } else {
+                error_fatal("Unknown Attribute '" + attribute + "'");
+                pend();
+                return EXIT_FAILURE;
+            }
+        }
 
         if(compile_code.substr(0,1)=="="){
             compile_code = string_delete_amount(compile_code,1);
@@ -50,14 +66,20 @@ int compile_variable(string method_name, string template_name, string& init_buff
                 return EXIT_FAILURE;
             }
 
-            write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "(" + value + "));\n";
-            clean_up += "delete &" + resource(variable_name) + ";\n";
+            if(global){
+                file_write << string_template(variable_type) + " " + resource(variable_name) + " = " + string_template(variable_type) + "(" + value + ");\n";
+            } else {
+                write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "(" + value + "));\n";
+                clean_up += "delete &" + resource(variable_name) + ";\n";
 
-            copying += resource(variable_name) + " = *(new " + string_template(variable_type) + "(t." + resource(variable_name) + "));\n";
+                copying += resource(variable_name) + " = *(new " + string_template(variable_type) + "(t." + resource(variable_name) + "));\n";
+            }
 
             code_chop(compile_code);
 
-            if(method_name==""){
+            if(global){
+                variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_GLOBAL,indentation);
+            } else if(method_name==""){
                 if(template_name==""){
                     variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
                 } else {
@@ -71,14 +93,20 @@ int compile_variable(string method_name, string template_name, string& init_buff
                 }
             }
         } else {
-            write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "());\n";
-            clean_up += "delete &" + resource(variable_name) + ";\n";
+            if(global){
+                file_write << string_template(variable_type) + " " + resource(variable_name) + ";\n";
+            } else {
+                write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "());\n";
+                clean_up += "delete &" + resource(variable_name) + ";\n";
 
-            copying += resource(variable_name) + " = *(new " + string_template(variable_type) + "(t." + resource(variable_name) + "));\n";
+                copying += resource(variable_name) + " = *(new " + string_template(variable_type) + "(t." + resource(variable_name) + "));\n";
+            }
 
             code_chop(compile_code);
 
-            if(method_name==""){
+            if(global){
+                variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_GLOBAL,indentation);
+            } else if(method_name==""){
                 if(template_name==""){
                     variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
                 } else {
@@ -102,6 +130,23 @@ int compile_variable(string method_name, string template_name, string& init_buff
 
     compile_code = string_delete_until_or(compile_code," =+-/*.[");
     compile_code = string_kill_whitespace(compile_code);
+
+    bool global = false;
+
+    while(is_identifier(string_get_until_or(compile_code," \n"))){
+        string attribute = string_get_until_or(compile_code," \n");
+
+        compile_code = string_delete_until_or(compile_code," \n");
+        compile_code = string_kill_whitespace(compile_code);
+
+        if(attribute=="global"){
+            global = true;
+        } else {
+            error_fatal("Unknown Attribute '" + attribute + "'");
+            pend();
+            return EXIT_FAILURE;
+        }
+    }
 
     if(compile_code.substr(0,1)=="["){
         array_indexing += "[";
@@ -138,6 +183,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
         error_debug("Found " + variable_name + " to contain a method.");
 
         if(class_handler.exists(variable_name)){}
+        else if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_GLOBAL,indentation)){}
         else if(template_name=="" and method_name==""){//Main scope
             if( !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation) ){
                 error_fatal("Undeclared Variable '" + variable_name + "'");
@@ -168,6 +214,9 @@ int compile_variable(string method_name, string template_name, string& init_buff
 
 
         if(class_handler.exists(variable_name)){}
+        else if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_GLOBAL,indentation)){
+            return_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_GLOBAL,indentation)].type;
+        }
         else if(method_name==""){
             if(template_name==""){
                 //In main scope
@@ -394,26 +443,33 @@ int compile_variable(string method_name, string template_name, string& init_buff
         compile_code = string_kill_whitespace(compile_code);
 
         //Does the variable not exist?
-        if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)){//Main scope
+        if(template_name=="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)
+        and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_GLOBAL,indentation)){//Main scope
             //Main scope
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,global,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
-        } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation)){//Template method
+        } else if (template_name!="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE),SCOPETYPE_FUNCTION,indentation)
+        and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_GLOBAL,indentation)){//Template method
             //Template method scope
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,global,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
-        } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation) ){//Template non-methods
+        } else if (template_name!="" and method_name=="" and !variable_handler.exists(variable_name,S_NULL,class_handler.find(template_name),SCOPETYPE_TEMPLATE,indentation)
+        and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_GLOBAL,indentation)){//Template non-methods
             //Template scope
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,global,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
-        }else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation)){//Method
+        } else if (template_name=="" and method_name!="" and !variable_handler.exists(variable_name,S_NULL,function_handler.find(method_name,S_NULL,S_NULL,I_NULL,SCOPETYPE_GLOBAL),SCOPETYPE_FUNCTION,indentation)
+        and !variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_GLOBAL,indentation)){//Method
             //Method scope
-            if(compile_nonexisting_variable(variable_name,method_name,template_name,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
+            if(compile_nonexisting_variable(variable_name,method_name,template_name,global,init_buffer,clean_up,copying,write_to)==EXIT_FAILURE) return EXIT_FAILURE;
 
-        } else {//Variable is Declared
+        }
+        else {//Variable is Declared
             string variable_type;
 
-            if(method_name==""){
+            if(variable_handler.exists(variable_name,S_NULL,I_NULL,SCOPETYPE_GLOBAL,indentation)){
+                variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_GLOBAL,indentation)].type;
+            } else if(method_name==""){
                 if(template_name==""){
                     //In main scope
                     variable_type = variable_handler.variables[variable_handler.find(variable_name,S_NULL,I_NULL,SCOPETYPE_MAIN,indentation)].type;
@@ -488,7 +544,7 @@ int compile_variable(string method_name, string template_name, string& init_buff
     return EXIT_SUCCESS;
 }
 
-int compile_nonexisting_variable(string variable_name,string method_name, string template_name, string& init_buffer, string& clean_up, string& copying, string& write_to){
+int compile_nonexisting_variable(string variable_name,string method_name, string template_name, bool global, string& init_buffer, string& clean_up, string& copying, string& write_to){
     string variable_type = S_NULL;
     compile_code = string_kill_all_whitespace(compile_code);
 
@@ -506,14 +562,20 @@ int compile_nonexisting_variable(string variable_name,string method_name, string
         return EXIT_FAILURE;
     }
 
-    write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "(" + value + "));\n";
-    clean_up += "delete &" + resource(variable_name) + ";\n";
+    if(global){
+        file_write << string_template(variable_type) + " " + resource(variable_name) + " = " + string_template(variable_type) + "(" + value + ");\n";
+    } else {
+        write_to += string_template(variable_type) + "& " + resource(variable_name) + " = *(new " + string_template(variable_type) + "(" + value + "));\n";
+        clean_up += "delete &" + resource(variable_name) + ";\n";
 
-    copying += resource(variable_name) + " = *(new " + string_template(variable_type) + "(t." + resource(variable_name) + "));\n";
+        copying += resource(variable_name) + " = *(new " + string_template(variable_type) + "(t." + resource(variable_name) + "));\n";
+    }
 
     code_chop(compile_code);
 
-    if(method_name==""){
+    if(global){
+        variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_GLOBAL,indentation);
+    } else if(method_name==""){
         if(template_name==""){
             variable_handler.add(variable_name,variable_type,I_NULL,SCOPETYPE_MAIN,indentation);
         } else {

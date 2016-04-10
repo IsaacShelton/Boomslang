@@ -245,7 +245,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             compile_code = string_delete_until_or(compile_code," \n");
             compile_code = string_kill_whitespace(compile_code);
 
-            write_to += "try ";
+            init_buffer += "try ";
             continue;
         }
 
@@ -256,7 +256,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             compile_code = string_kill_whitespace(compile_code);
 
             if(compile_code.substr(0,1)=="\n"){
-                write_to += "catch(...) ";
+                init_buffer += "catch(...) ";
                 continue;
             }
             else {//Catch specific template
@@ -271,7 +271,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 }
 
                 if(compile_code.substr(0,1)=="\n"){
-                    write_to += "catch(" + resource(catch_template) + ") ";
+                    init_buffer += "catch(" + resource(catch_template) + ") ";
                     continue;
                 } else if(compile_code.substr(0,2)=="as"){//Catch into variable
                     compile_code = string_delete_amount(compile_code,2);
@@ -281,7 +281,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                     compile_code = string_delete_until_or(compile_code," \n");
                     compile_code = string_kill_whitespace(compile_code);
 
-                    write_to += "catch(" + resource(catch_template) + " " + resource(catch_variable) + ") ";
+                    init_buffer += "catch(" + resource(catch_template) + " " + resource(catch_variable) + ") ";
                     variable_handler.add(catch_variable,catch_template,I_NULL,SCOPETYPE_MAIN,indentation);
                     continue;
                 } else {
@@ -301,7 +301,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
             compile_code = string_kill_whitespace(compile_code);
             string type_of;
 
-            write_to += "throw ";
+            init_buffer += "throw ";
 
             if(code_harvest_value_type(compile_code,type_of,"",template_name,indentation)==EXIT_FAILURE){
                 error_fatal("Couldn't Determine type for throw statement");
@@ -309,11 +309,11 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
                 return EXIT_FAILURE;
             }
 
-            if(code_harvest_value(compile_code,type_of,"","",template_name,indentation,write_to)==EXIT_FAILURE){
+            if(code_harvest_value(compile_code,type_of,"","",template_name,indentation,init_buffer)==EXIT_FAILURE){
                 return EXIT_FAILURE;
             }
 
-            write_to += ";\n";
+            init_buffer += ";\n";
         }
 
         //Is it a keyword?
@@ -779,7 +779,7 @@ int compile_template(int arg_count,char** args, unsigned int indentation,bool un
     }
 
     if(unique_template)
-        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n" + "virtual ~" + template_name + "(){\n" + clean_up + "}\n" + resource(template_name) + "(const " + resource(template_name) + "&t){\n" + copying + "}\n";
+        write_to = "\n" + write_to + template_name + "(){\n" + init_buffer + "}\n" + "virtual ~" + template_name + "(){\n" + clean_up + "}\n" + template_name + "(const " + template_name + "&t){\n" + copying + "}\n";
     else
         write_to = "\n" + write_to + resource(template_name) + "(){\n" + init_buffer + "}\n" + "virtual ~" + resource(template_name) + "(){\n" + clean_up + "}\n" + resource(template_name) + "(const " + resource(template_name) + "& t){\n" + copying + "}\n";
 

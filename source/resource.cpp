@@ -91,7 +91,9 @@ bool VariableHandler::exists_in(string var_name, string var_type, int var_parent
 }
 
 bool VariableHandler::available(string var_name, string var_type, string method_name, string template_name, unsigned int var_indent){
-    if(template_name=="" and method_name=="" and this->exists(var_name,var_type,I_NULL,SCOPETYPE_MAIN,var_indent)){//Main scope
+    if(this->exists(var_name,var_type,I_NULL,SCOPETYPE_GLOBAL,var_indent)){
+        return true;
+    } else if(template_name=="" and method_name=="" and this->exists(var_name,var_type,I_NULL,SCOPETYPE_MAIN,var_indent)){//Main scope
         return true;
     } else if (template_name!="" and method_name=="" and this->exists(var_name,var_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,var_indent)){//Template non-methods
         return true;
@@ -105,7 +107,9 @@ bool VariableHandler::available(string var_name, string var_type, string method_
 }
 
 Variable VariableHandler::available_get(string var_name, string var_type, string method_name, string template_name, unsigned int var_indent){
-    if(template_name=="" and method_name=="" and this->exists(var_name,var_type,I_NULL,SCOPETYPE_MAIN,var_indent)){//Main scope
+    if(this->exists(var_name,var_type,I_NULL,SCOPETYPE_GLOBAL,var_indent)){
+        return this->get(var_name,var_type,I_NULL,SCOPETYPE_GLOBAL,var_indent);
+    } else if(template_name=="" and method_name=="" and this->exists(var_name,var_type,I_NULL,SCOPETYPE_MAIN,var_indent)){//Main scope
         return this->get(var_name,var_type,I_NULL,SCOPETYPE_MAIN,var_indent);
     } else if (template_name!="" and method_name=="" and this->exists(var_name,var_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,var_indent)){//Template non-methods
         return this->get(var_name,var_type,class_handler.find(template_name),SCOPETYPE_TEMPLATE,var_indent);

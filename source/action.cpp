@@ -112,6 +112,16 @@ int action(string action_name){
         } else {
             current_module = string_get_until_or(compile_code," \n");
 
+            string path = string_replace_all(filename_path(current_filename),"\\","/");
+            string required_path = string_replace_all(current_module,".","/") + "/";
+
+            if(path.substr(path.length()-required_path.length(), required_path.length()) != required_path){
+                error_fatal("The file '" + filename_name(current_filename) + "' isn't located in the module specified");
+                error_suggest("Move the file into '" + required_path + "'");
+                pend();
+                return EXIT_FAILURE;
+            }
+
             compile_code = string_delete_until_or(compile_code," \n");
             compile_code = string_kill_whitespace(compile_code);
         }
