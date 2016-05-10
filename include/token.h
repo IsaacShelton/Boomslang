@@ -52,6 +52,7 @@ struct Token {
 
 typedef std::vector<Token> TokenList;
 
+std::string token_name(Token token);
 void token_print(Token token);
 
 #endif // INCLUDED_TOKEN_H

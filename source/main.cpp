@@ -18,10 +18,6 @@ int main(int argc, char** argv){
     // Tokenize the Code
     TokenList tokens = tokenize(contents(argv[1]));
 
-    for(Token token : tokens){
-        token_print(token);
-    }
-
     // Ensure the code is valid
     enforce(tokens);
 
