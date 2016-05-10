@@ -1,0 +1,85 @@
+# depslib dependency file v1.0
+1462834645 source:c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\source\lexer.cpp
+	<iostream>
+	<stdlib.h>
+	"../include/token.h"
+	"../include/lexer.h"
+	"../include/management.h"
+
+1462913994 source:c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\source\main.cpp
+	<string>
+	<iostream>
+	<stdlib.h>
+	"../include/file.h"
+	"../include/lexer.h"
+	"../include/token.h"
+	"../include/options.h"
+	"../include/enforcer.h"
+	"../include/assembler.h"
+
+1462716521 source:c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\source\token.cpp
+	<iostream>
+	"../include/lexer.h"
+	"../include/token.h"
+
+1462719919 c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\include\lexer.h
+	<string>
+	<vector>
+	"token.h"
+
+1462716769 c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\include\token.h
+	<string>
+	<vector>
+
+1462837735 source:c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\source\management.cpp
+	<string>
+	<fstream>
+	<iostream>
+	<algorithm>
+
+1462837739 c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\include\management.h
+	<string>
+	<fstream>
+
+1462720269 source:c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\source\parser.cpp
+	"../include/parser.h"
+
+1462720592 c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\include\parser.h
+	<string>
+	<vector>
+	"token.h"
+
+1462913250 source:c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\source\assembler.cpp
+	<iostream>
+	"../include/options.h"
+	"../include/assembler.h"
+
+1462840756 c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\include\assembler.h
+	<string>
+	"token.h"
+	"options.h"
+
+1462834996 source:c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\source\enforcer.cpp
+	"../include/enforcer.h"
+
+1462834003 c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\include\enforcer.h
+	"token.h"
+
+1462913347 c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\include\options.h
+	<string>
+
+1462913326 source:c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\source\options.cpp
+	<iostream>
+	<stdlib.h>
+	"../include/options.h"
+	"../include/management.h"
+
+1462913930 source:c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\source\file.cpp
+	<iostream>
+	<stdlib.h>
+	"../include/file.h"
+
+1462913751 c:\users\isaac\google drive\boomslang\3.0\boomslangcompiler\include\file.h
+	<string>
+	<fstream>
+
