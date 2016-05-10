@@ -22,9 +22,7 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 ###Displaying the current time
 <code>import boomslang.time</code><br>
 <br>
-<code>time = new Time</code><br>
-<code>time.now()</code><br>
-<br>
+<code>time = Time.now()</code><br>
 <code>time.output()</code>
 
 ###Creating a basic window
