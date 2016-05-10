@@ -8,7 +8,7 @@ using namespace std;
 void compile(Configuration* config, const TokenList& tokens){
     // Writes output c++ source code
 
-
+    if(true)
 }
 
 void build(Configuration* config){
