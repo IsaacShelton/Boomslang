@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void process_indentation(TokenList& tokens, string& code, int indentation){
+void process_indentation(TokenList& tokens, string& code, unsigned int& indentation){
     unsigned int line_indentaion = 0;
 
     while(is_indent(code)){

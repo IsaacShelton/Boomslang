@@ -6,5 +6,6 @@
 #include <fstream>
 
 std::string contents(std::string);
+bool file_exists(std::string);
 
 #endif // FILE_H_INCLUDED

@@ -20,10 +20,25 @@
 
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <algorithm>
 
 using namespace std;
+
+//Converts string to double
+double to_double(string str){
+    double dec;
+    if( ! (std::istringstream(str) >> dec) ) dec = 0;
+    return dec;
+}
+
+//Converts double to string
+string to_string(double dec){
+    std::ostringstream convert;
+    convert << dec;
+    return convert.str();
+}
 
 //Checks if parent string contains substring
 bool string_contains(string parent_string, string sub_string){

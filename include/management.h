@@ -24,6 +24,8 @@
 #include <string>
 #include <fstream>
 
+double to_double(std::string);
+std::string to_string(double);
 bool string_contains(std::string, std::string);
 std::string string_get_until(std::string, std::string);
 std::string string_delete_until(std::string, std::string);

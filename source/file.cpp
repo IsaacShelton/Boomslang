@@ -25,3 +25,12 @@ string contents(string filename){
         exit(1);
     }
 }
+
+//Checks if the file exists
+bool file_exists(string filename){
+    ifstream file;
+    file.open(filename.c_str());
+    bool open = file;
+    file.close();
+    return open;
+}

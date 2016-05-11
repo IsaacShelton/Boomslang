@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include "../include/locate.h"
 #include "../include/options.h"
 #include "../include/management.h"
 
@@ -16,6 +17,9 @@ Configuration configure(int* argc, char*** argv){
         exit(1);
     }
 
+    // Get current login information
+    login();
+
     for(unsigned int item = 2; item < *argc; item++){
         option = (*argv)[item];
 
@@ -23,6 +27,7 @@ Configuration configure(int* argc, char*** argv){
             cout << "BoomslangCompiler <filename> [options]" << endl << endl;
             cout << "  -help     : help" << endl;
             cout << "  -console  : uses the console" << endl;
+            cout << "  -optimize : optimizes code" << endl;
             cout << "  -wait     : wait after complete" << endl;
             cout << "  -run      : run after compiled" << endl;
             cout << "  -windows  : compile for windows" << endl;
@@ -31,6 +36,21 @@ Configuration configure(int* argc, char*** argv){
             cout << "  -linux    : compile for linux" << endl;
             cout << "  -debian   : compile for debian linux" << endl;
             exit(1);
+        }
+        else if(option == "-optimize"){
+            config.optimize = true;
+        }
+        else if(option == "-console"){
+            config.console = true;
+        }
+        else if(option == "-wait"){
+            config.wait = true;
+        }
+        else if(option == "-run"){
+            config.run = true;
+        }
+        else if(option == "-windows"){
+            config.platform = PLATFORM_WINDOWS;
         }
         else {
             cerr << "Unknown option '" + option + "'" << endl;
