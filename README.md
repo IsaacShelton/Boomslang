@@ -125,5 +125,24 @@ on main()
     ruff.info()
     ruff.bark()
 ```
+
+###Working with Addresses
+```python
+
+on main()
+    String& message = create String("Hello World")
+    message:output()
+```
+
+###Getting a Value Pointed to by an Address
+```python
+
+on main()
+    String name = "Isaac"
+    String& greeting = create String("Welcome ")
+    
+    (*greeting + name).output()
+```
+
 ##Contacting Us
 develop.dockysoft@gmail.com
