@@ -137,7 +137,7 @@ on main()
     delete message
 ```
 
-###Getting a Value Pointed to by an Address
+###Getting a Value from an Address
 ```python
 
 on main()
@@ -148,6 +148,23 @@ on main()
     
     # Make sure to free dynamically allocated memory
     delete greeting
+```
+
+###Using Addresses with already existing values
+```python
+
+on main()
+    String name = "Isaac"
+    String& nameAddress = &name
+    
+    name.output()
+    nameAddress:output()
+    
+    # This will change the value pointed to by nameAddress
+    *nameAddress = "Changed"
+
+    name.output()
+    nameAddress:output()
 ```
 
 ##Contacting Us
