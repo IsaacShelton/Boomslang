@@ -81,7 +81,7 @@ on main()
     Number b = new Number
     Number c = 0
     
-    # The type is infered if it isn't stated
+    # You don't even have to state the type if it can be infered
     d = new Number
     e = 0
 ```
