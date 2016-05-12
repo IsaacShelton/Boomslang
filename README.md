@@ -85,5 +85,21 @@ on main()
     d = new Number
     e = 0
 ```
+
+###Declaring Templates
+```python
+
+template Dog
+    String name
+    UInteger id
+
+on Dog.bark()
+    "BARK ".print()
+
+on main()
+    Dog ruff
+    
+    ruff.bark()
+```
 ##Contacting Us
 develop.dockysoft@gmail.com
