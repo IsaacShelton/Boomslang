@@ -8,7 +8,7 @@ The Boomslang Programming Language is an open-source programming language that c
 ##Boomslang program examples
 
 ###Hello World
-```c++
+```python
 on main()
     "Hello World".output()
 ```
@@ -16,7 +16,7 @@ on main()
 NOTE: Ensure to use the -console compiler flag when compiling console programs such as this one.
 
 ###Taking input
-```c++
+```python
 on main()
     userInput = ""
     "Please enter something:".output()
@@ -25,14 +25,14 @@ on main()
 ```
 
 ###Displaying the current time
-```c++
+```python
 import time from boomslang
 
 on main()
     Time.now().output()
 ```
 ###Creating a basic window
-```c++
+```python
 import window from boomslang
 
 on main()
@@ -40,7 +40,7 @@ on main()
     application.show()
 ```
 ###Drawing a rectangle
-```c++
+```python
 import window from boomslang
 
 unique Window application
