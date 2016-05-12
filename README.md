@@ -72,5 +72,17 @@ window = unique Window
 on main()
     window.show()
 ```
+
+###Declaring Variables
+```python
+on main()
+    # All the following are equivalent
+    Number a
+    Number b = new Number
+    Number c = 0
+    
+    d = new Number
+    e = 0
+```
 ##Contacting Us
 develop.dockysoft@gmail.com
