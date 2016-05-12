@@ -38,19 +38,19 @@ on main()
 import window from boomslang
 
 on main()
-    application = new Window
-    application.show()
+    window = new Window
+    window.show()
 ```
 ###Drawing a rectangle
 ```python
 import window from boomslang
 
+window = unique Window
+    on display()
+        new Rectangle(100,100).draw(0,0)
+
 on main()
-    application = unique Window
-        on display()
-            new Rectangle(100,100).draw(0,0)
-    
-    application.show()
+    window.show()
 ```
 ##Contacting Us
 develop.dockysoft@gmail.com
