@@ -101,5 +101,29 @@ on main()
     
     ruff.bark()
 ```
+
+###Declaring Constructors for Templates
+```python
+
+template Dog
+    String name = "Unnamed"
+    UInteger id
+
+on Dog.new(String newName, UInteger newId)
+    name = newName
+    id = newId
+
+on Dog.bark()
+    "BARK ".print()
+
+on Dog.info()
+    ("Dog " + name + " has an id of " + id.toString()).output()
+
+on main()
+    Dog ruff("Ruff", 1)
+    
+    ruff.info()
+    ruff.bark()
+```
 ##Contacting Us
 develop.dockysoft@gmail.com
