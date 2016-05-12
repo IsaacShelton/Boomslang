@@ -32,7 +32,7 @@ on greet(name = "Anonymous")
     ("Welcome " + name).output()
 
 on main()
-    greet("Isaac")
+    greet()
 ```
 
 ###Taking input
