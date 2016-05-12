@@ -45,11 +45,11 @@ on main()
 ```python
 import window from boomslang
 
-unique Window application
-    on display()
-        new Rectangle(100,100).draw(0,0)
-
 on main()
+    application = unique Window
+        on display()
+            new Rectangle(100,100).draw(0,0)
+    
     application.show()
 ```
 ##Contacting Us
