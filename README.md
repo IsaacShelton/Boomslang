@@ -58,7 +58,8 @@ on main()
 import window from boomslang
 
 on main()
-    new Window.show()
+    window = new Window
+    window.show()
 ```
 ###Drawing a rectangle
 ```python
