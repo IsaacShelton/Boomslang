@@ -28,15 +28,7 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
         else if(tokens[index].id == TOKENINDEX_WORD){
             string name = tokens[index].data;
 
-            index++;
-            if(tokens[index].id == TOKENINDEX_OPEN){ // Function call
-                index += 1;
-                output += resource(name) + "()";
-            }
-            else { // Variable
-                output += resource(name);
-            }
-
+            output += resource(name);
             terminate_needed = true;
         }
         else if(tokens[index].id == TOKENINDEX_METHOD_CALL){
@@ -74,6 +66,21 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                 write << return_value + " " + resource(method_name) + "(){\n" + method_code + "}\n";
             }
         }
+        else if(tokens[index].id == TOKENINDEX_ADDRESS){
+            output += "&";
+        }
+        else if(tokens[index].id == TOKENINDEX_MEMBER){
+            output += ".";
+        }
+        else if(tokens[index].id == TOKENINDEX_NEXT){
+            output += ",";
+        }
+        else if(tokens[index].id == TOKENINDEX_ADDRESSMEMBER){
+            output += "->";
+        }
+        else if(tokens[index].id == TOKENINDEX_NOT){
+            output += "!";
+        }
 
         terminate_needed = true;
     }
@@ -84,7 +91,7 @@ void compile(Configuration* config, const TokenList& tokens){
 
     ofstream write( (HOME + CPP_SOURCE).c_str() );
     bool terminate_needed = false;
-    string main_code;
+    string global;
 
     // Ensure file(s) are open
     if(!write.is_open()){
@@ -98,11 +105,11 @@ void compile(Configuration* config, const TokenList& tokens){
 
     // Process tokens
     for(unsigned int index = 0; index < tokens.size(); index++){
-        process_token(tokens, index, terminate_needed, main_code, write, indentation);
+        process_token(tokens, index, terminate_needed, global, write, indentation);
     }
 
     // Write Main
-    write << "int main(int _agc, char** _agv){\nargc = &_agc; argv = &_agv;\n" + main_code + "}\n";
+    write << "int main(int _agc, char** _agv){\nargc = &_agc;\nargv = &_agv;\nboomslang_main();\nreturn 0;\n}\n";
     write.close();
 }
 

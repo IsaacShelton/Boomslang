@@ -71,10 +71,9 @@ TokenList tokenize(string code){
             tokens.push_back( TOKEN_NUMERIC_LITERAL(string_get_until_or(code," ,)]\n")) );
             code = string_delete_until_or(code," ,)]\n");
         }
-        else if( code.substr(0,1) == "."){                       // Method Call
+        else if( code.substr(0,1) == "."){                       // Member
             code = string_delete_amount(code,1);
-            tokens.push_back( TOKEN_METHOD_CALL(string_get_until_or(code," (")) );
-            code = string_delete_until_or(code," (");
+            tokens.push_back( TOKEN_MEMBER );
         }
         else if( code.substr(0,1) == "("){                       // Open
             tokens.push_back( TOKEN_OPEN );
@@ -82,6 +81,22 @@ TokenList tokenize(string code){
         }
         else if( code.substr(0,1) == ")"){                       // Close
             tokens.push_back( TOKEN_CLOSE );
+            code = string_delete_amount(code,1);
+        }
+        else if( code.substr(0,1) == "["){                       // Square Open
+            tokens.push_back( TOKEN_SQOPEN );
+            code = string_delete_amount(code,1);
+        }
+        else if( code.substr(0,1) == "]"){                       // Square Close
+            tokens.push_back( TOKEN_SQCLOSE );
+            code = string_delete_amount(code,1);
+        }
+        else if( code.substr(0,1) == "{"){                       // Curly Open
+            tokens.push_back( TOKEN_CURLYOPEN );
+            code = string_delete_amount(code,1);
+        }
+        else if( code.substr(0,1) == "}"){                       // Curly Close
+            tokens.push_back( TOKEN_CURLYCLOSE );
             code = string_delete_amount(code,1);
         }
         else if( code.substr(0,1) == "="){                       // Assign
@@ -108,6 +123,22 @@ TokenList tokenize(string code){
             tokens.push_back( TOKEN_NEXT );
             code = string_delete_amount(code,1);
         }
+        else if( code.substr(0,1) == "!"){                       // Not
+            tokens.push_back( TOKEN_NOT );
+            code = string_delete_amount(code,1);
+        }
+        else if( code.substr(0,1) == "&"){                       // Address
+            tokens.push_back( TOKEN_ADDRESS );
+            code = string_delete_amount(code,1);
+        }
+        else if( code.substr(0,1) == ":"){                       // Address Member
+            tokens.push_back( TOKEN_ADDRESSMEMBER );
+            code = string_delete_amount(code,1);
+        }
+        else if( code.substr(0,1) == "#"){                       // Line Comment
+            code = string_delete_amount(code,1);
+            code = string_delete_until(code, "\n");
+        }
         else if( string_get_until(code," ") == "on"){            // Method Declaration
             tokens.push_back( TOKEN_KEYWORD("on") );
 
@@ -132,9 +163,9 @@ TokenList tokenize(string code){
             code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
         }
-        else if( is_identifier(string_get_until_or(code, " ,()[]\n.+-*/=")) ){
-            tokens.push_back( TOKEN_WORD(string_get_until_or(code, " ,()[]\n.+-*/=")) );
-            code = string_delete_until_or(code, " ,()[]\n.+-*/=");
+        else if( is_identifier(string_get_until_or(code, " ,()[]\n.+-*/=&:")) ){
+            tokens.push_back( TOKEN_WORD(string_get_until_or(code, " ,()[]\n.+-*/=&:")) );
+            code = string_delete_until_or(code, " ,()[]\n.+-*/=&:");
         }
 
         code = string_kill_whitespace(code);

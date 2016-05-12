@@ -4,6 +4,18 @@
 
 using namespace std;
 
+bool environment_method_exists(Environment* environment, Method method){
+    for(unsigned int i = 0; i < environment->methods.size(); i++){
+        if( environment->methods[i].name == method.name
+        and environment->methods[i].parent == method.parent
+        and environment->methods[i].return_type == method.return_type){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void print_scopes(Scope* scope, unsigned int indent){
 
     for(int i = 0; i < indent; i++){
@@ -15,7 +27,6 @@ void print_scopes(Scope* scope, unsigned int indent){
         print_scopes(scope->children[i], indent+1);
     }
 }
-
 void clean_scopes(Scope* scope){
 
     for(int i = 0; i < scope->children.size(); i++){

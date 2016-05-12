@@ -28,6 +28,14 @@ string token_name(Token token){
         case 16 : token_name = "word"; break;
         case 17 : token_name = "terminate"; break;
         case 18 : token_name = "next"; break;
+        case 19 : token_name = "square open bracket"; break;
+        case 20 : token_name = "square close bracket"; break;
+        case 21 : token_name = "curly open bracket"; break;
+        case 22 : token_name = "curly close bracket"; break;
+        case 23 : token_name = "not"; break;
+        case 24 : token_name = "address"; break;
+        case 25 : token_name = "member"; break;
+        case 26 : token_name = "address member"; break;
     }
 
     return token_name;

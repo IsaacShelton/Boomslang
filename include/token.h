@@ -24,6 +24,14 @@
 #define TOKENINDEX_WORD              16
 #define TOKENINDEX_TERMINATE         17
 #define TOKENINDEX_NEXT              18
+#define TOKENINDEX_SQOPEN            19
+#define TOKENINDEX_SQCLOSE           20
+#define TOKENINDEX_CURLYOPEN         21
+#define TOKENINDEX_CURLYCLOSE        22
+#define TOKENINDEX_NOT               23
+#define TOKENINDEX_ADDRESS           24
+#define TOKENINDEX_MEMBER            25
+#define TOKENINDEX_ADDRESSMEMBER     26
 
 #define TOKEN_STRING_LITERAL(a)  Token{ 0, a}
 #define TOKEN_NUMERIC_LITERAL(a) Token{ 1, a}
@@ -44,6 +52,14 @@
 #define TOKEN_WORD(a)            Token{16, a}
 #define TOKEN_TERMINATE          Token{17}
 #define TOKEN_NEXT               Token{18}
+#define TOKEN_SQOPEN             Token{19}
+#define TOKEN_SQCLOSE            Token{20}
+#define TOKEN_CURLYOPEN          Token{21}
+#define TOKEN_CURLYCLOSE         Token{22}
+#define TOKEN_NOT                Token{23}
+#define TOKEN_ADDRESS            Token{24}
+#define TOKEN_MEMBER             Token{25}
+#define TOKEN_ADDRESSMEMBER      Token{26}
 
 struct Token {
     unsigned int id;
