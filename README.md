@@ -81,6 +81,7 @@ on main()
     Number b = new Number
     Number c = 0
     
+    # The type is infered if it isn't stated
     d = new Number
     e = 0
 ```
