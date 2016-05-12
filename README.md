@@ -132,6 +132,8 @@ on main()
 on main()
     String& message = create String("Hello World")
     message:output()
+    
+    free message
 ```
 
 ###Getting a Value Pointed to by an Address
@@ -142,6 +144,7 @@ on main()
     String& greeting = create String("Welcome ")
     
     (*greeting + name).output()
+    free greeting
 ```
 
 ##Contacting Us
