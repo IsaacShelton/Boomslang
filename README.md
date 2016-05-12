@@ -133,6 +133,7 @@ on main()
     String& message = create String("Hello World")
     message:output()
     
+    # Make sure to free the dynamically allocated memory
     delete message
 ```
 
@@ -144,6 +145,8 @@ on main()
     String& greeting = create String("Welcome ")
     
     (*greeting + name).output()
+    
+    # Make sure to free the dynamically allocated memory
     delete greeting
 ```
 
