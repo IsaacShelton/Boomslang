@@ -18,8 +18,8 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 ###Creating a Method
 ```python
 
-on greet(String who)
-    ("Welcome " + who).output()
+on greet(String name)
+    ("Welcome " + name).output()
 
 on main()
     greet("Isaac")
@@ -28,8 +28,8 @@ on main()
 ###Specifing Default Arguments
 ```python
 
-on greet(who = "Anonymous")
-    ("Welcome " + who).output()
+on greet(name = "Anonymous")
+    ("Welcome " + name).output()
 
 on main()
     greet("Isaac")
