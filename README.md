@@ -18,10 +18,12 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 ###Taking input
 ```python
 on main()
-    userInput = ""
-    "Please enter something:".output()
-    userInput.input()
-    ("You entered : " + userInput).output()
+    String name
+    
+    "Enter your name:".output()
+    name.input()
+    
+    ("Welcome " + name).output()
 ```
 
 ###Displaying the current time
