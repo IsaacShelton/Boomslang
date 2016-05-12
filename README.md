@@ -15,6 +15,26 @@ on main()
 
 NOTE: Ensure to use the -console compiler flag when compiling console programs such as this one.
 
+###Creating a Method
+```python
+
+on greet(String who)
+    ("Welcome " + who).output()
+
+on main()
+    greet("Isaac")
+```
+
+###Specifing Default Arguments
+```python
+
+on greet(who = "Anonymous")
+    ("Welcome " + who).output()
+
+on main()
+    greet("Isaac")
+```
+
 ###Taking input
 ```python
 on main()
