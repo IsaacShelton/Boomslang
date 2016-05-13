@@ -157,6 +157,12 @@ TokenList tokenize(string code){
             tokens.push_back( TOKEN_WORD(string_get_until(code,"\n")) );
             code = string_delete_until(code,"\n");
         }
+        else if( string_get_until(code," ") == "return"){        // return
+            tokens.push_back( TOKEN_KEYWORD("return") );
+
+            code = string_delete_amount(code,6);
+            code = string_kill_whitespace(code);
+        }
         else if( string_get_until(code," ") == "unique"){        // Method Declaration
             tokens.push_back( TOKEN_KEYWORD("unique") );
 

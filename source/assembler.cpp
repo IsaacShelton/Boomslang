@@ -4,6 +4,7 @@
 #include "../include/die.h"
 #include "../include/run.h"
 #include "../include/file.h"
+#include "../include/scope.h"
 #include "../include/locate.h"
 #include "../include/options.h"
 #include "../include/assembler.h"
@@ -11,7 +12,7 @@
 
 using namespace std;
 
-void process_token(const TokenList& tokens, unsigned int& index, bool& terminate_needed, string& output, ofstream& write, unsigned int& indentation){
+void process_token(const TokenList& tokens, unsigned int& index, bool& terminate_needed, string& output, ofstream& write, unsigned int& indentation, Environment& environment){
     // Terminate
     if(tokens[index].id == TOKENINDEX_TERMINATE and terminate_needed){
         output += ";\n";
@@ -48,22 +49,64 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
         }
         else if(tokens[index].id == TOKENINDEX_KEYWORD){
             if(tokens[index].data == "on"){
-                string return_value = "void";
+                string return_value;
                 string method_name;
                 string method_code;
+                string method_arguments;
+
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
 
                 index++;
                 method_name = tokens[index].data;
-                index += 5;
+                index += 2;
 
-                while(before_indentation != token_indent){
-                    process_token(tokens, index, terminate_needed, method_code, write, token_indent);
+                return_value = environment.methods[environment_method_get(&environment, Method{method_name, &environment.global})].return_type;
+
+                unsigned int balance = 0;
+
+                while(balance != 0 or (tokens[index].id != TOKENINDEX_CLOSE)){
+                    if(tokens[index].id == TOKENINDEX_OPEN){
+                        balance++;
+                    }
+                    else if(tokens[index].id == TOKENINDEX_CLOSE){
+                        balance--;
+                    }
+                    else if(tokens[index].id == TOKENINDEX_WORD){
+                        method_arguments += resource(tokens[index].data) + " ";
+                    }
+                    else if(tokens[index].id == TOKENINDEX_ASSIGN){
+                        method_arguments += "=";
+                    }
+                    else if(tokens[index].id == TOKENINDEX_NEXT){
+                        method_arguments += ", ";
+                    }
+                    else {
+                        die("Invalid Token");
+                    }
+
                     index++;
                 }
 
-                write << return_value + " " + resource(method_name) + "(){\n" + method_code + "}\n";
+                index+=2;
+
+                if(tokens[index].id == TOKENINDEX_INDENT){
+                    index++;
+                    while(before_indentation != token_indent){
+                        process_token(tokens, index, terminate_needed, method_code, write, token_indent, environment);
+                        index++;
+                    }
+                }
+
+                if(return_value == "void"){
+                    write << "void " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                }
+                else {
+                    write << resource(return_value) + " " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                }
+            }
+            else if(tokens[index].data == "return"){
+                output += "return ";
             }
         }
         else if(tokens[index].id == TOKENINDEX_ADDRESS){
@@ -81,12 +124,27 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
         else if(tokens[index].id == TOKENINDEX_NOT){
             output += "!";
         }
+        else if(tokens[index].id == TOKENINDEX_ASSIGN){
+            output += "=";
+        }
+        else if(tokens[index].id == TOKENINDEX_ADD){
+            output += "+";
+        }
+        else if(tokens[index].id == TOKENINDEX_SUBTRACT){
+            output += "-";
+        }
+        else if(tokens[index].id == TOKENINDEX_MULTIPLY){
+            output += "*";
+        }
+        else if(tokens[index].id == TOKENINDEX_DIVIDE){
+            output += "/";
+        }
 
         terminate_needed = true;
     }
 }
 
-void compile(Configuration* config, const TokenList& tokens){
+void compile(Configuration* config, const TokenList& tokens, Environment& environment){
     // Writes resulting c++ source code
 
     ofstream write( (HOME + CPP_SOURCE).c_str() );
@@ -105,7 +163,7 @@ void compile(Configuration* config, const TokenList& tokens){
 
     // Process tokens
     for(unsigned int index = 0; index < tokens.size(); index++){
-        process_token(tokens, index, terminate_needed, global, write, indentation);
+        process_token(tokens, index, terminate_needed, global, write, indentation, environment);
     }
 
     // Write Main
@@ -160,11 +218,11 @@ void build(Configuration* config){
     cout << "Successfully Built '" + filename_name(config->output_filename) + "'" << endl;
 }
 
-void assemble(Configuration* config, const TokenList& tokens){
+void assemble(Configuration* config, const TokenList& tokens, Environment& environment){
     // Creates executable/package from code
 
     // Write source code
-    compile(config, tokens);
+    compile(config, tokens, environment);
 
     // Build the result
     build(config);

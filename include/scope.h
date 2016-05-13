@@ -39,6 +39,7 @@ struct Environment {
 };
 
 bool environment_method_exists(Environment*, Method);
+unsigned int environment_method_get(Environment*, Method);
 
 void print_scopes(Scope* scope, unsigned int indent = 0);
 void clean_scopes(Scope* scope);

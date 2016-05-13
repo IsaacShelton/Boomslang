@@ -4,8 +4,9 @@
 
 #include <string>
 #include "token.h"
+#include "scope.h"
 #include "options.h"
 
-void assemble(Configuration*, const TokenList&);
+void assemble(Configuration*, const TokenList&, Environment&);
 
 #endif // ASSEMBLER_H_INCLUDED

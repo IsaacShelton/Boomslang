@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include "../include/die.h"
 #include "../include/scope.h"
 
 using namespace std;
@@ -14,6 +15,17 @@ bool environment_method_exists(Environment* environment, Method method){
     }
 
     return false;
+}
+
+unsigned int environment_method_get(Environment* environment, Method method){
+    for(unsigned int i = 0; i < environment->methods.size(); i++){
+        if( environment->methods[i].name == method.name
+        and environment->methods[i].parent == method.parent){
+            return i;
+        }
+    }
+
+    die("Method doesn't exist");
 }
 
 void print_scopes(Scope* scope, unsigned int indent){

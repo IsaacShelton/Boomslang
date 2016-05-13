@@ -3,7 +3,8 @@
 #define ENFORCER_H_INCLUDED
 
 #include "token.h"
+#include "scope.h"
 
-void enforce(TokenList);
+Environment enforce(TokenList);
 
 #endif // ENFORCER_H_INCLUDED
