@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include "../include/errors.h"
 #include "../include/locate.h"
 #include "../include/options.h"
 #include "../include/management.h"
@@ -20,7 +21,7 @@ Configuration configure(int* argc, char*** argv){
     // Get current login information
     login();
 
-    for(unsigned int item = 2; item < *argc; item++){
+    for(unsigned int item = 2; item < (unsigned int)(*argc); item++){
         option = (*argv)[item];
 
         if(option == "-help"){
@@ -60,6 +61,9 @@ Configuration configure(int* argc, char*** argv){
     }
 
     option = (*argv)[1];
+
+    // Set the current source file
+    current_filename = filename_name(option);
 
     if(config.platform == PLATFORM_AUTO){
         #if defined(__WIN32__)

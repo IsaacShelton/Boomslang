@@ -5,6 +5,7 @@
 #include "../include/run.h"
 #include "../include/file.h"
 #include "../include/scope.h"
+#include "../include/errors.h"
 #include "../include/locate.h"
 #include "../include/options.h"
 #include "../include/assembler.h"
@@ -61,9 +62,14 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                 method_name = tokens[index].data;
                 index += 2;
 
-                return_value = environment.methods[environment_method_get(&environment, Method{method_name, &environment.global})].return_type;
+                if(!environment_method_exists(&environment, Method{method_name, &environment.global, IGNORE, IGNORE})){
+                    die("Declared Method has no Implementation");
+                }
+
+                return_value = environment_method_get(&environment, Method{method_name, &environment.global, IGNORE, IGNORE}).return_type;
 
                 unsigned int balance = 0;
+                bool value = false;
 
                 while(balance != 0 or (tokens[index].id != TOKENINDEX_CLOSE)){
                     if(tokens[index].id == TOKENINDEX_OPEN){
@@ -76,13 +82,33 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                         method_arguments += resource(tokens[index].data) + " ";
                     }
                     else if(tokens[index].id == TOKENINDEX_ASSIGN){
+                        if(value == true){
+                            die(UNEXPECTED_OPERATOR_INEXP);
+                        }
+
+                        value = true;
                         method_arguments += "=";
                     }
                     else if(tokens[index].id == TOKENINDEX_NEXT){
                         method_arguments += ", ";
+                        value = false;
+                    }
+                    else if(tokens[index].id == TOKENINDEX_STRING_LITERAL){
+                        if(value == false){
+                            die(UNEXPECTED_OPERATOR);
+                        }
+
+                        method_arguments += "boomslang_String(\"" + tokens[index].data + "\")";
+                    }
+                    else if(tokens[index].id == TOKENINDEX_NUMERIC_LITERAL){
+                        if(value == false){
+                            die(UNEXPECTED_OPERATOR);
+                        }
+
+                        method_arguments += "boomslang_Number(" + tokens[index].data + ")";
                     }
                     else {
-                        die("Invalid Token");
+                        die(INVALID_TOKEN);
                     }
 
                     index++;

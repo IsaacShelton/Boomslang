@@ -7,8 +7,8 @@
 
 #define TOKENINDEX_STRING_LITERAL     0
 #define TOKENINDEX_NUMERIC_LITERAL    1
-#define TOKENINDEX_METHOD_CALL        2
-#define TOKENINDEX_FUNCTION_CALL      3
+#define TOKENINDEX_METHOD_CALL        2 // Obsolete
+#define TOKENINDEX_FUNCTION_CALL      3 // Obsolete
 #define TOKENINDEX_ASSIGN             4
 #define TOKENINDEX_ADD                5
 #define TOKENINDEX_SUBTRACT           6
@@ -35,8 +35,8 @@
 
 #define TOKEN_STRING_LITERAL(a)  Token{ 0, a}
 #define TOKEN_NUMERIC_LITERAL(a) Token{ 1, a}
-#define TOKEN_METHOD_CALL(a)     Token{ 2, a}
-#define TOKEN_FUNCTION_CALL(a)   Token{ 3, a}
+#define TOKEN_METHOD_CALL(a)     Token{ 2, a} // Obsolete
+#define TOKEN_FUNCTION_CALL(a)   Token{ 3, a} // Obsolete
 #define TOKEN_ASSIGN             Token{ 4}
 #define TOKEN_ADD                Token{ 5}
 #define TOKEN_SUBTRACT           Token{ 6}
@@ -69,6 +69,7 @@ struct Token {
 typedef std::vector<Token> TokenList;
 
 std::string token_name(Token token);
+std::string token_operator(Token token);
 void token_print(Token token);
 
 #endif // INCLUDED_TOKEN_H

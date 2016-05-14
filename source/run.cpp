@@ -14,10 +14,11 @@ int execute_silent(string exe, string params){
     #if defined(__WIN32__)
 	STARTUPINFO StartupInfo;
 	PROCESS_INFORMATION ProcessInfo;
+	ULONG rc;
+
+    const char* pDefaultCMD = "CMD.EXE";
 	char args[4096];
 	char* pEnvCMD = NULL;
-	char* pDefaultCMD = "CMD.EXE";
-	ULONG rc;
 
 	memset(&StartupInfo, 0, sizeof(StartupInfo));
 	StartupInfo.cb = sizeof(STARTUPINFO);
