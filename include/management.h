@@ -26,23 +26,29 @@
 
 double to_double(std::string);
 std::string to_string(double);
+
 bool string_contains(std::string, std::string);
 std::string string_get_until(std::string, std::string);
-std::string string_delete_until(std::string, std::string);
 std::string string_get_until_or(std::string, std::string);
+std::string string_delete_until(std::string, std::string);
 std::string string_delete_until_or(std::string, std::string);
 std::string string_delete_amount(std::string, int);
+
 unsigned int string_count(std::string, std::string);
 std::string string_replace(std::string, std::string, std::string);
 std::string string_replace_all(std::string, std::string, std::string);
+
 std::string string_kill_whitespace(std::string);
 std::string string_kill_all_whitespace(std::string);
 std::string string_kill_newline(std::string);
-std::string resource(std::string);
+
 std::string delete_backslash(std::string);
 std::string string_upper(std::string);
+
+std::string resource(std::string);
 bool is_identifier(std::string);
 bool is_indent(std::string);
+
 std::string filename_name(std::string);
 std::string filename_path(std::string);
 std::string filename_change_ext(std::string, std::string);
