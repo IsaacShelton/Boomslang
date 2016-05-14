@@ -156,3 +156,24 @@ bool environment_variable_exists(Scope* scope, Variable variable){
 
     return false;
 }
+
+Variable environment_variable_get(Scope* scope, Variable variable){
+    for(unsigned int i = 0; i < scope->children.size(); i++){
+        if(environment_variable_exists(scope->children[i], variable)){
+            return environment_variable_get(scope->children[i], variable);
+        }
+    }
+
+    for(unsigned int v = 0; v < scope->variables.size(); v++){
+        if( (scope->variables[v].name == variable.name or variable.name==IGNORE)
+        and (scope->variables[v].type == variable.type or variable.type==IGNORE)){
+            return scope->variables[v];
+        }
+    }
+
+    #ifdef DEV_ERRORS
+    fail(DEV_BLANK_TYPE);
+    #endif // DEV_ERRORS
+
+    return Variable{"",""};
+}

@@ -42,7 +42,7 @@ void token_force(const TokenList& tokens, unsigned int& index, unsigned int toke
 }
 
 // Token Enforcement Sequences
-void tokens_value(const TokenList& tokens, unsigned int& index){
+void tokens_value(const TokenList& tokens, unsigned int& index, Scope** scope, Template& type){
     int balance = 0;
     index_increase(tokens, index);
 
@@ -53,10 +53,37 @@ void tokens_value(const TokenList& tokens, unsigned int& index){
         else if(tokens[index].id == TOKENINDEX_CLOSE){
             balance--;
         }
-        else if(tokens[index].id == TOKENINDEX_WORD
-        or tokens[index].id == TOKENINDEX_STRING_LITERAL
-        or tokens[index].id == TOKENINDEX_NUMERIC_LITERAL
-        or tokens[index].id == TOKENINDEX_ADD
+        else if(tokens[index].id == TOKENINDEX_WORD){
+            if( !environment_variable_exists(*scope, Variable{tokens[index].data,IGNORE}) ){
+                fail(UNDECLARED_VARIABLE);
+            }
+
+            string variable_type = environment_variable_get(*scope, Variable{tokens[index].data,IGNORE}).type;
+
+            if(type.name == ""){
+                type.name = variable_type;
+            }
+            else if(type.name != variable_type){
+                fail( INCOMPATIBLE_TEMPLATES(type.name,variable_type) );
+            }
+        }
+        else if(tokens[index].id == TOKENINDEX_STRING_LITERAL){
+            if(type.name == ""){
+                type.name = "String";
+            }
+            else if(type.name != "String"){
+                fail( INCOMPATIBLE_TEMPLATES(type.name,"String") );
+            }
+        }
+        else if(tokens[index].id == TOKENINDEX_NUMERIC_LITERAL){
+            if(type.name == ""){
+                type.name = "Number";
+            }
+            else if(type.name != "Number"){
+                fail( INCOMPATIBLE_TEMPLATES(type.name,"Number") );
+            }
+        }
+        else if(tokens[index].id == TOKENINDEX_ADD
         or tokens[index].id == TOKENINDEX_SUBTRACT
         or tokens[index].id == TOKENINDEX_MULTIPLY
         or tokens[index].id == TOKENINDEX_DIVIDE
@@ -65,7 +92,7 @@ void tokens_value(const TokenList& tokens, unsigned int& index){
             // ok
         }
         else {
-            die("Unexpected token " + token_name(tokens[index]));
+            die(UNEXPECTED_OPERATOR_INEXP);
         }
 
         index_increase(tokens, index);
@@ -147,10 +174,13 @@ void tokens_method_declaration_arguments(const TokenList& tokens, unsigned int& 
         }
 
         if(tokens[index].id == TOKENINDEX_ASSIGN){
-            tokens_value(tokens, index);
+            Template value_template;
+            tokens_value(tokens, index, scope, value_template);
         }
         else if(tokens[index].id == TOKENINDEX_WORD){
-            tokens_value(tokens, index);
+            Template value_template;
+
+            tokens_value(tokens, index, scope, value_template);
             if(!advance_index(index,tokens.size())){
                 die(UNEXPECTED_TERMINATE);
             }
@@ -171,31 +201,56 @@ void tokens_method_declaration_arguments(const TokenList& tokens, unsigned int& 
 }
 
 // Validate Token Statement
-void enforce_token(const TokenList& tokens, unsigned int& index, Scope** current_scope, Environment& environment){
+void enforce_token(const TokenList& tokens, unsigned int& index, Scope** scope, Environment& environment){
     static unsigned int next_block = 0;
 
     if(tokens[index].id == TOKENINDEX_TERMINATE){
         // Do nothing
     }
     else if(tokens[index].id == TOKENINDEX_STRING_LITERAL or tokens[index].id == TOKENINDEX_NUMERIC_LITERAL){
-        if(*current_scope == &environment.global){
+        if(*scope == &environment.global){
             die(GLOBAL_STATEMENT);
         }
 
         token_force(tokens, index, TOKENINDEX_MEMBER, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
-        token_force(tokens, index, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
-        tokens_arguments(tokens,index);
+
+        while(tokens[index].id == TOKENINDEX_MEMBER){
+            token_force(tokens, index, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+            tokens_arguments(tokens,index);
+            index_increase(tokens, index);
+        }
+
+        index_decrease(tokens, index);
+        token_force(tokens, index, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+    }
+    else if(tokens[index].id == TOKENINDEX_OPEN){
+        if(*scope == &environment.global){
+            die(GLOBAL_STATEMENT);
+        }
+
+        Template expression_type;
+
+        tokens_value(tokens,index,scope,expression_type);
+        token_force(tokens, index, TOKENINDEX_MEMBER, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+
+        while(tokens[index].id == TOKENINDEX_MEMBER){
+            token_force(tokens, index, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+            tokens_arguments(tokens,index);
+            index_increase(tokens, index);
+        }
+
+        index_decrease(tokens, index);
         token_force(tokens, index, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
     }
     else if(tokens[index].id == TOKENINDEX_INDENT){
-        (*current_scope)->children.push_back(new Scope{"block_" + to_string(next_block), (*current_scope)});
-        (*current_scope) = (*current_scope)->children[(*current_scope)->children.size()-1];
+        (*scope)->children.push_back(new Scope{"block_" + to_string(next_block), (*scope)});
+        (*scope) = (*scope)->children[(*scope)->children.size()-1];
 
         next_block++;
     }
     else if(tokens[index].id == TOKENINDEX_DEDENT){
-        if((*current_scope)->parent != NULL){
-            (*current_scope) = (*current_scope)->parent;
+        if((*scope)->parent != NULL){
+            (*scope) = (*scope)->parent;
         }
     }
     else if(tokens[index].id == TOKENINDEX_KEYWORD){
@@ -207,10 +262,10 @@ void enforce_token(const TokenList& tokens, unsigned int& index, Scope** current
             token_force(tokens, index, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method name after 'on'", ERROR_INDICATOR + "Expected method name after 'on'");
             method_name = tokens[index].data;
 
-            (*current_scope)->children.push_back(new Scope{"method_" + method_name, (*current_scope)});
-            (*current_scope) = (*current_scope)->children[(*current_scope)->children.size()-1];
+            (*scope)->children.push_back(new Scope{"method_" + method_name, (*scope)});
+            (*scope) = (*scope)->children[(*scope)->children.size()-1];
 
-            tokens_method_declaration_arguments(tokens, index, environment, current_scope, method_arguments);
+            tokens_method_declaration_arguments(tokens, index, environment, scope, method_arguments);
 
             token_force(tokens, index, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
 
@@ -221,8 +276,10 @@ void enforce_token(const TokenList& tokens, unsigned int& index, Scope** current
             }
         }
         else if(tokens[index].data == "return"){
-            tokens_value(tokens, index);
-            environment.methods[environment.methods.size()-1].return_type = "Number";
+            Template value_template;
+
+            tokens_value(tokens, index, scope, value_template);
+            environment.methods[environment.methods.size()-1].return_type = value_template.name;
             // ...
         }
         else {
@@ -235,7 +292,7 @@ void enforce_token(const TokenList& tokens, unsigned int& index, Scope** current
         }
 
         if(tokens[index].id == TOKENINDEX_OPEN){
-            if(*current_scope == &environment.global){
+            if(*scope == &environment.global){
                 die(GLOBAL_STATEMENT);
             }
 
@@ -260,6 +317,10 @@ void enforce_token(const TokenList& tokens, unsigned int& index, Scope** current
         }
         else {
             retreat_index(index);
+
+            if( !environment_variable_exists(*scope, Variable{tokens[index].data,IGNORE}) ){
+                fail(UNDECLARED_VARIABLE);
+            }
         }
     }
     else {
@@ -272,17 +333,21 @@ Environment enforce(TokenList tokens){
     // Enforce grammer and context
 
     Environment environment;
-    Scope* current_scope = &environment.global;
+    Scope* scope = &environment.global;
 
     environment.templates.push_back( Template{"Number"} );
     environment.templates.push_back( Template{"String"} );
 
     for(unsigned int index = 0; index < tokens.size(); index++){
-        enforce_token(tokens,index,&current_scope,environment);
+        enforce_token(tokens,index,&scope,environment);
     }
 
     if( !environment_method_exists(&environment, Method{"main", &environment.global, "", "void"}) ){
         die(NO_MAIN);
+    }
+
+    if(error_count > 0){
+        exit(1);
     }
 
     return environment;

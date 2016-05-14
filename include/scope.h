@@ -11,15 +11,13 @@ struct Variable {
     std::string name;
     std::string type;
 };
-typedef std::vector<Variable> VariableList;
 
 struct Scope {
     std::string name;
     Scope* parent;
     std::vector<Scope*> children;
-    VariableList variables;
+    std::vector<Variable> variables;
 };
-typedef std::vector<Scope> ScopeList;
 
 struct Method {
     std::string name;
@@ -27,18 +25,21 @@ struct Method {
     std::string arguments;
     std::string return_type;
 };
-typedef std::vector<Method> MethodList;
 
 struct Template {
     std::string name;
 };
-typedef std::vector<Template> TemplateList;
 
 struct Environment {
-    Scope        global{"global", NULL};
-    MethodList   methods;
-    TemplateList templates;
+    Scope global{"global", NULL};
+    std::vector<Method> methods;
+    std::vector<Template> templates;
 };
+
+typedef std::vector<Variable> VariableList;
+typedef std::vector<Scope> ScopeList;
+typedef std::vector<Method> MethodList;
+typedef std::vector<Template> TemplateList;
 
 // Scopes
 void print_scopes(Scope* scope, unsigned int indent = 0);
@@ -57,5 +58,7 @@ Template environment_template_get(Environment*, Template);
 
 // Variables
 void environment_print_variables(Scope* scope, unsigned int indent = 0);
+bool environment_variable_exists(Scope* scope, Variable);
+Variable environment_variable_get(Scope* scope, Variable);
 
 #endif // SCOPE_H_INCLUDED
