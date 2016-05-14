@@ -91,7 +91,7 @@ on main()
 
 template Dog
     String name
-    UnsighedInteger id
+    UnsignedInteger id
 
 on Dog.bark()
     "BARK ".print()
@@ -107,7 +107,7 @@ on main()
 
 template Dog
     String name = "Unnamed"
-    UnsighedInteger id
+    UnsignedInteger id
 
 on Dog.new(String newName, UInteger newId)
     name = newName
