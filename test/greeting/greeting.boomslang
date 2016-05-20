@@ -1,0 +1,6 @@
+
+on greet(String name)
+	("Welcome " + name).output()
+
+on main()
+	greet("Isaac")
