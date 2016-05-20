@@ -5,11 +5,35 @@
 #include <string>
 #include <vector>
 
-#define IGNORE "..."
+#define IGNORE      "..."
+#define IGNORE_ARGS {MethodArgument{Template{IGNORE}, 1}}
+
+struct Variable;
+struct Scope;
+struct Template;
+struct MethodArgument;
+struct Method;
+struct Environment;
 
 struct Variable {
     std::string name;
     std::string type;
+};
+
+struct Template {
+    std::string name;
+};
+
+struct MethodArgument {
+    Template type;
+    bool optional;
+};
+
+struct Method {
+    std::string name;
+    Scope* parent;
+    std::vector<MethodArgument> arguments;
+    std::string return_type;
 };
 
 struct Scope {
@@ -17,23 +41,16 @@ struct Scope {
     Scope* parent;
     std::vector<Scope*> children;
     std::vector<Variable> variables;
-};
-
-struct Method {
-    std::string name;
-    Scope* parent;
-    std::string arguments;
-    std::string return_type;
-};
-
-struct Template {
-    std::string name;
+    std::vector<Method> methods;
+    std::vector<Template> templates;
 };
 
 struct Environment {
+    // Root Scope
     Scope global{"global", NULL};
-    std::vector<Method> methods;
-    std::vector<Template> templates;
+
+    // Current Scope
+    Scope* scope = &(this->global);
 };
 
 typedef std::vector<Variable> VariableList;
@@ -47,14 +64,14 @@ void print_scopes_variables(Scope* scope, unsigned int indent = 0);
 void clean_scopes(Scope* scope);
 
 // Methods
-bool environment_method_exists(Environment*, Method);
-unsigned int environment_method_index(Environment*, Method);
-Method environment_method_get(Environment*, Method);
+bool environment_method_exists(Scope*, Method);
+unsigned int environment_method_index(Scope*, Method);
+Method environment_method_get(Scope*, Method);
 
 // Templates
-bool environment_template_exists(Environment*, Template);
-unsigned int environment_template_index(Environment*, Template);
-Template environment_template_get(Environment*, Template);
+bool environment_template_exists(Scope*, Template);
+unsigned int environment_template_index(Scope*, Template);
+Template environment_template_get(Scope*, Template);
 
 // Variables
 void environment_print_variables(Scope* scope, unsigned int indent = 0);

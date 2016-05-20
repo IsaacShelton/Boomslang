@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include "../include/log.h"
 #include "../include/errors.h"
 #include "../include/locate.h"
 #include "../include/options.h"
@@ -59,6 +60,14 @@ Configuration configure(int* argc, char*** argv){
             exit(1);
         }
     }
+
+    clear_lexer_log();
+    clear_enforcer_log();
+    clear_assembler_log();
+
+    log_lexer    ("-=-=- Lexer Log -=-=-");
+    log_enforcer ("-=-=- Enforcer Log -=-=-");
+    log_assembler("-=-=- Assembler Log -=-=-");
 
     option = (*argv)[1];
 

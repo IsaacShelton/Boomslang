@@ -8,12 +8,13 @@
 #include "../include/errors.h"
 #include "../include/locate.h"
 #include "../include/options.h"
+#include "../include/enforcer.h"
 #include "../include/assembler.h"
 #include "../include/management.h"
 
 using namespace std;
 
-void process_token(const TokenList& tokens, unsigned int& index, bool& terminate_needed, string& output, ofstream& write, unsigned int& indentation, Environment& environment){
+void process_token(const TokenList& tokens, unsigned int& index, bool& terminate_needed, string& output, ofstream& write, ofstream& header, ofstream& define, unsigned int& indentation, Environment& environment){
     // Terminate
     if(tokens[index].id == TOKENINDEX_TERMINATE and terminate_needed){
         output += ";\n";
@@ -54,6 +55,7 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                 string method_name;
                 string method_code;
                 string method_arguments;
+                bool of_template = false;
 
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
@@ -62,14 +64,15 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                 method_name = tokens[index].data;
                 index += 2;
 
-                if(!environment_method_exists(&environment, Method{method_name, &environment.global, IGNORE, IGNORE})){
+                if(!environment_method_exists(environment.scope, Method{method_name, &environment.global, IGNORE_ARGS, IGNORE})){
                     die("Declared Method has no Implementation");
                 }
 
-                return_value = environment_method_get(&environment, Method{method_name, &environment.global, IGNORE, IGNORE}).return_type;
+                return_value = environment_method_get(environment.scope, Method{method_name, &environment.global, IGNORE_ARGS, IGNORE}).return_type;
 
                 unsigned int balance = 0;
                 bool value = false;
+                bool first_word = true;
 
                 while(balance != 0 or (tokens[index].id != TOKENINDEX_CLOSE)){
                     if(tokens[index].id == TOKENINDEX_OPEN){
@@ -79,7 +82,12 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                         balance--;
                     }
                     else if(tokens[index].id == TOKENINDEX_WORD){
-                        method_arguments += resource(tokens[index].data) + " ";
+                        if(!first_word){
+                            method_arguments += " ";
+                        }
+
+                        method_arguments += resource(tokens[index].data);
+                        first_word = false;
                     }
                     else if(tokens[index].id == TOKENINDEX_ASSIGN){
                         if(value == true){
@@ -92,6 +100,7 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                     else if(tokens[index].id == TOKENINDEX_NEXT){
                         method_arguments += ", ";
                         value = false;
+                        first_word = true;
                     }
                     else if(tokens[index].id == TOKENINDEX_STRING_LITERAL){
                         if(value == false){
@@ -119,16 +128,34 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                 if(tokens[index].id == TOKENINDEX_INDENT){
                     index++;
                     while(before_indentation != token_indent){
-                        process_token(tokens, index, terminate_needed, method_code, write, token_indent, environment);
+                        process_token(tokens, index, terminate_needed, method_code, write, header, define, token_indent, environment);
                         index++;
                     }
                 }
 
-                if(return_value == "void"){
-                    write << "void " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                if( string_count(method_name, ".") == 1){
+                    of_template = true;
+                }
+
+                if(!of_template){
+                    if(return_value == "void"){
+                        write  << "void " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        header << "void " + resource(method_name) + "(" + method_arguments + ");\n";
+                    }
+                    else {
+                        write  << resource(return_value) + " " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        header << resource(return_value) + " " + resource(method_name) + "(" + method_arguments + ");\n";
+                    }
                 }
                 else {
-                    write << resource(return_value) + " " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                    if(return_value == "void"){
+                        write  << "void " + resource(string_get_until(method_name, ".")) + "::" + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        template_add_method(string_get_until(method_name, "."), "void " + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");\n");
+                    }
+                    else {
+                        write  << resource(return_value) + " " + resource(string_get_until(method_name, ".")) + "::" + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        template_add_method(string_get_until(method_name, "."), resource(return_value) + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");\n");
+                    }
                 }
             }
             else if(tokens[index].data == "return"){
@@ -174,6 +201,8 @@ void compile(Configuration* config, const TokenList& tokens, Environment& enviro
     // Writes resulting c++ source code
 
     ofstream write( (HOME + CPP_SOURCE).c_str() );
+    ofstream header( (HOME + CPP_HEADER).c_str() );
+    ofstream define( (HOME + CPP_DEFINE).c_str() );
     bool terminate_needed = false;
     string global;
 
@@ -182,19 +211,33 @@ void compile(Configuration* config, const TokenList& tokens, Environment& enviro
         die("Failed to open source file(s)");
     }
 
-    // Write Header
-    write << "/*This file was generated by Boomslang, modify at your own risk*/\n\n#include \"../core/boomslangcore.h\"\n\nint* argc;\nchar*** argv;\n\n";
+    // Write Comment
+    write << "/*This file was generated by Boomslang, modify at your own risk*/\n\n#include \"define.h\"\n#include \"../core/boomslangcore.h\"\n#include \"source.h\"\n\nint* argc;\nchar*** argv;\n\n";
+    header << "/*This file was generated by Boomslang, modify at your own risk*/\n\n#ifndef SOURCE_H_INCLUDED\n#define SOURCE_H_INCLUDED\n\n#include \"define.h\"\n#include \"../core/boomslangcore.h\"\n\nextern int* argc;\nextern char*** argv;\n\n";
+    define << "/*This file was generated by Boomslang, modify at your own risk*/\n\n#ifndef DEFINE_H_INCLUDED\n#define DEFINE_H_INCLUDED\n\n";
+
+    if(template_additions.size() != 0){
+        header << "\n";
+    }
 
     unsigned int indentation;
 
     // Process tokens
     for(unsigned int index = 0; index < tokens.size(); index++){
-        process_token(tokens, index, terminate_needed, global, write, indentation, environment);
+        process_token(tokens, index, terminate_needed, global, write, header, define, indentation, environment);
+    }
+
+    for(unsigned int i = 0; i < template_additions.size(); i++){
+        define << "#define BOOMSLANGDEFINE_" + template_additions[i].name + " " + template_additions[i].additions + "\n";
     }
 
     // Write Main
     write << "int main(int _agc, char** _agv){\nargc = &_agc;\nargv = &_agv;\nboomslang_main();\nreturn 0;\n}\n";
+    header << "int main(int, char**);\n\n#endif\n";
+    define << "#endif\n";
+
     write.close();
+    header.close();
 }
 
 void build(Configuration* config){
@@ -221,17 +264,18 @@ void build(Configuration* config){
     }
 
     { //Run MinGW
-        bool bad = execute_silent("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\bin\\g++","-c \"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\source.cpp\" " + compile_flags + " -o \"" + "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\source.o" + "\" 2>\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\logs\\native_errors.log\"");
+        bool bad = execute_silent("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\bin\\g++","-c \"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\source.cpp\" " + compile_flags + " -o \"" + "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\source.o" + "\" 2>\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\logs\\native.log\"");
 
         if(bad) die("Native Compiler Error");
     }
 
     if(config->package){
+        // -=- old -=-
         //execute_silent("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\bin\\ar","rvs \"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.a\" \"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.o\" \"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\core\\libboomslangcore.a\" " + linker_flags + " 2>\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\logs\\linker_errors.log\"");
         //branch_create(filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"branch"),"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.a","C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.h","C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.boomslang");
     }
     else {
-        bool bad = execute_silent("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\bin\\g++","\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\source.o\" " + linker_flags + "\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\core\\libboomslangcore.a\" -o \"" +  config->output_filename + "\" 2>\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\logs\\linker_errors.log\"");
+        bool bad = execute_silent("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\bin\\g++","\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\source.o\" " + linker_flags + "\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\core\\libboomslangcore.a\" -o \"" +  config->output_filename + "\" 2>\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\logs\\linker.log\"");
 
         if(bad) die("Native Compiler Error");
     }

@@ -263,3 +263,12 @@ ifstream::pos_type file_size(string size_filename){
     file_stream.close();
     return size_of_file;
 }
+
+string encode_function_name(string name){
+    return "boomslang_function_" + name;
+}
+
+std::string encode_method_name(string name, string template_name){
+    template_name = string_replace_all(template_name,"_","_U");
+    return "boomslang_method_" + template_name + "_" + name;
+}

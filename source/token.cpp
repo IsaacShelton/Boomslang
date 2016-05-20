@@ -1,7 +1,11 @@
 
+#include <fstream>
 #include <iostream>
+#include "../include/die.h"
+#include "../include/log.h"
 #include "../include/lexer.h"
 #include "../include/token.h"
+#include "../include/locate.h"
 
 using namespace std;
 
@@ -78,4 +82,18 @@ string token_operator(Token token){
 
 void token_print(Token token){
     cout << "Token => " + token_name(token) + " :   '" + token.data + "'" << endl;
+}
+
+void lexer_log_tokens(TokenList tokens){
+    ofstream lexer_logfile(LOGHOME + LOG_LEXER, ios::app);
+
+    if(!lexer_logfile) die("Failed to open lexer log file");
+
+    lexer_logfile << "Resulting Tokens (" << tokens.size()-1 << ")" << endl;
+
+    for(unsigned int i = 0; i < tokens.size(); i++){
+        lexer_logfile << i << " '" + token_name(tokens[i]) + "'" << endl;
+    }
+
+    lexer_logfile.close();
 }

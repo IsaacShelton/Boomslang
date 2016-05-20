@@ -71,5 +71,6 @@ typedef std::vector<Token> TokenList;
 std::string token_name(Token token);
 std::string token_operator(Token token);
 void token_print(Token token);
+void lexer_log_tokens(TokenList token);
 
 #endif // INCLUDED_TOKEN_H

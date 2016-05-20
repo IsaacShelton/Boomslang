@@ -14,6 +14,7 @@
 using namespace std;
 
 int main(int argc, char** argv){
+
     // Configure from specified options
     Configuration config = configure(&argc, &argv);
 

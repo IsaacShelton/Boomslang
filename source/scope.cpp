@@ -43,25 +43,51 @@ void clean_scopes(Scope* scope){
     }
 }
 
+bool arguments_equal(std::vector<MethodArgument> a, std::vector<MethodArgument> b){
+    if(a.size() == 1){
+        if(a[0].type.name == IGNORE and a[0].optional == true){
+            return true;
+        }
+    }
+
+    if(b.size() == 1){
+        if(b[0].type.name == IGNORE and b[0].optional == true){
+            return true;
+        }
+    }
+
+    if(a.size() != b.size()){
+        return false;
+    }
+
+    for(unsigned int i = 0; i < a.size(); i++){
+        if(a[i].type.name != b[i].type.name){
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // Methods
-bool environment_method_exists(Environment* environment, Method method){
-    for(unsigned int i = 0; i < environment->methods.size(); i++){
-        if( (environment->methods[i].name == method.name               or method.name==IGNORE)
-        and (environment->methods[i].parent == method.parent           or method.parent==NULL)
-        and (environment->methods[i].return_type == method.return_type or method.return_type==IGNORE)
-        and (environment->methods[i].arguments == method.arguments     or method.arguments==IGNORE)){
+bool environment_method_exists(Scope* scope, Method method){
+    for(unsigned int i = 0; i < scope->methods.size(); i++){
+        if( (scope->methods[i].name == method.name               or method.name==IGNORE)
+        and (scope->methods[i].parent == method.parent           or method.parent==NULL)
+        and (scope->methods[i].return_type == method.return_type or method.return_type==IGNORE)
+        and (arguments_equal(scope->methods[i].arguments, method.arguments))){
             return true;
         }
     }
 
     return false;
 }
-unsigned int environment_method_index(Environment* environment, Method method){
-    for(unsigned int i = 0; i < environment->methods.size(); i++){
-        if( (environment->methods[i].name == method.name               or method.name==IGNORE)
-        and (environment->methods[i].parent == method.parent           or method.parent==NULL)
-        and (environment->methods[i].return_type == method.return_type or method.return_type==IGNORE)
-        and (environment->methods[i].arguments == method.arguments     or method.arguments==IGNORE) ){
+unsigned int environment_method_index(Scope* scope, Method method){
+    for(unsigned int i = 0; i < scope->methods.size(); i++){
+        if( (scope->methods[i].name == method.name               or method.name==IGNORE)
+        and (scope->methods[i].parent == method.parent           or method.parent==NULL)
+        and (scope->methods[i].return_type == method.return_type or method.return_type==IGNORE)
+        and (arguments_equal(scope->methods[i].arguments, method.arguments))){
             return i;
         }
     }
@@ -72,13 +98,13 @@ unsigned int environment_method_index(Environment* environment, Method method){
 
     return 0;
 }
-Method environment_method_get(Environment* environment, Method method){
-    for(unsigned int i = 0; i < environment->methods.size(); i++){
-        if( (environment->methods[i].name == method.name               or method.name==IGNORE)
-        and (environment->methods[i].parent == method.parent           or method.parent==NULL)
-        and (environment->methods[i].return_type == method.return_type or method.return_type==IGNORE)
-        and (environment->methods[i].arguments == method.arguments     or method.arguments==IGNORE) ){
-            return environment->methods[i];
+Method environment_method_get(Scope* scope, Method method){
+    for(unsigned int i = 0; i < scope->methods.size(); i++){
+        if( (scope->methods[i].name == method.name               or method.name==IGNORE)
+        and (scope->methods[i].parent == method.parent           or method.parent==NULL)
+        and (scope->methods[i].return_type == method.return_type or method.return_type==IGNORE)
+        and (arguments_equal(scope->methods[i].arguments, method.arguments))){
+            return scope->methods[i];
         }
     }
 
@@ -86,22 +112,22 @@ Method environment_method_get(Environment* environment, Method method){
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Method{"", NULL, "", ""};
+    return Method{"", NULL, IGNORE_ARGS, ""};
 }
 
 // Templates
-bool environment_template_exists(Environment* environment, Template type){
-    for(unsigned int i = 0; i < environment->templates.size(); i++){
-        if( (environment->templates[i].name == type.name               or type.name==IGNORE)){
+bool environment_template_exists(Scope* scope, Template type){
+    for(unsigned int i = 0; i < scope->templates.size(); i++){
+        if( (scope->templates[i].name == type.name               or type.name==IGNORE)){
             return true;
         }
     }
 
     return false;
 }
-unsigned int environment_template_index(Environment* environment, Template type){
-    for(unsigned int i = 0; i < environment->templates.size(); i++){
-        if( (environment->templates[i].name == type.name               or type.name==IGNORE)){
+unsigned int environment_template_index(Scope* scope, Template type){
+    for(unsigned int i = 0; i < scope->templates.size(); i++){
+        if( (scope->templates[i].name == type.name               or type.name==IGNORE)){
             return i;
         }
     }
@@ -112,10 +138,10 @@ unsigned int environment_template_index(Environment* environment, Template type)
 
     return 0;
 }
-Template environment_template_get(Environment* environment, Template type){
-    for(unsigned int i = 0; i < environment->templates.size(); i++){
-        if( (environment->templates[i].name == type.name               or type.name==IGNORE)){
-            return environment->templates[i];
+Template environment_template_get(Scope* scope, Template type){
+    for(unsigned int i = 0; i < scope->templates.size(); i++){
+        if( (scope->templates[i].name == type.name               or type.name==IGNORE)){
+            return scope->templates[i];
         }
     }
 

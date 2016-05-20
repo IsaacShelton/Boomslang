@@ -54,4 +54,7 @@ std::string filename_path(std::string);
 std::string filename_change_ext(std::string, std::string);
 std::ifstream::pos_type file_size(std::string);
 
+std::string encode_function_name(std::string);
+std::string encode_method_name(std::string, std::string);
+
 #endif // MANAGEMENT_H_INCLUDED
