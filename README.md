@@ -98,7 +98,6 @@ on Dog.bark()
 
 on main()
     Dog ruff
-    
     ruff.bark()
 ```
 
