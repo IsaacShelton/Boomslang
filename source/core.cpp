@@ -10,9 +10,12 @@ void load_core(Environment& environment){
     environment.global.templates.push_back( Template{"String"} );
     environment.global.methods.push_back( Method{"String.output",&environment.global, std::vector<MethodArgument>(),"void"} );
     environment.global.methods.push_back( Method{"String.print",&environment.global, std::vector<MethodArgument>(),"void"} );
+    environment.global.methods.push_back( Method{"String.input",&environment.global, std::vector<MethodArgument>(),"void"} );
+    environment.global.methods.push_back( Method{"String.toNumber",&environment.global, std::vector<MethodArgument>(),"Number"} );
 
     // Base Number Template
     environment.global.templates.push_back( Template{"Number"} );
     environment.global.methods.push_back( Method{"Number.output",&environment.global, std::vector<MethodArgument>(),"void"} );
     environment.global.methods.push_back( Method{"Number.print",&environment.global, std::vector<MethodArgument>(),"void"} );
+    environment.global.methods.push_back( Method{"Number.toString",&environment.global, std::vector<MethodArgument>(),"String"} );
 }

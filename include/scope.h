@@ -8,6 +8,9 @@
 #define IGNORE      "..."
 #define IGNORE_ARGS {MethodArgument{Template{IGNORE}, 1}}
 
+#define METHOD_PREFIX   "METHOD "
+#define TEMPLATE_PREFIX "TEMPLATE "
+
 struct Variable;
 struct Scope;
 struct Template;
@@ -62,6 +65,7 @@ typedef std::vector<Template> TemplateList;
 void print_scopes(Scope* scope, unsigned int indent = 0);
 void print_scopes_variables(Scope* scope, unsigned int indent = 0);
 void clean_scopes(Scope* scope);
+Scope* environment_get_child(Scope* scope, std::string name);
 
 // Methods
 bool environment_method_exists(Scope*, Method);
@@ -72,6 +76,8 @@ Method environment_method_get(Scope*, Method);
 bool environment_template_exists(Scope*, Template);
 unsigned int environment_template_index(Scope*, Template);
 Template environment_template_get(Scope*, Template);
+bool environment_template_variable_exists(Environment& environment, Template base, Variable variable);
+Variable environment_template_variable_get(Environment& environment, Template base, Variable variable);
 
 // Variables
 void environment_print_variables(Scope* scope, unsigned int indent = 0);

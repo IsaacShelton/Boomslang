@@ -7,9 +7,6 @@
 #include "token.h"
 #include "scope.h"
 
-#define METHOD_PREFIX   "METHOD "
-#define TEMPLATE_PREFIX "TEMPLATE "
-
 struct TemplateAdditions {
     std::string name;
     std::string additions;

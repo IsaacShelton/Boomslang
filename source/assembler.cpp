@@ -32,6 +32,15 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
             string name = tokens[index].data;
 
             output += resource(name);
+
+            index++;
+
+            if(tokens[index].id == TOKENINDEX_WORD){
+                output += " ";
+            }
+
+            index--;
+
             terminate_needed = true;
         }
         else if(tokens[index].id == TOKENINDEX_METHOD_CALL){
@@ -150,13 +159,39 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                 else {
                     if(return_value == "void"){
                         write  << "void " + resource(string_get_until(method_name, ".")) + "::" + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                        template_add_method(string_get_until(method_name, "."), "void " + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");\n");
+                        template_add_method(string_get_until(method_name, "."), "void " + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");");
                     }
                     else {
                         write  << resource(return_value) + " " + resource(string_get_until(method_name, ".")) + "::" + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                        template_add_method(string_get_until(method_name, "."), resource(return_value) + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");\n");
+                        template_add_method(string_get_until(method_name, "."), resource(return_value) + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");");
                     }
                 }
+            }
+            else if(tokens[index].data == "template"){
+                string template_name;
+                string template_code;
+
+                unsigned int before_indentation = indentation; // The indentation before processing tokens in method
+                unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+                index++;
+                template_name = tokens[index].data;
+
+                if(!environment_template_exists(environment.scope, Template{template_name})){
+                    die("Declared Template has no Implementation");
+                }
+
+                index+=2;
+
+                if(tokens[index].id == TOKENINDEX_INDENT){
+                    index++;
+                    while(before_indentation != token_indent){
+                        process_token(tokens, index, terminate_needed, template_code, write, header, define, token_indent, environment);
+                        index++;
+                    }
+                }
+
+                header << "class " + resource(template_name) + "{\npublic:\n" + template_code + "#ifdef BOOMSLANGDEFINE_" + template_name + "\nBOOMSLANGDEFINE_" + template_name + ";\n#endif // BOOMSLANGDEFINE_" + template_name + "\n};\n";
             }
             else if(tokens[index].data == "return"){
                 output += "return ";
@@ -178,19 +213,19 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
             output += "!";
         }
         else if(tokens[index].id == TOKENINDEX_ASSIGN){
-            output += "=";
+            output += " = ";
         }
         else if(tokens[index].id == TOKENINDEX_ADD){
-            output += "+";
+            output += " + ";
         }
         else if(tokens[index].id == TOKENINDEX_SUBTRACT){
-            output += "-";
+            output += " - ";
         }
         else if(tokens[index].id == TOKENINDEX_MULTIPLY){
-            output += "*";
+            output += " * ";
         }
         else if(tokens[index].id == TOKENINDEX_DIVIDE){
-            output += "/";
+            output += " / ";
         }
 
         terminate_needed = true;
@@ -220,7 +255,7 @@ void compile(Configuration* config, const TokenList& tokens, Environment& enviro
         header << "\n";
     }
 
-    unsigned int indentation;
+    unsigned int indentation = 0;
 
     // Process tokens
     for(unsigned int index = 0; index < tokens.size(); index++){

@@ -42,7 +42,17 @@ void clean_scopes(Scope* scope){
         delete scope->children[i];
     }
 }
+Scope* environment_get_child(Scope* scope, std::string name){
+    for(unsigned int i = 0; i < scope->children.size(); i++){
+        if(scope->children[i]->name == name){
+            return scope->children[i];
+        }
+    }
 
+    return NULL;
+}
+
+// Arguments
 bool arguments_equal(std::vector<MethodArgument> a, std::vector<MethodArgument> b){
     if(a.size() == 1){
         if(a[0].type.name == IGNORE and a[0].optional == true){
@@ -118,7 +128,7 @@ Method environment_method_get(Scope* scope, Method method){
 // Templates
 bool environment_template_exists(Scope* scope, Template type){
     for(unsigned int i = 0; i < scope->templates.size(); i++){
-        if( (scope->templates[i].name == type.name               or type.name==IGNORE)){
+        if( (scope->templates[i].name == type.name or type.name==IGNORE)){
             return true;
         }
     }
@@ -140,7 +150,7 @@ unsigned int environment_template_index(Scope* scope, Template type){
 }
 Template environment_template_get(Scope* scope, Template type){
     for(unsigned int i = 0; i < scope->templates.size(); i++){
-        if( (scope->templates[i].name == type.name               or type.name==IGNORE)){
+        if( (scope->templates[i].name == type.name or type.name==IGNORE)){
             return scope->templates[i];
         }
     }
@@ -150,6 +160,38 @@ Template environment_template_get(Scope* scope, Template type){
     #endif // DEV_ERRORS
 
     return Template{""};
+}
+
+// Template Variables
+bool environment_template_variable_exists(Environment& environment, Template base, Variable variable){
+    unsigned int variables_size = environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables.size();
+
+    for(unsigned int i = 0; i < variables_size; i++){
+        if( (environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i].name == variable.name or variable.name == IGNORE)
+        and (environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i].type == variable.type or variable.type == IGNORE) ){
+            // Variable Found
+            return true;
+        }
+    }
+
+    return false;
+}
+Variable environment_template_variable_get(Environment& environment, Template base, Variable variable){
+    unsigned int variables_size = environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables.size();
+
+    for(unsigned int i = 0; i < variables_size; i++){
+        if( (environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i].name == variable.name or variable.name == IGNORE)
+        and (environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i].type == variable.type or variable.type == IGNORE) ){
+            // Variable Found
+            return environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i];
+        }
+    }
+
+    #ifdef DEV_ERRORS
+    fail(DEV_BLANK_TYPE);
+    #endif // DEV_ERRORS
+
+    return Variable{IGNORE, IGNORE};
 }
 
 // Variables
@@ -167,10 +209,10 @@ void environment_print_variables(Scope* scope, unsigned int indent){
     }
 }
 bool environment_variable_exists(Scope* scope, Variable variable){
-    for(unsigned int i = 0; i < scope->children.size(); i++){
-        if(environment_variable_exists(scope->children[i], variable)){
-            return true;
-        }
+    if(scope->parent == NULL) return false;
+
+    if(environment_variable_exists(scope->parent, variable)){
+        return true;
     }
 
     for(unsigned int v = 0; v < scope->variables.size(); v++){
@@ -184,10 +226,16 @@ bool environment_variable_exists(Scope* scope, Variable variable){
 }
 
 Variable environment_variable_get(Scope* scope, Variable variable){
-    for(unsigned int i = 0; i < scope->children.size(); i++){
-        if(environment_variable_exists(scope->children[i], variable)){
-            return environment_variable_get(scope->children[i], variable);
-        }
+    if(scope->parent == NULL){
+        #ifdef DEV_ERRORS
+        fail(DEV_BLANK_TYPE);
+        #endif // DEV_ERRORS
+
+        return Variable{"",""};
+    }
+
+    if(environment_variable_exists(scope->parent, variable)){
+        return environment_variable_get(scope->parent, variable);
     }
 
     for(unsigned int v = 0; v < scope->variables.size(); v++){

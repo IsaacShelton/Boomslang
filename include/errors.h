@@ -28,7 +28,7 @@
 #define CANT_CALL_METHODS_OF_VOID          (ERROR_INDICATOR + "Can't call methods of void, it has no type")
 #define CANT_PASS_VOID_AS_ARGUMENT         (ERROR_INDICATOR + "Can't pass void as method argument, it has no type")
 
-#define DEV_BLANK_TYPE                (NOLINE_ERROR_INDICATOR + "Returning blank type")
+#define DEV_BLANK_TYPE                (NOLINE_ERROR_INDICATOR + "Returning blank type at " + string(__LINE__))
 
 extern std::string current_filename;
 
