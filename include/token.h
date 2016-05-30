@@ -68,9 +68,20 @@ struct Token {
 
 typedef std::vector<Token> TokenList;
 
+struct TokenContext {
+    const TokenList& tokens;
+    unsigned int& index;
+};
+
 std::string token_name(Token token);
 std::string token_operator(Token token);
 void token_print(Token token);
 void lexer_log_tokens(TokenList token);
+
+bool advance_index(unsigned int& index, unsigned int length);
+bool retreat_index(unsigned int& index);
+void index_increase(TokenContext context);
+void index_decrease(TokenContext context);
+void token_force(TokenContext context, unsigned int token_id, std::string cant_advance, std::string fail);
 
 #endif // INCLUDED_TOKEN_H

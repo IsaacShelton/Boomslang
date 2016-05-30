@@ -7,7 +7,7 @@
 
 #define DEV_ERRORS
 
-#define ERROR_INDICATOR                    (current_filename + " (" + getLineString(tokens,index) + "): ")
+#define ERROR_INDICATOR                    (current_filename + " (" + getLineString(context.tokens,context.index) + "): ")
 #define NOLINE_ERROR_INDICATOR             (current_filename + ": ")
 
 #define NO_MAIN                            (NOLINE_ERROR_INDICATOR + "Missing main method")
@@ -16,10 +16,10 @@
 #define INVALID_TEMPLATE_NAME(a)           (ERROR_INDICATOR + "Invalid template name '" + a + "'")
 #define GLOBAL_STATEMENT                   (ERROR_INDICATOR + "Unexpected statement in global scope")
 #define UNEXPECTED_TERMINATE               (ERROR_INDICATOR + "Unexpected statement termination")
-#define UNEXPECTED_OPERATOR                (ERROR_INDICATOR + "Unexpected operator '" + token_operator(tokens[index]) + "'")
-#define UNEXPECTED_OPERATOR_INEXP          (ERROR_INDICATOR + "Unexpected operator '" + token_operator(tokens[index]) + "' in expression")
-#define UNEXPECTED_WORD                    (ERROR_INDICATOR + "Unexpected identifier '" + tokens[index].data + "'")
-#define UNEXPECTED_WORD_AFTER_VARNAME(a)   (ERROR_INDICATOR + "Unexpected identifier '" + tokens[index].data + "' after variable '" + a + "'")
+#define UNEXPECTED_OPERATOR                (ERROR_INDICATOR + "Unexpected operator '" + token_operator(context.tokens[context.index]) + "'")
+#define UNEXPECTED_OPERATOR_INEXP          (ERROR_INDICATOR + "Unexpected operator '" + token_operator(context.tokens[context.index]) + "' in expression")
+#define UNEXPECTED_WORD                    (ERROR_INDICATOR + "Unexpected identifier '" + context.tokens[context.index].data + "'")
+#define UNEXPECTED_WORD_AFTER_VARNAME(a)   (ERROR_INDICATOR + "Unexpected identifier '" + context.tokens[context.index].data + "' after variable '" + a + "'")
 #define UNDECLARED_VARIABLE(a)             (ERROR_INDICATOR + "Undeclared variable '" + a + "'")
 #define UNDECLARED_METHOD(a)               (ERROR_INDICATOR + "Undeclared method '" + a + "'")
 #define UNDECLARED_TEMPLATE(a)             (ERROR_INDICATOR + "Undeclared template '" + a + "'")

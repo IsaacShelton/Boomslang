@@ -17,4 +17,9 @@ Variable context_variable_get(Environment&, Variable);
 Template context_template_get(Environment&, Template);
 Method context_method_get(Environment&, Method);
 
+void context_enforce_expression(TokenContext context, Environment& e, Template& type);
+void context_enforce_arguments(TokenContext context, Environment& e, Template& type);
+void context_enforce_method_declaration_arguments(TokenContext tokens, Environment& e, MethodArgumentList& method_arguments, std::string& argument_string);
+void context_enforce_following_method_calls(TokenContext context, Environment& e, Template& type);
+
 #endif // CONTEXT_H_INCLUDED

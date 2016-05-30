@@ -14,52 +14,52 @@
 
 using namespace std;
 
-void process_token(const TokenList& tokens, unsigned int& index, bool& terminate_needed, string& output, ofstream& write, ofstream& header, ofstream& define, unsigned int& indentation, Environment& environment){
+void process_token(TokenContext context, bool& terminate_needed, string& output, ofstream& write, ofstream& header, ofstream& define, unsigned int& indentation, Environment& environment){
     // Terminate
-    if(tokens[index].id == TOKENINDEX_TERMINATE and terminate_needed){
+    if(context.tokens[context.index].id == TOKENINDEX_TERMINATE and terminate_needed){
         output += ";\n";
         terminate_needed = false;
     }
     else { // Other tokens
 
-        if(tokens[index].id == TOKENINDEX_STRING_LITERAL){
-            output += "boomslang_String(\"" + tokens[index].data + "\")";
+        if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
+            output += "boomslang_String(\"" + context.tokens[context.index].data + "\")";
         }
-        else if(tokens[index].id == TOKENINDEX_NUMERIC_LITERAL){
-            output += "boomslang_Number(" + tokens[index].data + ")";
+        else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
+            output += "boomslang_Number(" + context.tokens[context.index].data + ")";
         }
-        else if(tokens[index].id == TOKENINDEX_WORD){
-            string name = tokens[index].data;
+        else if(context.tokens[context.index].id == TOKENINDEX_WORD){
+            string name = context.tokens[context.index].data;
 
             output += resource(name);
 
-            index++;
+            context.index++;
 
-            if(tokens[index].id == TOKENINDEX_WORD){
+            if(context.tokens[context.index].id == TOKENINDEX_WORD){
                 output += " ";
             }
 
-            index--;
+            context.index--;
 
             terminate_needed = true;
         }
-        else if(tokens[index].id == TOKENINDEX_METHOD_CALL){
-            output += "." + resource(tokens[index].data);
+        else if(context.tokens[context.index].id == TOKENINDEX_METHOD_CALL){
+            output += "." + resource(context.tokens[context.index].data);
         }
-        else if(tokens[index].id == TOKENINDEX_OPEN){
+        else if(context.tokens[context.index].id == TOKENINDEX_OPEN){
             output += "(";
         }
-        else if(tokens[index].id == TOKENINDEX_CLOSE){
+        else if(context.tokens[context.index].id == TOKENINDEX_CLOSE){
             output += ")";
         }
-        else if(tokens[index].id == TOKENINDEX_INDENT){
+        else if(context.tokens[context.index].id == TOKENINDEX_INDENT){
             indentation++;
         }
-        else if(tokens[index].id == TOKENINDEX_DEDENT){
+        else if(context.tokens[context.index].id == TOKENINDEX_DEDENT){
             indentation--;
         }
-        else if(tokens[index].id == TOKENINDEX_KEYWORD){
-            if(tokens[index].data == "on"){
+        else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
+            if(context.tokens[context.index].data == "on"){
                 string return_value;
                 string method_name;
                 string method_code;
@@ -69,9 +69,9 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
 
-                index++;
-                method_name = tokens[index].data;
-                index += 2;
+                context.index++;
+                method_name = context.tokens[context.index].data;
+                context.index += 2;
 
                 if(!environment_method_exists(environment.scope, Method{method_name, &environment.global, IGNORE_ARGS, IGNORE})){
                     die("Declared Method has no Implementation");
@@ -83,22 +83,22 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                 bool value = false;
                 bool first_word = true;
 
-                while(balance != 0 or (tokens[index].id != TOKENINDEX_CLOSE)){
-                    if(tokens[index].id == TOKENINDEX_OPEN){
+                while(balance != 0 or (context.tokens[context.index].id != TOKENINDEX_CLOSE)){
+                    if(context.tokens[context.index].id == TOKENINDEX_OPEN){
                         balance++;
                     }
-                    else if(tokens[index].id == TOKENINDEX_CLOSE){
+                    else if(context.tokens[context.index].id == TOKENINDEX_CLOSE){
                         balance--;
                     }
-                    else if(tokens[index].id == TOKENINDEX_WORD){
+                    else if(context.tokens[context.index].id == TOKENINDEX_WORD){
                         if(!first_word){
                             method_arguments += " ";
                         }
 
-                        method_arguments += resource(tokens[index].data);
+                        method_arguments += resource(context.tokens[context.index].data);
                         first_word = false;
                     }
-                    else if(tokens[index].id == TOKENINDEX_ASSIGN){
+                    else if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
                         if(value == true){
                             die(UNEXPECTED_OPERATOR_INEXP);
                         }
@@ -106,39 +106,39 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                         value = true;
                         method_arguments += "=";
                     }
-                    else if(tokens[index].id == TOKENINDEX_NEXT){
+                    else if(context.tokens[context.index].id == TOKENINDEX_NEXT){
                         method_arguments += ", ";
                         value = false;
                         first_word = true;
                     }
-                    else if(tokens[index].id == TOKENINDEX_STRING_LITERAL){
+                    else if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
                         if(value == false){
                             die(UNEXPECTED_OPERATOR);
                         }
 
-                        method_arguments += "boomslang_String(\"" + tokens[index].data + "\")";
+                        method_arguments += "boomslang_String(\"" + context.tokens[context.index].data + "\")";
                     }
-                    else if(tokens[index].id == TOKENINDEX_NUMERIC_LITERAL){
+                    else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
                         if(value == false){
                             die(UNEXPECTED_OPERATOR);
                         }
 
-                        method_arguments += "boomslang_Number(" + tokens[index].data + ")";
+                        method_arguments += "boomslang_Number(" + context.tokens[context.index].data + ")";
                     }
                     else {
                         die(INVALID_TOKEN);
                     }
 
-                    index++;
+                    context.index++;
                 }
 
-                index+=2;
+                context.index+=2;
 
-                if(tokens[index].id == TOKENINDEX_INDENT){
-                    index++;
+                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                    context.index++;
                     while(before_indentation != token_indent){
-                        process_token(tokens, index, terminate_needed, method_code, write, header, define, token_indent, environment);
-                        index++;
+                        process_token(context, terminate_needed, method_code, write, header, define, token_indent, environment);
+                        context.index++;
                     }
                 }
 
@@ -167,64 +167,64 @@ void process_token(const TokenList& tokens, unsigned int& index, bool& terminate
                     }
                 }
             }
-            else if(tokens[index].data == "template"){
+            else if(context.tokens[context.index].data == "template"){
                 string template_name;
                 string template_code;
 
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
 
-                index++;
-                template_name = tokens[index].data;
+                context.index++;
+                template_name = context.tokens[context.index].data;
 
                 if(!environment_template_exists(environment.scope, Template{template_name})){
                     die("Declared Template has no Implementation");
                 }
 
-                index+=2;
+                context.index+=2;
 
-                if(tokens[index].id == TOKENINDEX_INDENT){
-                    index++;
+                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                    context.index++;
                     while(before_indentation != token_indent){
-                        process_token(tokens, index, terminate_needed, template_code, write, header, define, token_indent, environment);
-                        index++;
+                        process_token(context, terminate_needed, template_code, write, header, define, token_indent, environment);
+                        context.index++;
                     }
                 }
 
                 header << "class " + resource(template_name) + "{\npublic:\n" + template_code + "#ifdef BOOMSLANGDEFINE_" + template_name + "\nBOOMSLANGDEFINE_" + template_name + ";\n#endif // BOOMSLANGDEFINE_" + template_name + "\n};\n";
             }
-            else if(tokens[index].data == "return"){
+            else if(context.tokens[context.index].data == "return"){
                 output += "return ";
             }
         }
-        else if(tokens[index].id == TOKENINDEX_ADDRESS){
+        else if(context.tokens[context.index].id == TOKENINDEX_ADDRESS){
             output += "&";
         }
-        else if(tokens[index].id == TOKENINDEX_MEMBER){
+        else if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
             output += ".";
         }
-        else if(tokens[index].id == TOKENINDEX_NEXT){
+        else if(context.tokens[context.index].id == TOKENINDEX_NEXT){
             output += ",";
         }
-        else if(tokens[index].id == TOKENINDEX_ADDRESSMEMBER){
+        else if(context.tokens[context.index].id == TOKENINDEX_ADDRESSMEMBER){
             output += "->";
         }
-        else if(tokens[index].id == TOKENINDEX_NOT){
+        else if(context.tokens[context.index].id == TOKENINDEX_NOT){
             output += "!";
         }
-        else if(tokens[index].id == TOKENINDEX_ASSIGN){
+        else if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
             output += " = ";
         }
-        else if(tokens[index].id == TOKENINDEX_ADD){
+        else if(context.tokens[context.index].id == TOKENINDEX_ADD){
             output += " + ";
         }
-        else if(tokens[index].id == TOKENINDEX_SUBTRACT){
+        else if(context.tokens[context.index].id == TOKENINDEX_SUBTRACT){
             output += " - ";
         }
-        else if(tokens[index].id == TOKENINDEX_MULTIPLY){
+        else if(context.tokens[context.index].id == TOKENINDEX_MULTIPLY){
             output += " * ";
         }
-        else if(tokens[index].id == TOKENINDEX_DIVIDE){
+        else if(context.tokens[context.index].id == TOKENINDEX_DIVIDE){
             output += " / ";
         }
 
@@ -259,7 +259,7 @@ void compile(Configuration* config, const TokenList& tokens, Environment& enviro
 
     // Process tokens
     for(unsigned int index = 0; index < tokens.size(); index++){
-        process_token(tokens, index, terminate_needed, global, write, header, define, indentation, environment);
+        process_token(TokenContext{tokens, index}, terminate_needed, global, write, header, define, indentation, environment);
     }
 
     for(unsigned int i = 0; i < template_additions.size(); i++){

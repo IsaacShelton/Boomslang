@@ -60,6 +60,7 @@ typedef std::vector<Variable> VariableList;
 typedef std::vector<Scope> ScopeList;
 typedef std::vector<Method> MethodList;
 typedef std::vector<Template> TemplateList;
+typedef std::vector<MethodArgument> MethodArgumentList;
 
 // Scopes
 void print_scopes(Scope* scope, unsigned int indent = 0);
