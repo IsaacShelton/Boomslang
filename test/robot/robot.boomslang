@@ -1,0 +1,15 @@
+
+template Robot
+	String name
+	Number speed
+
+on Robot.greet()
+	("Hello my name is " + self.name).output()
+	("I am going " + self.speed.toString() + " miles per hour").output()
+
+on main()
+	Robot jeff
+	jeff.name = "Jeff"
+	jeff.speed = 15
+	
+	jeff.greet()
