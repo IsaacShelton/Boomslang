@@ -49,6 +49,10 @@ Scope* environment_get_child(Scope* scope, std::string name){
         }
     }
 
+    #ifdef DEV_ERRORS
+    fail(DEV_BLANK_TYPE);
+    #endif // DEV_ERRORS
+
     return NULL;
 }
 
@@ -151,6 +155,23 @@ unsigned int environment_template_index(Scope* scope, Template type){
 Template environment_template_get(Scope* scope, Template type){
     for(unsigned int i = 0; i < scope->templates.size(); i++){
         if( (scope->templates[i].name == type.name or type.name==IGNORE)){
+            return scope->templates[i];
+        }
+    }
+
+    #ifdef DEV_ERRORS
+    fail(DEV_BLANK_TYPE);
+    #endif // DEV_ERRORS
+
+    return Template{""};
+}
+Template environment_template_get_first(Scope* scope, Template type, Template type2){
+    for(unsigned int i = 0; i < scope->templates.size(); i++){
+        if( (scope->templates[i].name == type.name or type.name==IGNORE)){
+            return scope->templates[i];
+        }
+
+        if( (scope->templates[i].name == type2.name or type2.name==IGNORE)){
             return scope->templates[i];
         }
     }

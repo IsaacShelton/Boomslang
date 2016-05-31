@@ -62,24 +62,23 @@ void context_enforce_expression(TokenContext context, Environment& e, Template& 
                 context_enforce_arguments(context, e, base);
                 index_increase(context);
 
-
+                context_enforce_following_method_calls(context, e, base);
+                index_decrease(context);
             }
             else { // Variable with possible method calls after
                 if( !environment_variable_exists(e.scope, Variable{name,IGNORE}) ){
-                    fail(UNDECLARED_VARIABLE(context.tokens[context.index].data));
+                    fail(UNDECLARED_VARIABLE(name));
                 }
 
-                Template base_template;
-                string variable_type = environment_variable_get(e.scope, Variable{name,IGNORE}).type;
-
-                base_template.name = variable_type;
+                Template base_template{environment_variable_get(e.scope, Variable{name,IGNORE}).type};
 
                 while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                    if( context_template_exists(e, Template{variable_type}) ){
+                    if( context_template_exists(e, base_template) ){
                         index_increase(context);
 
-                        if( environment_template_variable_exists(e, Template{variable_type}, Variable{context.tokens[context.index].data,IGNORE}) ){
-                            variable_type = environment_template_variable_get(e, Template{variable_type}, Variable{context.tokens[context.index].data,IGNORE}).type;
+                        if( environment_template_variable_exists(e, base_template, Variable{context.tokens[context.index].data,IGNORE}) ){
+                            base_template.name = environment_template_variable_get(e, base_template, Variable{context.tokens[context.index].data,IGNORE}).type;
+                            index_increase(context);
                         }
                         else {
                             index_decrease(context);
@@ -89,15 +88,17 @@ void context_enforce_expression(TokenContext context, Environment& e, Template& 
                         }
                     }
                     else {
-                        die(UNDECLARED_TEMPLATE(variable_type));
+                        die(UNDECLARED_TEMPLATE(base_template.name));
                     }
                 }
 
+                index_decrease(context);
+
                 if(type.name == ""){
-                    type.name = variable_type;
+                    type.name = base_template.name;
                 }
-                else if(type.name != variable_type){
-                    fail( INCOMPATIBLE_TEMPLATES(type.name,variable_type) );
+                else if(type.name != base_template.name){
+                    fail( INCOMPATIBLE_TEMPLATES(type.name, base_template.name) );
                 }
             }
         }
@@ -442,6 +443,26 @@ void context_enforce_method_declaration_arguments(TokenContext context, Environm
 
     if(type != ""){
         method_arguments.push_back( MethodArgument{Template{type}, optional} );
+    }
+}
+void context_enforce_following_method_calls(TokenContext context, Environment& e, Template& type){
+    while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+        if( environment_template_exists(&e.global, type) ){
+            index_increase(context);
+
+            if( environment_template_variable_exists(e, type ,Variable{context.tokens[context.index].data,IGNORE}) ){
+                type.name = environment_template_variable_get(e, type, Variable{context.tokens[context.index].data,IGNORE}).type;
+            }
+            else {
+                index_decrease(context);
+                token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+                context_enforce_arguments(context, e, type);
+                index_increase(context);
+            }
+        }
+        else {
+            die(UNDECLARED_TEMPLATE(type.name));
+        }
     }
 }
 

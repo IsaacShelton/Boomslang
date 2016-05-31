@@ -163,7 +163,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                     }
                     else {
                         write  << resource(return_value) + " " + resource(string_get_until(method_name, ".")) + "::" + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                        template_add_method(string_get_until(method_name, "."), resource(return_value) + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");");
+                        template_add_method(string_get_until(method_name, "."), resource(return_value) + " " + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");");
                     }
                 }
             }

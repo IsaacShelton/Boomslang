@@ -23,6 +23,8 @@
 #define UNDECLARED_VARIABLE(a)             (ERROR_INDICATOR + "Undeclared variable '" + a + "'")
 #define UNDECLARED_METHOD(a)               (ERROR_INDICATOR + "Undeclared method '" + a + "'")
 #define UNDECLARED_TEMPLATE(a)             (ERROR_INDICATOR + "Undeclared template '" + a + "'")
+#define TEMPLATE_DECLARED_AFTER(a, b)      (ERROR_INDICATOR + "The Template '" + a + "' was declared after '" + b + "', it can't be used before that")
+#define TEMPLATE_IS_FINAL(a)               (ERROR_INDICATOR + "The Template '" + a + "' is final, methods can't be added")
 #define UNDECLARED_METHOD_OTHERS(a)        (ERROR_INDICATOR + "Undeclared method '" + a + "' - similar methods exist with different arguments")
 #define INCOMPATIBLE_TEMPLATES(a,b)        (ERROR_INDICATOR + "Incompatible templates '" + a + "' and '" + b + "'")
 #define CANT_CALL_METHODS_OF_VOID          (ERROR_INDICATOR + "Can't call methods of void, it has no type")

@@ -26,8 +26,6 @@ void template_add_method(string name, string function_declaration){
     template_additions.push_back( TemplateAdditions{name, function_declaration} );
 }
 
-// Token Enforcement Sequences
-
 // Validate Token Statement
 void enforce_token(TokenContext context, Environment& environment){
     static unsigned int next_block = 0;
@@ -110,6 +108,20 @@ void enforce_token(TokenContext context, Environment& environment){
 
             if( string_count(method_name,".") == 1 ){
                 environment.scope->variables.push_back( Variable{"self", string_get_until(method_name,".")} );
+
+                if( context_template_get(environment, Template{string_get_until(method_name,".")}).is_final ){
+                    fail(TEMPLATE_IS_FINAL(string_get_until(method_name,".")));
+                }
+
+                if( environment_template_get_first(&environment.global, Template{string_get_until(method_name,".")}, Template{method_return_type}).name != string_get_until(method_name,".")){
+                    fail(TEMPLATE_DECLARED_AFTER(method_return_type, string_get_until(method_name,".")));
+                }
+
+                for(MethodArgument argument : method_arguments){
+                    if( environment_template_get_first(&environment.global, Template{string_get_until(method_name,".")}, Template{argument.type.name}).name != argument.type.name){
+                        fail(TEMPLATE_DECLARED_AFTER(argument.type.name, string_get_until(method_name,".")));
+                    }
+                }
             }
 
             index_increase(context);

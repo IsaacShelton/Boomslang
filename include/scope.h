@@ -8,8 +8,8 @@
 #define IGNORE      "..."
 #define IGNORE_ARGS {MethodArgument{Template{IGNORE}, 1}}
 
-#define METHOD_PREFIX   "METHOD "
-#define TEMPLATE_PREFIX "TEMPLATE "
+#define METHOD_PREFIX   std::string("METHOD ")
+#define TEMPLATE_PREFIX std::string("TEMPLATE ")
 
 struct Variable;
 struct Scope;
@@ -25,6 +25,7 @@ struct Variable {
 
 struct Template {
     std::string name;
+    bool is_final;
 };
 
 struct MethodArgument {
@@ -79,6 +80,7 @@ unsigned int environment_template_index(Scope*, Template);
 Template environment_template_get(Scope*, Template);
 bool environment_template_variable_exists(Environment& environment, Template base, Variable variable);
 Variable environment_template_variable_get(Environment& environment, Template base, Variable variable);
+Template environment_template_get_first(Scope*, Template, Template);
 
 // Variables
 void environment_print_variables(Scope* scope, unsigned int indent = 0);
