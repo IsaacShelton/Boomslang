@@ -268,7 +268,7 @@ string encode_function_name(string name){
     return "boomslang_function_" + name;
 }
 
-std::string encode_method_name(string name, string template_name){
-    template_name = string_replace_all(template_name,"_","_U");
-    return "boomslang_method_" + template_name + "_" + name;
+std::string encode_method_name(string name, string class_name){
+    class_name = string_replace_all(class_name,"_","_U");
+    return "boomslang_method_" + class_name + "_" + name;
 }

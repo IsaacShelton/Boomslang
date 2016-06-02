@@ -191,11 +191,12 @@ TokenList tokenize(string code){
             code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until(code," ") == "template"){      // template
-            log_lexer(LEXER_LOG_PREFIX + "Found `template` keyword");
-            tokens.push_back( TOKEN_KEYWORD("template") );
+        else if( string_get_until(code," ") == "class"){      // class
+            log_lexer(LEXER_LOG_PREFIX + "Found `class` keyword");
+            tokens.push_back( TOKEN_KEYWORD("class") );
 
-            code = string_delete_amount(code,8);
+            code = string_delete_amount(code,5);
+
             code = string_kill_whitespace(code);
         }
         else if( string_get_until(code," ") == "unique"){        // Method Declaration

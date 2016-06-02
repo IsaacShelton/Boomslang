@@ -12,20 +12,6 @@
 
 using namespace std;
 
-// Template Additions
-std::vector<TemplateAdditions> template_additions;
-void template_add_method(string name, string function_declaration){
-
-    for(unsigned int i = 0; i < template_additions.size(); i++){
-        if(template_additions[i].name == name){
-            template_additions[i].additions += function_declaration;
-            return;
-        }
-    }
-
-    template_additions.push_back( TemplateAdditions{name, function_declaration} );
-}
-
 // Validate Token Statement
 void enforce_token(TokenContext context, Environment& environment){
     static unsigned int next_block = 0;
@@ -38,20 +24,20 @@ void enforce_token(TokenContext context, Environment& environment){
             die(GLOBAL_STATEMENT);
         }
 
-        Template base_template;
+        Class base_class;
 
         if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
-            base_template.name = "String";
+            base_class.name = "String";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
-            base_template.name = "Number";
+            base_class.name = "Number";
         }
 
         token_force(context, TOKENINDEX_MEMBER, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
 
         while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
             token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
-            context_enforce_arguments(context, environment, base_template);
+            context_enforce_arguments(context, environment, base_class);
             index_increase(context);
         }
 
@@ -63,7 +49,7 @@ void enforce_token(TokenContext context, Environment& environment){
             die(GLOBAL_STATEMENT);
         }
 
-        Template expression_type;
+        Class expression_type;
 
         context_enforce_expression(context, environment, expression_type);
         token_force(context, TOKENINDEX_MEMBER, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
@@ -98,55 +84,46 @@ void enforce_token(TokenContext context, Environment& environment){
             token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method name after 'on'", ERROR_INDICATOR + "Expected method name after 'on'");
             method_name = context.tokens[context.index].data;
 
+            // Create method scope
             environment.scope->children.push_back(new Scope{METHOD_PREFIX + method_name, environment.scope});
             environment.scope = environment.scope->children[environment.scope->children.size()-1];
 
+            // Enforce method declaration arguments
             context_enforce_method_declaration_arguments(context, environment, method_arguments, arguments_string);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
 
-            environment.global.methods.push_back( Method{method_name, &environment.global, method_arguments, "void"} );
+            // Add method reference to parent scope
+            environment.scope->parent->methods.push_back( Method{method_name, environment.scope->parent, method_arguments, "void"} );
 
-            if( string_count(method_name,".") == 1 ){
-                environment.scope->variables.push_back( Variable{"self", string_get_until(method_name,".")} );
-
-                if( context_template_get(environment, Template{string_get_until(method_name,".")}).is_final ){
-                    fail(TEMPLATE_IS_FINAL(string_get_until(method_name,".")));
-                }
-
-                if( environment_template_get_first(&environment.global, Template{string_get_until(method_name,".")}, Template{method_return_type}).name != string_get_until(method_name,".")){
-                    fail(TEMPLATE_DECLARED_AFTER(method_return_type, string_get_until(method_name,".")));
-                }
-
-                for(MethodArgument argument : method_arguments){
-                    if( environment_template_get_first(&environment.global, Template{string_get_until(method_name,".")}, Template{argument.type.name}).name != argument.type.name){
-                        fail(TEMPLATE_DECLARED_AFTER(argument.type.name, string_get_until(method_name,".")));
-                    }
-                }
+            // Add self variable to methods of a type
+            if(name_is_class(environment.scope->parent->name)){
+                environment.scope->variables.push_back( Variable{"self", name_get_class(environment.scope->parent->name)} );
             }
 
             index_increase(context);
             if(context.tokens[context.index].id != TOKENINDEX_INDENT){
                 index_decrease(context);
+                environment.scope = environment.scope->parent;
             }
         }
         else if(context.tokens[context.index].data == "return"){
-            Template value_template;
+            Class value_class;
 
-            context_enforce_expression(context, environment, value_template);
+            context_enforce_expression(context, environment, value_class);
 
-            environment.global.methods[environment.global.methods.size()-1].return_type = value_template.name;
+            environment.global.methods[environment.global.methods.size()-1].return_type = value_class.name;
         }
-        else if(context.tokens[context.index].data == "template"){
-            string template_name;
+        else if(context.tokens[context.index].data == "class"){
+            string class_name;
 
-            token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected template name in template declaration", ERROR_INDICATOR + "Expected template name in template declaration");
-            template_name = context.tokens[context.index].data;
+            token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected class name in class declaration", ERROR_INDICATOR + "Expected class name in class declaration");
+            class_name = context.tokens[context.index].data;
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
 
-            environment.scope->children.push_back(new Scope{TEMPLATE_PREFIX + template_name, environment.scope});
+            environment.scope->children.push_back(new Scope{CLASS_PREFIX + class_name, environment.scope});
             environment.scope = environment.scope->children[environment.scope->children.size()-1];
 
-            environment.global.templates.push_back( Template{template_name} );
+            environment.global.classes.push_back( Class{class_name} );
 
             index_increase(context);
             if(context.tokens[context.index].id != TOKENINDEX_INDENT){
@@ -162,7 +139,7 @@ void enforce_token(TokenContext context, Environment& environment){
         }
     }
     else if(context.tokens[context.index].id == TOKENINDEX_WORD){
-        string template_name = context.tokens[context.index].data;
+        string class_name = context.tokens[context.index].data;
 
         if( !advance_index(context.index, context.tokens.size()) ){
             die(ERROR_INDICATOR + UNEXPECTED_TERMINATE);
@@ -176,7 +153,7 @@ void enforce_token(TokenContext context, Environment& environment){
             index_decrease(context);
 
             string method_name = context.tokens[context.index].data;
-            Template return_type;
+            Class return_type;
 
             context_enforce_arguments(context, environment, return_type);
 
@@ -194,13 +171,11 @@ void enforce_token(TokenContext context, Environment& environment){
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE,  ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
-        else if(environment_template_exists(&environment.global, Template{template_name})){
-            // Variable Declaration
-
-            string type = template_name;
+        else if(environment_class_exists(&environment.global, Class{class_name})){ // Variable Declaration
+            string type = class_name;
 
             while( context.tokens[context.index].id == TOKENINDEX_WORD
-            and    environment_template_exists(&environment.global, Template{context.tokens[context.index].data})){
+            and    environment_class_exists(&environment.global, Class{context.tokens[context.index].data})){
                 type += " " + context.tokens[context.index].data;
                 index_increase(context);
             }
@@ -213,52 +188,59 @@ void enforce_token(TokenContext context, Environment& environment){
             environment.scope->variables.push_back( Variable{variable_name, type} );
             token_force(context, TOKENINDEX_TERMINATE,  ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
-        else {
-            // Variable might be declared
+        else { // Plain Variable
+            Class base_class;
 
+            // Go back to the word token containing the variable data
             retreat_index(context.index);
 
+            // Ensure variable is declared
             if( !environment_variable_exists(environment.scope, Variable{context.tokens[context.index].data, IGNORE}) ){
                 fail(UNDECLARED_VARIABLE(context.tokens[context.index].data));
             }
 
-            Template base_template;
-
+            // Get the class name depending on where the variable was found
             if(environment_variable_exists(environment.scope, Variable{context.tokens[context.index].data,IGNORE})){
-                base_template.name = environment_variable_get(environment.scope, Variable{context.tokens[context.index].data,IGNORE}).type;
+                base_class.name = environment_variable_get(environment.scope, Variable{context.tokens[context.index].data,IGNORE}).type;
             }
             else if(environment_variable_exists(&environment.global, Variable{context.tokens[context.index].data,IGNORE})){
-                base_template.name = environment_variable_get(&environment.global, Variable{context.tokens[context.index].data,IGNORE}).type;
+                base_class.name = environment_variable_get(&environment.global, Variable{context.tokens[context.index].data,IGNORE}).type;
             }
 
+            // See whats after the variable name
             index_increase(context);
 
+            // Handle following fields and methods
             while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                if( environment_template_exists(&environment.global, base_template) ){
+                if( environment_class_exists(&environment.global, base_class) ){ // Make sure the current class is valid
+                    // Next token should be a word
                     index_increase(context);
 
-                    if( environment_template_variable_exists(environment,base_template,Variable{context.tokens[context.index].data,IGNORE}) ){
-                        base_template.name = environment_template_variable_get(environment,base_template,Variable{context.tokens[context.index].data,IGNORE}).type;
+                    // Is it a field of the class
+                    if( environment_class_variable_exists(environment,base_class,Variable{context.tokens[context.index].data,IGNORE}) ){
+                        base_class.name = environment_class_variable_get(environment,base_class,Variable{context.tokens[context.index].data,IGNORE}).type;
                     }
-                    else {
+                    else { // Method of the class
                         index_decrease(context);
                         token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
-                        context_enforce_arguments(context, environment, base_template);
+                        context_enforce_arguments(context, environment, base_class);
                         index_increase(context);
                     }
                 }
-                else {
-                    die(UNDECLARED_TEMPLATE(template_name));
+                else { // Undeclared Class
+                    die(UNDECLARED_CLASS(class_name));
                 }
             }
 
+            // See whats after methods calls
             index_increase(context);
 
+            // Are we gonna assign it to something
             if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
                 index_increase(context);
-                context_enforce_expression(context, environment, base_template);
+                context_enforce_expression(context, environment, base_class);
             }
-            else {
+            else { // We aren't gonna assign it, so go back
                 index_decrease(context);
             }
 
@@ -267,7 +249,7 @@ void enforce_token(TokenContext context, Environment& environment){
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
     }
-    else {
+    else { // Unexpected operator
         die(UNEXPECTED_OPERATOR);
     }
 }
@@ -278,7 +260,7 @@ Environment enforce(TokenList tokens){
 
     Environment environment;
 
-    // Load Boomslang Core Templates
+    // Load Boomslang Core Classes
     load_core(environment);
 
     for(unsigned int index = 0; index < tokens.size(); index++){

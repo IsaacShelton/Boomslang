@@ -8,13 +8,14 @@
 #include "../include/errors.h"
 #include "../include/locate.h"
 #include "../include/options.h"
+#include "../include/context.h"
 #include "../include/enforcer.h"
 #include "../include/assembler.h"
 #include "../include/management.h"
 
 using namespace std;
 
-void process_token(TokenContext context, bool& terminate_needed, string& output, ofstream& write, ofstream& header, ofstream& define, unsigned int& indentation, Environment& environment){
+void process_token(TokenContext context, bool& terminate_needed, string& output, ofstream& write, ofstream& header, unsigned int& indentation, Environment& environment){
     // Terminate
     if(context.tokens[context.index].id == TOKENINDEX_TERMINATE and terminate_needed){
         output += ";\n";
@@ -64,7 +65,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 string method_name;
                 string method_code;
                 string method_arguments;
-                bool of_template = false;
+                bool of_class = false;
 
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
@@ -73,11 +74,14 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 method_name = context.tokens[context.index].data;
                 context.index += 2;
 
-                if(!environment_method_exists(environment.scope, Method{method_name, &environment.global, IGNORE_ARGS, IGNORE})){
-                    die("Declared Method has no Implementation");
+                if(!environment_method_exists(environment.scope, Method{method_name, environment.scope, IGNORE_ARGS, IGNORE})){
+                    die("Declared Method '" + method_name + "' has no Implementation");
                 }
 
-                return_value = environment_method_get(environment.scope, Method{method_name, &environment.global, IGNORE_ARGS, IGNORE}).return_type;
+                return_value = environment_method_get(environment.scope, Method{method_name, environment.scope, IGNORE_ARGS, IGNORE}).return_type;
+
+                // Set scope to the method scope
+                environment.scope = environment_get_child(environment.scope, METHOD_PREFIX + method_name);
 
                 unsigned int balance = 0;
                 bool value = false;
@@ -137,61 +141,69 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;
                     while(before_indentation != token_indent){
-                        process_token(context, terminate_needed, method_code, write, header, define, token_indent, environment);
+                        process_token(context, terminate_needed, method_code, write, header, token_indent, environment);
                         context.index++;
                     }
                 }
 
-                if( string_count(method_name, ".") == 1){
-                    of_template = true;
+                environment.scope = environment.scope->parent;
+                context.index--;
+
+                if(name_is_class(environment.scope->name)){
+                    of_class = true;
                 }
 
-                if(!of_template){
+                if(of_class){
                     if(return_value == "void"){
-                        write  << "void " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                        header << "void " + resource(method_name) + "(" + method_arguments + ");\n";
+                        write  << "void " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        output += "void " + resource(method_name) + "(" + method_arguments + ");\n";
                     }
                     else {
-                        write  << resource(return_value) + " " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                        header << resource(return_value) + " " + resource(method_name) + "(" + method_arguments + ");\n";
+                        write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        output += resource(return_value) + " " + resource(method_name) + "(" + method_arguments + ");\n";
                     }
                 }
                 else {
                     if(return_value == "void"){
-                        write  << "void " + resource(string_get_until(method_name, ".")) + "::" + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                        template_add_method(string_get_until(method_name, "."), "void " + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");");
+                        write  << "void " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        output += "void " + resource(method_name) + "(" + method_arguments + ");\n";
                     }
                     else {
-                        write  << resource(return_value) + " " + resource(string_get_until(method_name, ".")) + "::" + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                        template_add_method(string_get_until(method_name, "."), resource(return_value) + " " + resource(string_delete_amount(string_delete_until(method_name,"."),1)) + "(" + method_arguments + ");");
+                        write  << resource(return_value) + " " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        output += resource(return_value) + " " + resource(method_name) + "(" + method_arguments + ");\n";
                     }
                 }
             }
-            else if(context.tokens[context.index].data == "template"){
-                string template_name;
-                string template_code;
+            else if(context.tokens[context.index].data == "class"){
+                string class_name;
+                string class_code;
 
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
 
                 context.index++;
-                template_name = context.tokens[context.index].data;
+                class_name = context.tokens[context.index].data;
 
-                if(!environment_template_exists(environment.scope, Template{template_name})){
-                    die("Declared Template has no Implementation");
+                if(!environment_class_exists(environment.scope, Class{class_name})){
+                    die("Declared Class has no Implementation");
                 }
 
+                environment.scope = environment_get_child(environment.scope, CLASS_PREFIX + class_name);
+
                 context.index+=2;
+
+                header << "class " + resource(class_name) + "{\npublic:\n";
 
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;
                     while(before_indentation != token_indent){
-                        process_token(context, terminate_needed, template_code, write, header, define, token_indent, environment);
+                        process_token(context, terminate_needed, class_code, write, header, token_indent, environment);
                         context.index++;
                     }
+                    environment.scope = environment.scope->parent;
                 }
 
-                header << "class " + resource(template_name) + "{\npublic:\n" + template_code + "#ifdef BOOMSLANGDEFINE_" + template_name + "\nBOOMSLANGDEFINE_" + template_name + ";\n#endif // BOOMSLANGDEFINE_" + template_name + "\n};\n";
+                header << class_code + "\n};\n";
             }
             else if(context.tokens[context.index].data == "return"){
                 output += "return ";
@@ -237,7 +249,7 @@ void compile(Configuration* config, const TokenList& tokens, Environment& enviro
 
     ofstream write( (HOME + CPP_SOURCE).c_str() );
     ofstream header( (HOME + CPP_HEADER).c_str() );
-    ofstream define( (HOME + CPP_DEFINE).c_str() );
+
     bool terminate_needed = false;
     string global;
 
@@ -247,29 +259,19 @@ void compile(Configuration* config, const TokenList& tokens, Environment& enviro
     }
 
     // Write Comment
-    write << "/*This file was generated by Boomslang, modify at your own risk*/\n\n#include \"define.h\"\n#include \"../core/boomslangcore.h\"\n#include \"source.h\"\n\nint* argc;\nchar*** argv;\n\n";
-    header << "/*This file was generated by Boomslang, modify at your own risk*/\n\n#ifndef SOURCE_H_INCLUDED\n#define SOURCE_H_INCLUDED\n\n#include \"define.h\"\n#include \"../core/boomslangcore.h\"\n\nextern int* argc;\nextern char*** argv;\n\n";
-    define << "/*This file was generated by Boomslang, modify at your own risk*/\n\n#ifndef DEFINE_H_INCLUDED\n#define DEFINE_H_INCLUDED\n\n";
-
-    if(template_additions.size() != 0){
-        header << "\n";
-    }
+    write << "/*This file was generated by Boomslang, modify at your own risk*/\n\n#include \"../core/boomslangcore.h\"\n#include \"source.h\"\n\nint* argc;\nchar*** argv;\n\n";
+    header << "/*This file was generated by Boomslang, modify at your own risk*/\n\n#ifndef SOURCE_H_INCLUDED\n#define SOURCE_H_INCLUDED\n\n#include \"../core/boomslangcore.h\"\n\nextern int* argc;\nextern char*** argv;\n\n";
 
     unsigned int indentation = 0;
 
     // Process tokens
     for(unsigned int index = 0; index < tokens.size(); index++){
-        process_token(TokenContext{tokens, index}, terminate_needed, global, write, header, define, indentation, environment);
-    }
-
-    for(unsigned int i = 0; i < template_additions.size(); i++){
-        define << "#define BOOMSLANGDEFINE_" + template_additions[i].name + " " + template_additions[i].additions + "\n";
+        process_token(TokenContext{tokens, index}, terminate_needed, global, write, header, indentation, environment);
     }
 
     // Write Main
     write << "int main(int _agc, char** _agv){\nargc = &_agc;\nargv = &_agv;\nboomslang_main();\nreturn 0;\n}\n";
     header << "int main(int, char**);\n\n#endif\n";
-    define << "#endif\n";
 
     write.close();
     header.close();
@@ -325,6 +327,9 @@ void build(Configuration* config){
 
 void assemble(Configuration* config, const TokenList& tokens, Environment& environment){
     // Creates executable/package from code
+
+    // Reset the environment scope
+    environment.scope = &environment.global;
 
     // Write source code
     compile(config, tokens, environment);

@@ -6,14 +6,14 @@
 #include <vector>
 
 #define IGNORE      "..."
-#define IGNORE_ARGS {MethodArgument{Template{IGNORE}, 1}}
+#define IGNORE_ARGS {MethodArgument{Class{IGNORE}, 1}}
 
 #define METHOD_PREFIX   std::string("METHOD ")
-#define TEMPLATE_PREFIX std::string("TEMPLATE ")
+#define CLASS_PREFIX std::string("CLASS ")
 
 struct Variable;
 struct Scope;
-struct Template;
+struct Class;
 struct MethodArgument;
 struct Method;
 struct Environment;
@@ -23,13 +23,13 @@ struct Variable {
     std::string type;
 };
 
-struct Template {
+struct Class {
     std::string name;
     bool is_final;
 };
 
 struct MethodArgument {
-    Template type;
+    Class type;
     bool optional;
 };
 
@@ -46,7 +46,7 @@ struct Scope {
     std::vector<Scope*> children;
     std::vector<Variable> variables;
     std::vector<Method> methods;
-    std::vector<Template> templates;
+    std::vector<Class> classes;
 };
 
 struct Environment {
@@ -60,7 +60,7 @@ struct Environment {
 typedef std::vector<Variable> VariableList;
 typedef std::vector<Scope> ScopeList;
 typedef std::vector<Method> MethodList;
-typedef std::vector<Template> TemplateList;
+typedef std::vector<Class> ClassList;
 typedef std::vector<MethodArgument> MethodArgumentList;
 
 // Scopes
@@ -74,13 +74,13 @@ bool environment_method_exists(Scope*, Method);
 unsigned int environment_method_index(Scope*, Method);
 Method environment_method_get(Scope*, Method);
 
-// Templates
-bool environment_template_exists(Scope*, Template);
-unsigned int environment_template_index(Scope*, Template);
-Template environment_template_get(Scope*, Template);
-bool environment_template_variable_exists(Environment& environment, Template base, Variable variable);
-Variable environment_template_variable_get(Environment& environment, Template base, Variable variable);
-Template environment_template_get_first(Scope*, Template, Template);
+// Classes
+bool environment_class_exists(Scope*, Class);
+unsigned int environment_class_index(Scope*, Class);
+Class environment_class_get(Scope*, Class);
+bool environment_class_variable_exists(Environment& environment, Class base, Variable variable);
+Variable environment_class_variable_get(Environment& environment, Class base, Variable variable);
+Class environment_class_get_first(Scope*, Class, Class);
 
 // Variables
 void environment_print_variables(Scope* scope, unsigned int indent = 0);

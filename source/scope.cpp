@@ -129,19 +129,19 @@ Method environment_method_get(Scope* scope, Method method){
     return Method{"", NULL, IGNORE_ARGS, ""};
 }
 
-// Templates
-bool environment_template_exists(Scope* scope, Template type){
-    for(unsigned int i = 0; i < scope->templates.size(); i++){
-        if( (scope->templates[i].name == type.name or type.name==IGNORE)){
+// Classes
+bool environment_class_exists(Scope* scope, Class type){
+    for(unsigned int i = 0; i < scope->classes.size(); i++){
+        if( (scope->classes[i].name == type.name or type.name==IGNORE)){
             return true;
         }
     }
 
     return false;
 }
-unsigned int environment_template_index(Scope* scope, Template type){
-    for(unsigned int i = 0; i < scope->templates.size(); i++){
-        if( (scope->templates[i].name == type.name               or type.name==IGNORE)){
+unsigned int environment_class_index(Scope* scope, Class type){
+    for(unsigned int i = 0; i < scope->classes.size(); i++){
+        if( (scope->classes[i].name == type.name               or type.name==IGNORE)){
             return i;
         }
     }
@@ -152,10 +152,10 @@ unsigned int environment_template_index(Scope* scope, Template type){
 
     return 0;
 }
-Template environment_template_get(Scope* scope, Template type){
-    for(unsigned int i = 0; i < scope->templates.size(); i++){
-        if( (scope->templates[i].name == type.name or type.name==IGNORE)){
-            return scope->templates[i];
+Class environment_class_get(Scope* scope, Class type){
+    for(unsigned int i = 0; i < scope->classes.size(); i++){
+        if( (scope->classes[i].name == type.name or type.name==IGNORE)){
+            return scope->classes[i];
         }
     }
 
@@ -163,16 +163,16 @@ Template environment_template_get(Scope* scope, Template type){
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Template{""};
+    return Class{""};
 }
-Template environment_template_get_first(Scope* scope, Template type, Template type2){
-    for(unsigned int i = 0; i < scope->templates.size(); i++){
-        if( (scope->templates[i].name == type.name or type.name==IGNORE)){
-            return scope->templates[i];
+Class environment_class_get_first(Scope* scope, Class type, Class type2){
+    for(unsigned int i = 0; i < scope->classes.size(); i++){
+        if( (scope->classes[i].name == type.name or type.name==IGNORE)){
+            return scope->classes[i];
         }
 
-        if( (scope->templates[i].name == type2.name or type2.name==IGNORE)){
-            return scope->templates[i];
+        if( (scope->classes[i].name == type2.name or type2.name==IGNORE)){
+            return scope->classes[i];
         }
     }
 
@@ -180,16 +180,16 @@ Template environment_template_get_first(Scope* scope, Template type, Template ty
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Template{""};
+    return Class{""};
 }
 
-// Template Variables
-bool environment_template_variable_exists(Environment& environment, Template base, Variable variable){
-    unsigned int variables_size = environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables.size();
+// Class Variables
+bool environment_class_variable_exists(Environment& environment, Class base, Variable variable){
+    unsigned int variables_size = environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables.size();
 
     for(unsigned int i = 0; i < variables_size; i++){
-        if( (environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i].name == variable.name or variable.name == IGNORE)
-        and (environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i].type == variable.type or variable.type == IGNORE) ){
+        if( (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].name == variable.name or variable.name == IGNORE)
+        and (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].type == variable.type or variable.type == IGNORE) ){
             // Variable Found
             return true;
         }
@@ -197,14 +197,14 @@ bool environment_template_variable_exists(Environment& environment, Template bas
 
     return false;
 }
-Variable environment_template_variable_get(Environment& environment, Template base, Variable variable){
-    unsigned int variables_size = environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables.size();
+Variable environment_class_variable_get(Environment& environment, Class base, Variable variable){
+    unsigned int variables_size = environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables.size();
 
     for(unsigned int i = 0; i < variables_size; i++){
-        if( (environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i].name == variable.name or variable.name == IGNORE)
-        and (environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i].type == variable.type or variable.type == IGNORE) ){
+        if( (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].name == variable.name or variable.name == IGNORE)
+        and (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].type == variable.type or variable.type == IGNORE) ){
             // Variable Found
-            return environment_get_child(&environment.global, string(TEMPLATE_PREFIX) + base.name)->variables[i];
+            return environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i];
         }
     }
 
