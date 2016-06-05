@@ -42,6 +42,9 @@ string token_name(Token token){
         case 24 : token_name = "address"; break;
         case 25 : token_name = "member"; break;
         case 26 : token_name = "address member"; break;
+        case 27 : token_name = "pointer"; break;
+        case 28 : token_name = "less than"; break;
+        case 29 : token_name = "greater than"; break;
     }
 
     return token_name;
@@ -77,6 +80,9 @@ string token_operator(Token token){
         case 24 : token_name = "&"; break;
         case 25 : token_name = "."; break;
         case 26 : token_name = ":"; break;
+        case 27 : token_name = "^"; break;
+        case 28 : token_name = "<"; break;
+        case 29 : token_name = ">"; break;
     }
 
     return token_name;

@@ -59,6 +59,12 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
         else if(context.tokens[context.index].id == TOKENINDEX_CLOSE){
             balance--;
         }
+        if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
+            // We're fine with that
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_GREATERTHAN){
+             // We're fine with that
+        }
         else if(context.tokens[context.index].id == TOKENINDEX_WORD){
             std::string name = context.tokens[context.index].data;
             index_increase(context);

@@ -37,7 +37,6 @@ void load_core(Environment& environment){
 
     // Base Number Class
     type_scope = add_class(environment, Class{"Number", true});
-    type_scope = environment_get_child(&environment.global, CLASS_PREFIX + "Number");
     add_method(environment, Class{"Number"}, Method{"output",type_scope, std::vector<MethodArgument>(),"void"});
     add_method(environment, Class{"Number"}, Method{"print",type_scope, std::vector<MethodArgument>(),"void"});
     add_method(environment, Class{"Number"}, Method{"toString",type_scope, std::vector<MethodArgument>(),"String"});

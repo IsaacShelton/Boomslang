@@ -17,9 +17,11 @@ void enforce_token(TokenContext context, Environment& environment){
     static unsigned int next_block = 0;
 
     if(context.tokens[context.index].id == TOKENINDEX_TERMINATE){
-        // Do nothing
+        // Terminate
     }
-    else if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL or context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
+    else if( context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL or context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
+        // Literal
+
         if(environment.scope == &environment.global){
             die(GLOBAL_STATEMENT);
         }
@@ -45,6 +47,8 @@ void enforce_token(TokenContext context, Environment& environment){
         token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
     }
     else if(context.tokens[context.index].id == TOKENINDEX_OPEN){
+        // Expression
+
         if(environment.scope == &environment.global){
             die(GLOBAL_STATEMENT);
         }
@@ -64,18 +68,24 @@ void enforce_token(TokenContext context, Environment& environment){
         token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
     }
     else if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+        // Indentaion
+
         environment.scope->children.push_back(new Scope{"block_" + to_string(next_block), environment.scope});
         environment.scope = environment.scope->children[environment.scope->children.size()-1];
 
         next_block++;
     }
     else if(context.tokens[context.index].id == TOKENINDEX_DEDENT){
+        // Dedentation
+
         if(environment.scope->parent != NULL){
             environment.scope = environment.scope->parent;
         }
     }
     else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
-        if(context.tokens[context.index].data == "on"){
+        // Keyword
+
+        if(context.tokens[context.index].data == "on"){          // Method Declaration
             string method_name;
             vector<MethodArgument> method_arguments;
             string arguments_string;
@@ -106,14 +116,7 @@ void enforce_token(TokenContext context, Environment& environment){
                 environment.scope = environment.scope->parent;
             }
         }
-        else if(context.tokens[context.index].data == "return"){
-            Class value_class;
-
-            context_enforce_expression(context, environment, value_class);
-
-            environment.global.methods[environment.global.methods.size()-1].return_type = value_class.name;
-        }
-        else if(context.tokens[context.index].data == "class"){
+        else if(context.tokens[context.index].data == "class"){  // Class Declaration
             string class_name;
 
             token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected class name in class declaration", ERROR_INDICATOR + "Expected class name in class declaration");
@@ -134,11 +137,51 @@ void enforce_token(TokenContext context, Environment& environment){
                 }
             }
         }
+        else if(context.tokens[context.index].data == "return"){ // Return Statement
+            Class value_class;
+
+            context_enforce_expression(context, environment, value_class);
+
+            environment.global.methods[environment.global.methods.size()-1].return_type = value_class.name;
+        }
+        else if(context.tokens[context.index].data == "break"){ // Break Statement
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+        }
+        else if(context.tokens[context.index].data == "continue"){ // Continue Statement
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+        }
+        else if(context.tokens[context.index].data == "if"){     // If Statement
+            Class value_class;
+
+            context_enforce_expression(context, environment, value_class);
+        }
+        else if(context.tokens[context.index].data == "unless"){ // Unless Statement
+            Class value_class;
+
+            context_enforce_expression(context, environment, value_class);
+        }
+        else if(context.tokens[context.index].data == "else"){   // Else Keyword
+            // We're fine with that
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+        }
+        else if(context.tokens[context.index].data == "while"){  // While Statement
+            Class value_class;
+
+            context_enforce_expression(context, environment, value_class);
+        }
+        else if(context.tokens[context.index].data == "until"){  // Until Statement
+            Class value_class;
+
+            context_enforce_expression(context, environment, value_class);
+        }
         else {
             die("Unknown keyword " + context.tokens[context.index].data);
         }
+
     }
     else if(context.tokens[context.index].id == TOKENINDEX_WORD){
+        // Identifier
+
         string class_name = context.tokens[context.index].data;
 
         if( !advance_index(context.index, context.tokens.size()) ){
@@ -232,16 +275,10 @@ void enforce_token(TokenContext context, Environment& environment){
                 }
             }
 
-            // See whats after methods calls
-            index_increase(context);
-
             // Are we gonna assign it to something
             if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
                 index_increase(context);
                 context_enforce_expression(context, environment, base_class);
-            }
-            else { // We aren't gonna assign it, so go back
-                index_decrease(context);
             }
 
             // At this point token should be a terminate
@@ -263,14 +300,17 @@ Environment enforce(TokenList tokens){
     // Load Boomslang Core Classes
     load_core(environment);
 
+    // Validate Tokens
     for(unsigned int index = 0; index < tokens.size(); index++){
         enforce_token(TokenContext{tokens, index}, environment);
     }
 
+    // Make sure a main method was declared
     if( !environment_method_exists(environment.scope, Method{"main", &environment.global, std::vector<MethodArgument>(), IGNORE}) ){
         die(NO_MAIN);
     }
 
+    // Exit if mild errors were encountered
     if(error_count > 0){
         exit(1);
     }

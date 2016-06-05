@@ -1,6 +1,0 @@
-
-on sum(Number a, Number b)
-	return a + b
-
-on main()
-	sum(8, 13).output()

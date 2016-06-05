@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include "../include/die.h"
 #include "../include/log.h"
 #include "../include/token.h"
 #include "../include/lexer.h"
@@ -67,11 +68,11 @@ TokenList tokenize(string code){
             process_indentation(tokens, code, indentation);
         }
 
-        if(code.substr(0,1) == "\"" or code.substr(0,1) == "'"){ // String Literal
+        if(code.substr(0,1) == "\""){ // String Literal
             log_lexer(LEXER_LOG_PREFIX + "Found string literal, adding string literal token");
             code = string_delete_amount(code,1);
-            tokens.push_back( TOKEN_STRING_LITERAL(string_get_until_or(code,"\"'")) );
-            code = string_delete_until_or(code,"\"'");
+            tokens.push_back( TOKEN_STRING_LITERAL(string_get_until(code,"\"")) );
+            code = string_delete_until(code,"\"");
             code = string_delete_amount(code,1);
         }
         else if( (int)code[0] >= 48 and (int)code[0] <= 57){     // Numeric Literal
@@ -92,6 +93,16 @@ TokenList tokenize(string code){
         else if( code.substr(0,1) == ")"){                       // Close
             log_lexer(LEXER_LOG_PREFIX + "Found close operator, adding close token");
             tokens.push_back( TOKEN_CLOSE );
+            code = string_delete_amount(code,1);
+        }
+        else if( code.substr(0,1) == "<"){                       // Less Than
+            log_lexer(LEXER_LOG_PREFIX + "Found less than operator, adding open token");
+            tokens.push_back( TOKEN_LESSTHAN );
+            code = string_delete_amount(code,1);
+        }
+        else if( code.substr(0,1) == ">"){                       // Greater Than
+            log_lexer(LEXER_LOG_PREFIX + "Found greater than operator, adding close token");
+            tokens.push_back( TOKEN_GREATERTHAN );
             code = string_delete_amount(code,1);
         }
         else if( code.substr(0,1) == "["){                       // Square Open
@@ -154,6 +165,11 @@ TokenList tokenize(string code){
             tokens.push_back( TOKEN_ADDRESS );
             code = string_delete_amount(code,1);
         }
+        else if( code.substr(0,1) == "^"){                       // Pointer
+            log_lexer(LEXER_LOG_PREFIX + "Found `exponent` symbol, adding pointer token");
+            tokens.push_back( TOKEN_ADDRESS );
+            code = string_delete_amount(code,1);
+        }
         else if( code.substr(0,1) == ":"){                       // Address Member
             log_lexer(LEXER_LOG_PREFIX + "Found colon, adding address member token");
             tokens.push_back( TOKEN_ADDRESSMEMBER );
@@ -191,7 +207,70 @@ TokenList tokenize(string code){
             code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until(code," ") == "class"){      // class
+        else if( string_get_until_or(code," (") == "if"){            // if
+            log_lexer(LEXER_LOG_PREFIX + "Found `if` keyword");
+            tokens.push_back( TOKEN_KEYWORD("if") );
+
+            code = string_delete_amount(code,2);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," (") == "unless"){        // unless
+            log_lexer(LEXER_LOG_PREFIX + "Found `unless` keyword");
+            tokens.push_back( TOKEN_KEYWORD("unless") );
+
+            code = string_delete_amount(code,6);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," \n") == "else"){     // else
+            log_lexer(LEXER_LOG_PREFIX + "Found `else` keyword");
+            tokens.push_back( TOKEN_KEYWORD("else") );
+
+            code = string_delete_amount(code,4);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," \n") == "continue"){ // continue
+            log_lexer(LEXER_LOG_PREFIX + "Found `continue` keyword");
+            tokens.push_back( TOKEN_KEYWORD("continue") );
+
+            code = string_delete_amount(code,8);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," \n") == "break"){    // break
+            log_lexer(LEXER_LOG_PREFIX + "Found `break` keyword");
+            tokens.push_back( TOKEN_KEYWORD("break") );
+
+            code = string_delete_amount(code,5);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," (") == "switch"){        // switch
+            log_lexer(LEXER_LOG_PREFIX + "Found `switch` keyword");
+            tokens.push_back( TOKEN_KEYWORD("switch") );
+
+            code = string_delete_amount(code,6);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," (") == "while"){         // while
+            log_lexer(LEXER_LOG_PREFIX + "Found `while` keyword");
+            tokens.push_back( TOKEN_KEYWORD("while") );
+
+            code = string_delete_amount(code,5);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," (") == "until"){         // until
+            log_lexer(LEXER_LOG_PREFIX + "Found `until` keyword");
+            tokens.push_back( TOKEN_KEYWORD("until") );
+
+            code = string_delete_amount(code,5);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," (") == "for"){           // for
+            log_lexer(LEXER_LOG_PREFIX + "Found `for` keyword");
+            tokens.push_back( TOKEN_KEYWORD("for") );
+
+            code = string_delete_amount(code,3);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until(code," ") == "class"){         // class
             log_lexer(LEXER_LOG_PREFIX + "Found `class` keyword");
             tokens.push_back( TOKEN_KEYWORD("class") );
 
@@ -217,8 +296,7 @@ TokenList tokenize(string code){
     if(code == prev){
         log_lexer("Discovered unrecognized operator '" + code.substr(0,1) + "'");
 
-        cerr << "Unrecognized operator '" + code.substr(0,1) + "'" << endl;
-        exit(1);
+        die("Unrecognized operator '" + code.substr(0,1) + "'");
     }
 
     lexer_log_tokens(tokens);

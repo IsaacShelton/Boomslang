@@ -15,6 +15,75 @@
 
 using namespace std;
 
+void process_expression(TokenContext context, string& expression, Environment& environment){
+    while(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+        if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
+            expression += "boomslang_String(\"" + context.tokens[context.index].data + "\")";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
+            expression += "boomslang_Number(" + context.tokens[context.index].data + ")";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_WORD){
+            string name = context.tokens[context.index].data;
+
+            expression += resource(name);
+
+            context.index++;
+
+            if(context.tokens[context.index].id == TOKENINDEX_WORD){
+                expression += " ";
+            }
+
+            context.index--;
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+            expression += ".";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_OPEN){
+            expression += "(";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_CLOSE){
+            expression += ")";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
+            expression += "<";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_GREATERTHAN){
+            expression += ">";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+            expression += "==";
+
+            context.index++;
+
+            if(context.tokens[context.index].id != TOKENINDEX_ASSIGN){
+                context.index--;
+            }
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_NOT){
+            expression += "!";
+
+            context.index++;
+
+            if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                expression += "=";
+            }
+            else {
+                context.index--;
+            }
+        }
+        else {
+            die(UNEXPECTED_OPERATOR_INEXP + " while assembling");
+        }
+
+        // Next token
+        context.index++;
+    }
+
+    context.index--;
+    // Next token will be a terminate
+}
+
 void process_token(TokenContext context, bool& terminate_needed, string& output, ofstream& write, ofstream& header, unsigned int& indentation, Environment& environment){
     // Terminate
     if(context.tokens[context.index].id == TOKENINDEX_TERMINATE and terminate_needed){
@@ -207,6 +276,168 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
             }
             else if(context.tokens[context.index].data == "return"){
                 output += "return ";
+            }
+            else if(context.tokens[context.index].data == "break"){
+                output += "break;";
+            }
+            else if(context.tokens[context.index].data == "continue"){
+                output += "continue;";
+            }
+            else if(context.tokens[context.index].data == "if"){
+                std::string expression;
+                std::string conditional_code;
+                unsigned int before_indentation = indentation; // The indentation before processing tokens
+                unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+                context.index++;
+                process_expression(context, expression, environment);
+                context.index++;
+
+                output += "if (" + expression + "){\n";
+
+                if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                    die("Expected terminate after 'if' statement");
+                }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                    context.index++;
+                    while(before_indentation != token_indent){
+                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        context.index++;
+                    }
+                    context.index--;
+                }
+                else {
+                    index_decrease(context);
+                }
+
+                output += conditional_code + "}\n";
+            }
+            else if(context.tokens[context.index].data == "unless"){
+                std::string expression;
+                std::string conditional_code;
+                unsigned int before_indentation = indentation; // The indentation before processing tokens
+                unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+                context.index++;
+                process_expression(context, expression, environment);
+                context.index++;
+
+                output += "if (! (" + expression + ") ){\n";
+
+                if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                    die("Expected terminate after 'unless' statement");
+                }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                    context.index++;
+                    while(before_indentation != token_indent){
+                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        context.index++;
+                    }
+                    context.index--;
+                }
+                else {
+                    index_decrease(context);
+                }
+
+                output += conditional_code + "}\n";
+            }
+            else if(context.tokens[context.index].data == "else"){
+                std::string conditional_code;
+                unsigned int before_indentation = indentation; // The indentation before processing tokens
+                unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+                output += "else ";
+                context.index++;
+
+                if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                    die("Expected terminate after 'else' statement");
+                }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                    context.index++;
+                    while(before_indentation != token_indent){
+                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        context.index++;
+                    }
+                    context.index--;
+                    output += "{\n" + conditional_code + "}\n";
+                }
+                else {
+                    index_decrease(context);
+                    output += "{  }\n";
+                }
+            }
+            else if(context.tokens[context.index].data == "while"){
+                std::string expression;
+                std::string conditional_code;
+                unsigned int before_indentation = indentation; // The indentation before processing tokens
+                unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+                context.index++;
+                process_expression(context, expression, environment);
+                context.index++;
+
+                output += "while (" + expression + "){\n";
+
+                if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                    die("Expected terminate after 'while' statement");
+                }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                    context.index++;
+                    while(before_indentation != token_indent){
+                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        context.index++;
+                    }
+                    context.index--;
+                }
+                else {
+                    index_decrease(context);
+                }
+
+                output += conditional_code + "}\n";
+            }
+            else if(context.tokens[context.index].data == "until"){
+                std::string expression;
+                std::string conditional_code;
+                unsigned int before_indentation = indentation; // The indentation before processing tokens
+                unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+                context.index++;
+                process_expression(context, expression, environment);
+                context.index++;
+
+                output += "while ( !(" + expression + ") ){\n";
+
+                if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                    die("Expected terminate after 'until' statement");
+                }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                    context.index++;
+                    while(before_indentation != token_indent){
+                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        context.index++;
+                    }
+                    context.index--;
+                }
+                else {
+                    index_decrease(context);
+                }
+
+                output += conditional_code + "}\n";
             }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ADDRESS){
