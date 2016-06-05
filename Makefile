@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj\\Release
 DEP_RELEASE = 
 OUT_RELEASE = bin\\Release\\BoomslangCompiler.exe
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)\\source\\token.o $(OBJDIR_DEBUG)\\source\\scope.o $(OBJDIR_DEBUG)\\source\\run.o $(OBJDIR_DEBUG)\\source\\options.o $(OBJDIR_DEBUG)\\source\\management.o $(OBJDIR_DEBUG)\\source\\main.o $(OBJDIR_DEBUG)\\source\\log.o $(OBJDIR_DEBUG)\\source\\locate.o $(OBJDIR_DEBUG)\\source\\lexer.o $(OBJDIR_DEBUG)\\source\\file.o $(OBJDIR_DEBUG)\\source\\errors.o $(OBJDIR_DEBUG)\\source\\enforcer.o $(OBJDIR_DEBUG)\\source\\die.o $(OBJDIR_DEBUG)\\source\\core.o $(OBJDIR_DEBUG)\\source\\assembler.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)\\source\\token.o $(OBJDIR_DEBUG)\\source\\scope.o $(OBJDIR_DEBUG)\\source\\run.o $(OBJDIR_DEBUG)\\source\\options.o $(OBJDIR_DEBUG)\\source\\management.o $(OBJDIR_DEBUG)\\source\\main.o $(OBJDIR_DEBUG)\\source\\log.o $(OBJDIR_DEBUG)\\source\\locate.o $(OBJDIR_DEBUG)\\source\\lexer.o $(OBJDIR_DEBUG)\\source\\file.o $(OBJDIR_DEBUG)\\source\\errors.o $(OBJDIR_DEBUG)\\source\\enforcer.o $(OBJDIR_DEBUG)\\source\\die.o $(OBJDIR_DEBUG)\\source\\core.o $(OBJDIR_DEBUG)\\source\\context.o $(OBJDIR_DEBUG)\\source\\assembler.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)\\source\\token.o $(OBJDIR_RELEASE)\\source\\scope.o $(OBJDIR_RELEASE)\\source\\run.o $(OBJDIR_RELEASE)\\source\\options.o $(OBJDIR_RELEASE)\\source\\management.o $(OBJDIR_RELEASE)\\source\\main.o $(OBJDIR_RELEASE)\\source\\log.o $(OBJDIR_RELEASE)\\source\\locate.o $(OBJDIR_RELEASE)\\source\\lexer.o $(OBJDIR_RELEASE)\\source\\file.o $(OBJDIR_RELEASE)\\source\\errors.o $(OBJDIR_RELEASE)\\source\\enforcer.o $(OBJDIR_RELEASE)\\source\\die.o $(OBJDIR_RELEASE)\\source\\core.o $(OBJDIR_RELEASE)\\source\\assembler.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)\\source\\token.o $(OBJDIR_RELEASE)\\source\\scope.o $(OBJDIR_RELEASE)\\source\\run.o $(OBJDIR_RELEASE)\\source\\options.o $(OBJDIR_RELEASE)\\source\\management.o $(OBJDIR_RELEASE)\\source\\main.o $(OBJDIR_RELEASE)\\source\\log.o $(OBJDIR_RELEASE)\\source\\locate.o $(OBJDIR_RELEASE)\\source\\lexer.o $(OBJDIR_RELEASE)\\source\\file.o $(OBJDIR_RELEASE)\\source\\errors.o $(OBJDIR_RELEASE)\\source\\enforcer.o $(OBJDIR_RELEASE)\\source\\die.o $(OBJDIR_RELEASE)\\source\\core.o $(OBJDIR_RELEASE)\\source\\context.o $(OBJDIR_RELEASE)\\source\\assembler.o
 
 all: debug release
 
@@ -100,6 +100,9 @@ $(OBJDIR_DEBUG)\\source\\die.o: source\\die.cpp
 
 $(OBJDIR_DEBUG)\\source\\core.o: source\\core.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c source\\core.cpp -o $(OBJDIR_DEBUG)\\source\\core.o
+
+$(OBJDIR_DEBUG)\\source\\context.o: source\\context.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c source\\context.cpp -o $(OBJDIR_DEBUG)\\source\\context.o
 
 $(OBJDIR_DEBUG)\\source\\assembler.o: source\\assembler.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c source\\assembler.cpp -o $(OBJDIR_DEBUG)\\source\\assembler.o
@@ -161,6 +164,9 @@ $(OBJDIR_RELEASE)\\source\\die.o: source\\die.cpp
 
 $(OBJDIR_RELEASE)\\source\\core.o: source\\core.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c source\\core.cpp -o $(OBJDIR_RELEASE)\\source\\core.o
+
+$(OBJDIR_RELEASE)\\source\\context.o: source\\context.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c source\\context.cpp -o $(OBJDIR_RELEASE)\\source\\context.o
 
 $(OBJDIR_RELEASE)\\source\\assembler.o: source\\assembler.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c source\\assembler.cpp -o $(OBJDIR_RELEASE)\\source\\assembler.o
