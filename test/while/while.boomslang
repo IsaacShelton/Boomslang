@@ -1,0 +1,10 @@
+
+on main()
+	Number countdown
+	countdown = 10
+	
+	while countdown > 0
+		countdown.output()
+		countdown = countdown - 1
+	
+	"Lift off!".output()

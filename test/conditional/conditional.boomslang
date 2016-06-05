@@ -1,0 +1,11 @@
+
+on main()
+	String password
+	
+	"What's the password? ".print()
+	password.input()
+	
+	if password = "password123"
+		"Access granted".output()
+	else
+		"Access denied".output()

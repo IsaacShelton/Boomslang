@@ -1,0 +1,12 @@
+
+on main()
+	Number count
+	
+	while count < 10
+		count = count + 1
+		
+		if count = 3
+			"We don't like three".output()
+			continue
+		
+		count.output()

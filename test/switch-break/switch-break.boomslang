@@ -1,0 +1,10 @@
+
+on main()
+	Number count
+	
+	while count < 10
+		if count = 5
+			break
+		
+		count = count + 1
+		count.output()

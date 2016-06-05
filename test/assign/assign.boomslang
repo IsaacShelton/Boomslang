@@ -1,0 +1,6 @@
+
+on main()
+	String name
+	name = "John"
+	
+	name.output()

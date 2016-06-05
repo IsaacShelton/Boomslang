@@ -1,0 +1,11 @@
+
+on main()
+	String pin
+	
+	"Enter you PIN: ".print()
+	pin.input()
+	
+	unless pin = "1234"
+		"Wrong PIN".output()
+	else
+		"Correct PIN".output()
