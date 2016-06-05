@@ -1,0 +1,11 @@
+
+on main()
+	String x
+	
+	"Enter a Number: ".print()
+	x.input()
+	
+	if x.toNumber() != 10
+		"x is not 10".output()
+	else
+		"x is 10".output()

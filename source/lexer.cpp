@@ -207,14 +207,21 @@ TokenList tokenize(string code){
             code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until_or(code," (") == "if"){            // if
+        else if( string_get_until_or(code," (") == "new"){       // new
+            log_lexer(LEXER_LOG_PREFIX + "Found `new` keyword");
+            tokens.push_back( TOKEN_KEYWORD("new") );
+
+            code = string_delete_amount(code,3);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," (") == "if"){        // if
             log_lexer(LEXER_LOG_PREFIX + "Found `if` keyword");
             tokens.push_back( TOKEN_KEYWORD("if") );
 
             code = string_delete_amount(code,2);
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until_or(code," (") == "unless"){        // unless
+        else if( string_get_until_or(code," (") == "unless"){    // unless
             log_lexer(LEXER_LOG_PREFIX + "Found `unless` keyword");
             tokens.push_back( TOKEN_KEYWORD("unless") );
 
@@ -242,28 +249,28 @@ TokenList tokenize(string code){
             code = string_delete_amount(code,5);
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until_or(code," (") == "switch"){        // switch
+        else if( string_get_until_or(code," (") == "switch"){    // switch
             log_lexer(LEXER_LOG_PREFIX + "Found `switch` keyword");
             tokens.push_back( TOKEN_KEYWORD("switch") );
 
             code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until_or(code," (") == "while"){         // while
+        else if( string_get_until_or(code," (") == "while"){     // while
             log_lexer(LEXER_LOG_PREFIX + "Found `while` keyword");
             tokens.push_back( TOKEN_KEYWORD("while") );
 
             code = string_delete_amount(code,5);
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until_or(code," (") == "until"){         // until
+        else if( string_get_until_or(code," (") == "until"){     // until
             log_lexer(LEXER_LOG_PREFIX + "Found `until` keyword");
             tokens.push_back( TOKEN_KEYWORD("until") );
 
             code = string_delete_amount(code,5);
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until_or(code," (") == "for"){           // for
+        else if( string_get_until_or(code," (") == "for"){       // for
             log_lexer(LEXER_LOG_PREFIX + "Found `for` keyword");
             tokens.push_back( TOKEN_KEYWORD("for") );
 
@@ -294,7 +301,7 @@ TokenList tokenize(string code){
     }
 
     if(code == prev){
-        log_lexer("Discovered unrecognized operator '" + code.substr(0,1) + "'");
+        log_lexer("Encountered unrecognized operator '" + code.substr(0,1) + "'");
 
         die("Unrecognized operator '" + code.substr(0,1) + "'");
     }
