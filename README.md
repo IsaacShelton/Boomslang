@@ -65,11 +65,12 @@ on main()
 ```python
 import window from boomslang
 
-window = unique Window
+class AppWindow < Window
     on display()
         new Rectangle(100,100).draw(0,0)
 
 on main()
+    AppWindow window
     window.show()
 ```
 
@@ -89,12 +90,12 @@ on main()
 ###Declaring Templates
 ```python
 
-template Dog
+class Dog
     String name
-    UnsignedInteger id
-
-on Dog.bark()
-    "BARK ".print()
+    Positive id
+    
+    on bark()
+        "BARK ".print()
 
 on main()
     Dog ruff
@@ -104,19 +105,19 @@ on main()
 ###Declaring Constructors for Templates
 ```python
 
-template Dog
+class Dog
     String name = "Unnamed"
-    UnsignedInteger id
-
-on Dog.new(String newName, UInteger newId)
-    name = newName
-    id = newId
-
-on Dog.bark()
-    "BARK ".print()
-
-on Dog.info()
-    ("Dog " + name + " has an id of " + id.toString()).output()
+    Positive id
+    
+    on new(String name, Positive id)
+        self.name = name
+        self.id = id
+    
+    on bark()
+        "BARK ".print()
+    
+    on info()
+        ("Dog " + name + " has an id of " + id.toString() + ".").output()
 
 on main()
     Dog ruff("Ruff", 1)
@@ -125,45 +126,45 @@ on main()
     ruff.bark()
 ```
 
-###Working with Addresses
+###Working with Pointers
 ```python
 
 on main()
-    String& message = create String("Hello World")
-    message:output()
+    String^ message = create String("Hello World")
+    message.output()
     
     # Make sure to free dynamically allocated memory
     delete message
 ```
 
-###Getting a Value from an Address
+###Getting a Value from a pointer
 ```python
 
 on main()
     String name = "Isaac"
-    String& greeting = create String("Welcome ")
+    String^ greeting = create String("Welcome ")
     
-    (*greeting + name).output()
+    (^greeting + name).output()
     
     # Make sure to free dynamically allocated memory
     delete greeting
 ```
 
-###Using Addresses with Already Existing Values
+###Using Pointers with Already Existing Values
 ```python
 
 on main()
     String name = "Isaac"
-    String& nameAddress = &name
+    String^ pointer = &name
     
     name.output()
-    nameAddress:output()
+    pointer.output()
     
     # This will change the value pointed to by nameAddress
-    *nameAddress = "Changed"
+    ^pointer = "Changed"
 
     name.output()
-    nameAddress:output()
+    pointer.output()
 ```
 
 ##Contacting Us
