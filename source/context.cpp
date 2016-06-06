@@ -50,16 +50,48 @@ Method context_method_get(Environment& e, Class base, Method method){
 
 void context_enforce_expression(TokenContext context, Environment& e, Class& type){
     int balance = 0;
-    index_increase(context);
 
     while(balance != 0 or (context.tokens[context.index].id != TOKENINDEX_NEXT and context.tokens[context.index].id != TOKENINDEX_TERMINATE and context.tokens[context.index].id != TOKENINDEX_CLOSE)){
         if(context.tokens[context.index].id == TOKENINDEX_OPEN){
+            Class base_class;
+
             balance++;
-        }
-        else if(context.tokens[context.index].id == TOKENINDEX_CLOSE){
+            index_increase(context);
+            context_enforce_expression(context, e, base_class);
             balance--;
+
+            index_increase(context);
+
+            while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                if( context_class_exists(e, base_class) ){
+                    index_increase(context);
+
+                    if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data,IGNORE}) ){
+                        base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data,IGNORE}).type;
+                        index_increase(context);
+                    }
+                    else {
+                        index_decrease(context);
+                        token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+                        context_enforce_arguments(context, e, base_class);
+                        index_increase(context);
+                    }
+                }
+                else {
+                    die(UNDECLARED_CLASS(base_class.name));
+                }
+            }
+
+            index_decrease(context);
+
+            if(type.name == ""){
+                type.name = base_class.name;
+            }
+            else if(type.name != base_class.name){
+                fail( INCOMPATIBLE_CLASSES(type.name, base_class.name) );
+            }
         }
-        if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
+        else if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
             // We're fine with that
         }
         else if(context.tokens[context.index].id == TOKENINDEX_GREATERTHAN){
@@ -120,20 +152,99 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 }
             }
         }
-        else if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
-            if(type.name == ""){
-                type.name = "String";
+        else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
+            if(context.tokens[context.index].data == "new"){
+                std::string class_name;
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id != TOKENINDEX_WORD){
+                    die(UNEXPECTED_OPERATOR_INEXP);
+                }
+
+                class_name = context.tokens[context.index].data;
+
+                if(!context_class_exists(e, Class{class_name})){
+                    die(UNDECLARED_CLASS(class_name));
+                }
+
+                if(type.name == ""){
+                    type.name = class_name;
+                }
+                else if(type.name != class_name){
+                    fail( INCOMPATIBLE_CLASSES(type.name, class_name) );
+                }
             }
-            else if(type.name != "String"){
-                fail( INCOMPATIBLE_CLASSES(type.name,"String") );
+            else {
+                die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
+            }
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
+            Class base_class = Class{"String"};
+
+            index_increase(context);
+
+            while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                if( context_class_exists(e, base_class) ){
+                    index_increase(context);
+
+                    if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data,IGNORE}) ){
+                        base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data,IGNORE}).type;
+                        index_increase(context);
+                    }
+                    else {
+                        index_decrease(context);
+                        token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+                        context_enforce_arguments(context, e, base_class);
+                        index_increase(context);
+                    }
+                }
+                else {
+                    die(UNDECLARED_CLASS(base_class.name));
+                }
+            }
+
+            index_decrease(context);
+
+            if(type.name == ""){
+                type.name = base_class.name;
+            }
+            else if(type.name != base_class.name){
+                fail( INCOMPATIBLE_CLASSES(type.name, base_class.name) );
             }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
-            if(type.name == ""){
-                type.name = "Number";
+            Class base_class = Class{"Number"};
+
+            index_increase(context);
+
+            while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                if( context_class_exists(e, base_class) ){
+                    index_increase(context);
+
+                    if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data,IGNORE}) ){
+                        base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data,IGNORE}).type;
+                        index_increase(context);
+                    }
+                    else {
+                        index_decrease(context);
+                        token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+                        context_enforce_arguments(context, e, base_class);
+                        index_increase(context);
+                    }
+                }
+                else {
+                    die(UNDECLARED_CLASS(base_class.name));
+                }
             }
-            else if(type.name != "Number"){
-                fail( INCOMPATIBLE_CLASSES(type.name,"Number") );
+
+            index_decrease(context);
+
+            if(type.name == ""){
+                type.name = base_class.name;
+            }
+            else if(type.name != base_class.name){
+                fail( INCOMPATIBLE_CLASSES(type.name, base_class.name) );
             }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ADD
@@ -298,6 +409,9 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
             arguments.push_back( MethodArgument{Class{type},0} );
             type = "";
         }
+        else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
+            die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
+        }
         else {
             die(UNEXPECTED_OPERATOR_INEXP);
         }
@@ -386,26 +500,8 @@ void context_enforce_method_declaration_arguments(TokenContext context, Environm
     string class_name;
     string method_name = context.tokens[context.index].data;
 
-    if( string_count(method_name, ".") == 1 ){
-        class_name = string_get_until(method_name, ".");
-        method_name = string_delete_amount(string_delete_until(method_name, "."), 1);
-
-        if(!is_identifier(class_name)){
-            die(INVALID_CLASS_NAME(class_name));
-        }
-
-        if( !environment_class_exists(e.scope, Class{class_name}) and !environment_class_exists(&e.global, Class{class_name}) ){
-            die(UNDECLARED_CLASS(class_name));
-        }
-
-        if(!is_identifier(method_name)){
-            die(INVALID_METHOD_NAME(context.tokens[context.index].data));
-        }
-    }
-    else {
-        if(!is_identifier(method_name)){
-            die(INVALID_METHOD_NAME(context.tokens[context.index].data));
-        }
+    if(!is_identifier(method_name)){
+        die(INVALID_METHOD_NAME(context.tokens[context.index].data));
     }
 
     token_force(context, TOKENINDEX_OPEN, ERROR_INDICATOR + "Unexpected statement termination\nExpected opening parentheses", ERROR_INDICATOR + "Expected opening parentheses");
@@ -460,12 +556,14 @@ void context_enforce_method_declaration_arguments(TokenContext context, Environm
         // After That
         if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
             Class value_class;
+            index_increase(context);
             context_enforce_expression(context, e, value_class);
             optional = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_WORD){
             Class value_class;
 
+            index_increase(context);
             context_enforce_expression(context, e, value_class);
             if(!advance_index(context.index,context.tokens.size())){
                 die(UNEXPECTED_TERMINATE);

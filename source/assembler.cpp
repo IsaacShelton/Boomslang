@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include "../include/die.h"
+#include "../include/log.h"
 #include "../include/run.h"
 #include "../include/file.h"
 #include "../include/scope.h"
@@ -15,7 +16,9 @@
 
 using namespace std;
 
-void process_expression(TokenContext context, string& expression, Environment& environment){
+void assemble_expression(TokenContext context, string& expression, Environment& environment){
+    log_assembler("Assembling Expression");
+
     while(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
         if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
             expression += "boomslang_String(\"" + context.tokens[context.index].data + "\")";
@@ -84,7 +87,9 @@ void process_expression(TokenContext context, string& expression, Environment& e
     // Next token will be a terminate
 }
 
-void process_token(TokenContext context, bool& terminate_needed, string& output, ofstream& write, ofstream& header, unsigned int& indentation, Environment& environment){
+void assemble_token(TokenContext context, bool& terminate_needed, string& output, ofstream& write, ofstream& header, unsigned int& indentation, Environment& environment){
+    log_assembler("Assembling Token '" + token_name(context.tokens[context.index]) + "' with a value of '" + context.tokens[context.index].data + "'");
+
     // Terminate
     if(context.tokens[context.index].id == TOKENINDEX_TERMINATE and terminate_needed){
         output += ";\n";
@@ -210,7 +215,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;
                     while(before_indentation != token_indent){
-                        process_token(context, terminate_needed, method_code, write, header, token_indent, environment);
+                        assemble_token(context, terminate_needed, method_code, write, header, token_indent, environment);
                         context.index++;
                     }
                 }
@@ -266,7 +271,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;
                     while(before_indentation != token_indent){
-                        process_token(context, terminate_needed, class_code, write, header, token_indent, environment);
+                        assemble_token(context, terminate_needed, class_code, write, header, token_indent, environment);
                         context.index++;
                     }
                     environment.scope = environment.scope->parent;
@@ -290,7 +295,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
 
                 context.index++;
-                process_expression(context, expression, environment);
+                assemble_expression(context, expression, environment);
                 context.index++;
 
                 output += "if (" + expression + "){\n";
@@ -304,7 +309,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;
                     while(before_indentation != token_indent){
-                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        assemble_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
                         context.index++;
                     }
                     context.index--;
@@ -322,7 +327,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
 
                 context.index++;
-                process_expression(context, expression, environment);
+                assemble_expression(context, expression, environment);
                 context.index++;
 
                 output += "if (! (" + expression + ") ){\n";
@@ -336,7 +341,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;
                     while(before_indentation != token_indent){
-                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        assemble_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
                         context.index++;
                     }
                     context.index--;
@@ -348,31 +353,98 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 output += conditional_code + "}\n";
             }
             else if(context.tokens[context.index].data == "else"){
-                std::string conditional_code;
-                unsigned int before_indentation = indentation; // The indentation before processing tokens
-                unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-                output += "else ";
                 context.index++;
 
-                if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
-                    die("Expected terminate after 'else' statement");
-                }
+                if(context.tokens[context.index].data == "if"){          // Else If
+                    std::string expression;
+                    std::string conditional_code;
+                    unsigned int before_indentation = indentation; // The indentation before processing tokens
+                    unsigned int token_indent = indentation + 1;    // The indentation during processing
 
-                index_increase(context);
-
-                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;
-                    while(before_indentation != token_indent){
-                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                        context.index++;
+                    assemble_expression(context, expression, environment);
+                    context.index++;
+
+                    output += "else if (" + expression + "){\n";
+
+                    if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                        die("Expected terminate after 'else if' statement");
                     }
-                    context.index--;
-                    output += "{\n" + conditional_code + "}\n";
+
+                    index_increase(context);
+
+                    if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                        context.index++;
+                        while(before_indentation != token_indent){
+                            assemble_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                            context.index++;
+                        }
+                        context.index--;
+                    }
+                    else {
+                        index_decrease(context);
+                    }
+
+                    output += conditional_code + "}\n";
                 }
-                else {
-                    index_decrease(context);
-                    output += "{  }\n";
+                else if(context.tokens[context.index].data == "unless"){ // Else Unless
+                    std::string expression;
+                    std::string conditional_code;
+                    unsigned int before_indentation = indentation; // The indentation before processing tokens
+                    unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+                    context.index++;
+                    assemble_expression(context, expression, environment);
+                    context.index++;
+
+                    output += "else if (! (" + expression + ") ){\n";
+
+                    if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                        die("Expected terminate after 'else unless' statement");
+                    }
+
+                    index_increase(context);
+
+                    if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                        context.index++;
+                        while(before_indentation != token_indent){
+                            assemble_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                            context.index++;
+                        }
+                        context.index--;
+                    }
+                    else {
+                        index_decrease(context);
+                    }
+
+                    output += conditional_code + "}\n";
+                }
+                else { // Plain Else
+                    std::string conditional_code;
+                    unsigned int before_indentation = indentation; // The indentation before processing tokens
+                    unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+                    output += "else ";
+
+                    if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                        die("Expected terminate after 'else' statement");
+                    }
+
+                    index_increase(context);
+
+                    if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                        context.index++;
+                        while(before_indentation != token_indent){
+                            assemble_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                            context.index++;
+                        }
+                        context.index--;
+                        output += "{\n" + conditional_code + "}\n";
+                    }
+                    else {
+                        index_decrease(context);
+                        output += "{  }\n";
+                    }
                 }
             }
             else if(context.tokens[context.index].data == "while"){
@@ -382,7 +454,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
 
                 context.index++;
-                process_expression(context, expression, environment);
+                assemble_expression(context, expression, environment);
                 context.index++;
 
                 output += "while (" + expression + "){\n";
@@ -396,7 +468,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;
                     while(before_indentation != token_indent){
-                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        assemble_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
                         context.index++;
                     }
                     context.index--;
@@ -414,7 +486,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
 
                 context.index++;
-                process_expression(context, expression, environment);
+                assemble_expression(context, expression, environment);
                 context.index++;
 
                 output += "while ( !(" + expression + ") ){\n";
@@ -428,7 +500,7 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;
                     while(before_indentation != token_indent){
-                        process_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        assemble_token(context, terminate_needed, conditional_code, write, header, token_indent, environment);
                         context.index++;
                     }
                     context.index--;
@@ -438,6 +510,17 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
                 }
 
                 output += conditional_code + "}\n";
+            }
+            else if(context.tokens[context.index].data == "new"){
+                std::string class_name;
+
+                index_increase(context);
+                class_name = context.tokens[context.index].data;
+
+                output += resource(class_name) + "()";
+            }
+            else {
+                die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
             }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ADDRESS){
@@ -456,26 +539,26 @@ void process_token(TokenContext context, bool& terminate_needed, string& output,
             output += "!";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
-            output += " = ";
+            output += "=";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ADD){
-            output += " + ";
+            output += "+";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_SUBTRACT){
-            output += " - ";
+            output += "-";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_MULTIPLY){
-            output += " * ";
+            output += "*";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_DIVIDE){
-            output += " / ";
+            output += "/";
         }
 
         terminate_needed = true;
     }
 }
 
-void compile(Configuration* config, const TokenList& tokens, Environment& environment){
+void compile(Configuration* config, TokenList& tokens, Environment& environment){
     // Writes resulting c++ source code
 
     ofstream write( (HOME + CPP_SOURCE).c_str() );
@@ -497,7 +580,7 @@ void compile(Configuration* config, const TokenList& tokens, Environment& enviro
 
     // Process tokens
     for(unsigned int index = 0; index < tokens.size(); index++){
-        process_token(TokenContext{tokens, index}, terminate_needed, global, write, header, indentation, environment);
+        assemble_token(TokenContext{tokens, index}, terminate_needed, global, write, header, indentation, environment);
     }
 
     // Write Main
@@ -532,9 +615,13 @@ void build(Configuration* config){
     }
 
     { //Run MinGW
+        log_assembler("Compiling Source");
         bool bad = execute_silent("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\bin\\g++","-c \"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\source.cpp\" " + compile_flags + " -o \"" + "C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\source.o" + "\" 2>\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\logs\\native.log\"");
 
-        if(bad) die("Native Compiler Error");
+        if(bad){
+            log_assembler("Failed to Compile");
+            die("Native Compiler Error");
+        }
     }
 
     if(config->package){
@@ -543,9 +630,13 @@ void build(Configuration* config){
         //branch_create(filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"branch"),"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.a","C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.h","C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.boomslang");
     }
     else {
+        log_assembler("Linking Objects");
         bool bad = execute_silent("C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\resources\\MinGW\\bin\\g++","\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\source.o\" " + linker_flags + "\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\core\\libboomslangcore.a\" -o \"" +  config->output_filename + "\" 2>\"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\logs\\linker.log\"");
 
-        if(bad) die("Native Compiler Error");
+        if(bad){
+            log_assembler("Failed the Link");
+            die("Native Compiler Error");
+        }
     }
 
     if(config->run){
@@ -556,7 +647,7 @@ void build(Configuration* config){
     cout << "Successfully Built '" + filename_name(config->output_filename) + "'" << endl;
 }
 
-void assemble(Configuration* config, const TokenList& tokens, Environment& environment){
+void assemble(Configuration* config, TokenList& tokens, Environment& environment){
     // Creates executable/package from code
 
     // Reset the environment scope
@@ -565,6 +656,10 @@ void assemble(Configuration* config, const TokenList& tokens, Environment& envir
     // Write source code
     compile(config, tokens, environment);
 
+    log_assembler("Attempting to Compile and Link");
+
     // Build the result
     build(config);
+
+    log_assembler("Build Successful");
 }

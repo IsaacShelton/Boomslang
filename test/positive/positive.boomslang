@@ -1,0 +1,4 @@
+
+on main()
+	Positive x = 21.toPositive()
+	x.output()

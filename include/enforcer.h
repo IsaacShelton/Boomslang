@@ -6,7 +6,8 @@
 #include <vector>
 #include "token.h"
 #include "scope.h"
+#include "options.h"
 
-Environment enforce(TokenList);
+Environment enforce(Configuration* config, TokenList&);
 
 #endif // ENFORCER_H_INCLUDED

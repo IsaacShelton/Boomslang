@@ -76,9 +76,19 @@ TokenList tokenize(string code){
             code = string_delete_amount(code,1);
         }
         else if( (int)code[0] >= 48 and (int)code[0] <= 57){     // Numeric Literal
-            log_lexer(LEXER_LOG_PREFIX + "Found numeric literal, adding numeric literal token");
-            tokens.push_back( TOKEN_NUMERIC_LITERAL(string_get_until_or(code," ,)].\n")) );
+            std::string number = string_get_until_or(code," ,)].\n");
             code = string_delete_until_or(code," ,)].\n");
+
+            if(code.substr(0,1) == "."){
+                if( (int)code[1] >= 48 and (int)code[1] <= 57){
+                    code = string_delete_amount(code, 1);
+                    number += "." + string_get_until_or(code," ,)].\n");
+                    code = string_delete_until_or(code," ,)].\n");
+                }
+            }
+
+            log_lexer(LEXER_LOG_PREFIX + "Found numeric literal, adding numeric literal token");
+            tokens.push_back( TOKEN_NUMERIC_LITERAL(number) );
         }
         else if( code.substr(0,1) == "."){                       // Member
             log_lexer(LEXER_LOG_PREFIX + "Found member operator, adding member token");
@@ -196,9 +206,13 @@ TokenList tokenize(string code){
 
             code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
+        }
+        else if( string_get_until(code," ") == "by"){            // by
+            log_lexer(LEXER_LOG_PREFIX + "Found `by` keyword");
+            tokens.push_back( TOKEN_KEYWORD("by") );
 
-            tokens.push_back( TOKEN_WORD(string_get_until(code,"\n")) );
-            code = string_delete_until(code,"\n");
+            code = string_delete_amount(code,2);
+            code = string_kill_whitespace(code);
         }
         else if( string_get_until(code," ") == "return"){        // return
             log_lexer(LEXER_LOG_PREFIX + "Found `return` keyword");
@@ -210,6 +224,13 @@ TokenList tokenize(string code){
         else if( string_get_until_or(code," (") == "new"){       // new
             log_lexer(LEXER_LOG_PREFIX + "Found `new` keyword");
             tokens.push_back( TOKEN_KEYWORD("new") );
+
+            code = string_delete_amount(code,3);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until(code," ") == "var"){           // var
+            log_lexer(LEXER_LOG_PREFIX + "Found `var` keyword");
+            tokens.push_back( TOKEN_KEYWORD("var") );
 
             code = string_delete_amount(code,3);
             code = string_kill_whitespace(code);

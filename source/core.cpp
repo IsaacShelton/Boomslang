@@ -40,4 +40,19 @@ void load_core(Environment& environment){
     add_method(environment, Class{"Number"}, Method{"output",type_scope, std::vector<MethodArgument>(),"void"});
     add_method(environment, Class{"Number"}, Method{"print",type_scope, std::vector<MethodArgument>(),"void"});
     add_method(environment, Class{"Number"}, Method{"toString",type_scope, std::vector<MethodArgument>(),"String"});
+    add_method(environment, Class{"Number"}, Method{"toPositive",type_scope, std::vector<MethodArgument>(),"Positive"});
+
+    // Base Positive Class
+    type_scope = add_class(environment, Class{"Positive", true});
+    add_method(environment, Class{"Positive"}, Method{"output",type_scope, std::vector<MethodArgument>(),"void"});
+    add_method(environment, Class{"Positive"}, Method{"print",type_scope, std::vector<MethodArgument>(),"void"});
+    add_method(environment, Class{"Positive"}, Method{"toString",type_scope, std::vector<MethodArgument>(),"String"});
+    add_method(environment, Class{"Positive"}, Method{"toNumber",type_scope, std::vector<MethodArgument>(),"Number"});
+
+    // Base Boolean Class
+    type_scope = add_class(environment, Class{"Boolean", true});
+    add_method(environment, Class{"Boolean"}, Method{"output",type_scope, std::vector<MethodArgument>(),"void"});
+    add_method(environment, Class{"Boolean"}, Method{"print",type_scope, std::vector<MethodArgument>(),"void"});
+    add_method(environment, Class{"Boolean"}, Method{"input",type_scope, std::vector<MethodArgument>(),"void"});
+    add_method(environment, Class{"Boolean"}, Method{"toString",type_scope, std::vector<MethodArgument>(),"String"});
 }

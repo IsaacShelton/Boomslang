@@ -1,0 +1,10 @@
+
+on main()
+	Number x = 10
+	
+	if x = 0
+		"x is zero".output()
+	else if x = 10
+		"x is ten".output()
+	else
+		"x is not 0 or 10".output()

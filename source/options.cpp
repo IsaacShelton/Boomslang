@@ -73,6 +73,7 @@ Configuration configure(int* argc, char*** argv){
 
     // Set the current source file
     current_filename = filename_name(option);
+    config.filename_stack.push_back(current_filename);
 
     if(config.platform == PLATFORM_AUTO){
         #if defined(__WIN32__)

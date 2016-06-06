@@ -13,8 +13,10 @@
 using namespace std;
 
 // Validate Token Statement
-void enforce_token(TokenContext context, Environment& environment){
+void enforce_token(Configuration* config, TokenContext context, Environment& environment){
     static unsigned int next_block = 0;
+
+    log_enforcer("Enforcing Token '" + token_name(context.tokens[context.index]) + "' with a value of '" + context.tokens[context.index].data + "'");
 
     if(context.tokens[context.index].id == TOKENINDEX_TERMINATE){
         // Terminate
@@ -55,6 +57,7 @@ void enforce_token(TokenContext context, Environment& environment){
 
         Class expression_type;
 
+        index_increase(context);
         context_enforce_expression(context, environment, expression_type);
         token_force(context, TOKENINDEX_MEMBER, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
 
@@ -85,7 +88,10 @@ void enforce_token(TokenContext context, Environment& environment){
     else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
         // Keyword
 
-        if(context.tokens[context.index].data == "on"){          // Method Declaration
+        if(context.tokens[context.index].data == "new"){           // New Statement
+            die(UNEXPECTED_KEYWORD("new"));
+        }
+        else if(context.tokens[context.index].data == "on"){       // Method Declaration
             string method_name;
             vector<MethodArgument> method_arguments;
             string arguments_string;
@@ -116,7 +122,7 @@ void enforce_token(TokenContext context, Environment& environment){
                 environment.scope = environment.scope->parent;
             }
         }
-        else if(context.tokens[context.index].data == "class"){  // Class Declaration
+        else if(context.tokens[context.index].data == "class"){    // Class Declaration
             string class_name;
 
             token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected class name in class declaration", ERROR_INDICATOR + "Expected class name in class declaration");
@@ -137,45 +143,100 @@ void enforce_token(TokenContext context, Environment& environment){
                 }
             }
         }
-        else if(context.tokens[context.index].data == "return"){ // Return Statement
+        else if(context.tokens[context.index].data == "return"){   // Return Statement
             Class value_class;
 
+            index_increase(context);
             context_enforce_expression(context, environment, value_class);
 
             environment.global.methods[environment.global.methods.size()-1].return_type = value_class.name;
         }
-        else if(context.tokens[context.index].data == "break"){ // Break Statement
+        else if(context.tokens[context.index].data == "break"){    // Break Statement
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
         else if(context.tokens[context.index].data == "continue"){ // Continue Statement
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
-        else if(context.tokens[context.index].data == "if"){     // If Statement
+        else if(context.tokens[context.index].data == "if"){       // If Statement
             Class value_class;
 
+            index_increase(context);
             context_enforce_expression(context, environment, value_class);
         }
-        else if(context.tokens[context.index].data == "unless"){ // Unless Statement
+        else if(context.tokens[context.index].data == "unless"){   // Unless Statement
             Class value_class;
 
+            index_increase(context);
             context_enforce_expression(context, environment, value_class);
         }
-        else if(context.tokens[context.index].data == "else"){   // Else Keyword
-            // We're fine with that
-            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+        else if(context.tokens[context.index].data == "else"){     // Else Keyword
+            index_increase(context);
+
+            if(context.tokens[context.index].id == TOKENINDEX_KEYWORD and context.tokens[context.index].data == "if"){ // else if
+                Class value_class;
+
+                index_increase(context);
+                context_enforce_expression(context, environment, value_class);
+            }
+            if(context.tokens[context.index].id == TOKENINDEX_KEYWORD and context.tokens[context.index].data == "unless"){ // else unless
+                Class value_class;
+
+                index_increase(context);
+                context_enforce_expression(context, environment, value_class);
+            }
+            else {
+                index_decrease(context);
+                token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            }
         }
-        else if(context.tokens[context.index].data == "while"){  // While Statement
+        else if(context.tokens[context.index].data == "while"){    // While Statement
             Class value_class;
 
+            index_increase(context);
             context_enforce_expression(context, environment, value_class);
         }
-        else if(context.tokens[context.index].data == "until"){  // Until Statement
+        else if(context.tokens[context.index].data == "until"){    // Until Statement
             Class value_class;
 
+            index_increase(context);
             context_enforce_expression(context, environment, value_class);
+        }
+        else if(context.tokens[context.index].data == "var"){      // Var Statement
+            std::string variable_name;
+            Class value_class;
+            unsigned int var_token = context.index;
+
+            index_increase(context);
+
+            if(context.tokens[context.index].id != TOKENINDEX_WORD){
+                die(UNEXPECTED_OPERATOR_INEXP);
+            }
+
+            variable_name = context.tokens[context.index].data;
+
+            index_increase(context);
+
+            if(context.tokens[context.index].id != TOKENINDEX_ASSIGN){
+                die(UNEXPECTED_OPERATOR_INEXP);
+            }
+
+            index_increase(context);
+            context_enforce_expression(context, environment, value_class);
+
+            context.tokens[var_token] = TOKEN_WORD(value_class.name);
+
+            environment.scope->variables.push_back( Variable{variable_name, value_class.name} );
+
+            index_decrease(context);
+        }
+        else if(context.tokens[context.index].data == "import"){
+            std::string package;
+            std::string author;
+
+            index_increase(context);
         }
         else {
-            die("Unknown keyword " + context.tokens[context.index].data);
+            die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
         }
 
     }
@@ -215,11 +276,11 @@ void enforce_token(TokenContext context, Environment& environment){
             token_force(context, TOKENINDEX_TERMINATE,  ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
         else if(environment_class_exists(&environment.global, Class{class_name})){ // Variable Declaration
-            string type = class_name;
+            Class type = Class{class_name};
 
             while( context.tokens[context.index].id == TOKENINDEX_WORD
             and    environment_class_exists(&environment.global, Class{context.tokens[context.index].data})){
-                type += " " + context.tokens[context.index].data;
+                type.name += " " + context.tokens[context.index].data;
                 index_increase(context);
             }
 
@@ -228,50 +289,99 @@ void enforce_token(TokenContext context, Environment& environment){
             }
 
             string variable_name = context.tokens[context.index].data;
-            environment.scope->variables.push_back( Variable{variable_name, type} );
-            token_force(context, TOKENINDEX_TERMINATE,  ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            environment.scope->variables.push_back( Variable{variable_name, type.name} );
+
+            index_increase(context);
+
+            // Are we gonna assign it to something
+            if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                index_increase(context);
+                context_enforce_expression(context, environment, type);
+            }
+            else {
+                Token token_one = context.tokens[context.index];
+                index_increase(context);
+
+                Token token_two = context.tokens[context.index];
+                index_decrease(context);
+
+                if(token_two.id == TOKENINDEX_ASSIGN){
+                    if(token_one.id == TOKENINDEX_ADD){
+                        fail(VARIABLE_NOT_EXIST_YET(variable_name));
+                        index_increase(context);
+                        index_increase(context);
+                        context_enforce_expression(context, environment, type);
+                    }
+                    else if(token_one.id == TOKENINDEX_SUBTRACT){
+                        fail(VARIABLE_NOT_EXIST_YET(variable_name));
+                        index_increase(context);
+                        index_increase(context);
+                        context_enforce_expression(context, environment, type);
+                    }
+                    else if(token_one.id == TOKENINDEX_MULTIPLY){
+                        fail(VARIABLE_NOT_EXIST_YET(variable_name));
+                        index_increase(context);
+                        index_increase(context);
+                        context_enforce_expression(context, environment, type);
+                    }
+                    else if(token_one.id == TOKENINDEX_DIVIDE){
+                        fail(VARIABLE_NOT_EXIST_YET(variable_name));
+                        index_increase(context);
+                        index_increase(context);
+                        context_enforce_expression(context, environment, type);
+                    }
+                }
+            }
+
+            // At this point token should be a terminate
+            index_decrease(context);
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
         else { // Plain Variable
+            std::string variable_name;
             Class base_class;
 
             // Go back to the word token containing the variable data
             retreat_index(context.index);
-
-            // Ensure variable is declared
-            if( !environment_variable_exists(environment.scope, Variable{context.tokens[context.index].data, IGNORE}) ){
-                fail(UNDECLARED_VARIABLE(context.tokens[context.index].data));
-            }
-
-            // Get the class name depending on where the variable was found
-            if(environment_variable_exists(environment.scope, Variable{context.tokens[context.index].data,IGNORE})){
-                base_class.name = environment_variable_get(environment.scope, Variable{context.tokens[context.index].data,IGNORE}).type;
-            }
-            else if(environment_variable_exists(&environment.global, Variable{context.tokens[context.index].data,IGNORE})){
-                base_class.name = environment_variable_get(&environment.global, Variable{context.tokens[context.index].data,IGNORE}).type;
-            }
+            variable_name = context.tokens[context.index].data;
 
             // See whats after the variable name
             index_increase(context);
 
             // Handle following fields and methods
-            while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                if( environment_class_exists(&environment.global, base_class) ){ // Make sure the current class is valid
-                    // Next token should be a word
-                    index_increase(context);
-
-                    // Is it a field of the class
-                    if( environment_class_variable_exists(environment,base_class,Variable{context.tokens[context.index].data,IGNORE}) ){
-                        base_class.name = environment_class_variable_get(environment,base_class,Variable{context.tokens[context.index].data,IGNORE}).type;
-                    }
-                    else { // Method of the class
-                        index_decrease(context);
-                        token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
-                        context_enforce_arguments(context, environment, base_class);
-                        index_increase(context);
-                    }
+            if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                // Ensure variable is declared
+                if( !environment_variable_exists(environment.scope, Variable{variable_name, IGNORE}) ){
+                    fail(UNDECLARED_VARIABLE(context.tokens[context.index].data));
                 }
-                else { // Undeclared Class
-                    die(UNDECLARED_CLASS(class_name));
+
+                // Get the class name depending on where the variable was found
+                if(environment_variable_exists(environment.scope, Variable{variable_name,IGNORE})){
+                    base_class.name = environment_variable_get(environment.scope, Variable{variable_name,IGNORE}).type;
+                }
+                else if(environment_variable_exists(&environment.global, Variable{variable_name,IGNORE})){
+                    base_class.name = environment_variable_get(&environment.global, Variable{variable_name,IGNORE}).type;
+                }
+
+                while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                    if( environment_class_exists(&environment.global, base_class) ){ // Make sure the current class is valid
+                        // Next token should be a word
+                        index_increase(context);
+
+                        // Is it a field of the class
+                        if( environment_class_variable_exists(environment,base_class,Variable{variable_name,IGNORE}) ){
+                            base_class.name = environment_class_variable_get(environment,base_class,Variable{variable_name,IGNORE}).type;
+                        }
+                        else { // Method of the class
+                            index_decrease(context);
+                            token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+                            context_enforce_arguments(context, environment, base_class);
+                            index_increase(context);
+                        }
+                    }
+                    else { // Undeclared Class
+                        die(UNDECLARED_CLASS(class_name));
+                    }
                 }
             }
 
@@ -279,6 +389,36 @@ void enforce_token(TokenContext context, Environment& environment){
             if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
                 index_increase(context);
                 context_enforce_expression(context, environment, base_class);
+            }
+            else {
+                Token token_one = context.tokens[context.index];
+                index_increase(context);
+
+                Token token_two = context.tokens[context.index];
+                index_decrease(context);
+
+                if(token_two.id == TOKENINDEX_ASSIGN){
+                    if(token_one.id == TOKENINDEX_ADD){
+                        index_increase(context);
+                        index_increase(context);
+                        context_enforce_expression(context, environment, base_class);
+                    }
+                    else if(token_one.id == TOKENINDEX_SUBTRACT){
+                        index_increase(context);
+                        index_increase(context);
+                        context_enforce_expression(context, environment, base_class);
+                    }
+                    else if(token_one.id == TOKENINDEX_MULTIPLY){
+                        index_increase(context);
+                        index_increase(context);
+                        context_enforce_expression(context, environment, base_class);
+                    }
+                    else if(token_one.id == TOKENINDEX_DIVIDE){
+                        index_increase(context);
+                        index_increase(context);
+                        context_enforce_expression(context, environment, base_class);
+                    }
+                }
             }
 
             // At this point token should be a terminate
@@ -292,7 +432,7 @@ void enforce_token(TokenContext context, Environment& environment){
 }
 
 // Validate Token Stream
-Environment enforce(TokenList tokens){
+Environment enforce(Configuration* config, TokenList& tokens){
     // Enforce grammer and context
 
     Environment environment;
@@ -302,7 +442,7 @@ Environment enforce(TokenList tokens){
 
     // Validate Tokens
     for(unsigned int index = 0; index < tokens.size(); index++){
-        enforce_token(TokenContext{tokens, index}, environment);
+        enforce_token(config, TokenContext{tokens, index}, environment);
     }
 
     // Make sure a main method was declared
@@ -315,6 +455,7 @@ Environment enforce(TokenList tokens){
         exit(1);
     }
 
+    log_enforcer("The Program is Valid");
     return environment;
 }
 

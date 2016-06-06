@@ -1,0 +1,11 @@
+
+on main()
+	var x = 10
+	var y = 10
+	
+	unless x = 10
+		"x is not 10".output()
+	else unless y = 10
+		"y is not 10".output()
+	else
+		"x and y are 10".output()

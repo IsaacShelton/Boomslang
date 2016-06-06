@@ -3,6 +3,7 @@
 #define OPTIONS_H_INCLUDED
 
 #include <string>
+#include <vector>
 
 #define PLATFORM_AUTO    0
 #define PLATFORM_WINDOWS 1
@@ -13,6 +14,7 @@
 
 struct Configuration {
     std::string output_filename = "";
+    std::vector<std::string> filename_stack;
     unsigned int platform = 0;
     bool console = 0;
     bool optimize = 0;

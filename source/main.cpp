@@ -22,7 +22,7 @@ int main(int argc, char** argv){
     TokenList tokens = tokenize(contents(argv[1]));
 
     // Ensure the code is valid
-    Environment environment = enforce(tokens);
+    Environment environment = enforce(&config, tokens);
 
     // Assemble results
     assemble(&config, tokens, environment);

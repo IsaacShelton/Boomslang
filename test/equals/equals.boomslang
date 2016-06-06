@@ -1,0 +1,13 @@
+
+on main()
+	String message = "Hello "
+	Number x
+	
+	message += "John"
+	x += 10
+	x -= 4
+	x *= 4
+	x /= 3
+	
+	("Message is " + message).output()
+	("[(10 - 4) * 4] / 3 = " + x.toString()).output()

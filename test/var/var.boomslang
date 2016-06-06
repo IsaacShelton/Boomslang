@@ -1,0 +1,4 @@
+
+on main()
+	var value = new Boolean
+	value.output()

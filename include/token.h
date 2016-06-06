@@ -75,7 +75,7 @@ struct Token {
 typedef std::vector<Token> TokenList;
 
 struct TokenContext {
-    const TokenList& tokens;
+    TokenList& tokens;
     unsigned int& index;
 };
 
