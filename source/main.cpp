@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <stdlib.h>
+#include "../include/dump.h"
 #include "../include/file.h"
 #include "../include/lexer.h"
 #include "../include/token.h"

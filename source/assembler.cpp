@@ -4,6 +4,7 @@
 #include "../include/die.h"
 #include "../include/log.h"
 #include "../include/run.h"
+#include "../include/dump.h"
 #include "../include/file.h"
 #include "../include/scope.h"
 #include "../include/errors.h"
@@ -519,6 +520,21 @@ void assemble_token(TokenContext context, bool& terminate_needed, string& output
 
                 output += resource(class_name) + "()";
             }
+            else if(context.tokens[context.index].data == "import"){
+                std::string package;
+                std::string global;
+                TokenList tokens;
+
+                token_force(context, TOKENINDEX_STRING_LITERAL , "Unexpected Termination in import statement", "Unexpected Termination in import statement\nExpected package name");
+                package = context.tokens[context.index].data;
+
+                tokens_load(package, tokens);
+
+                // Process tokens
+                for(unsigned int index = 0; index < tokens.size(); index++){
+                    assemble_token(TokenContext{tokens, index}, terminate_needed, global, write, header, indentation, environment);
+                }
+            }
             else {
                 die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
             }
@@ -650,16 +666,23 @@ void build(Configuration* config){
 void assemble(Configuration* config, TokenList& tokens, Environment& environment){
     // Creates executable/package from code
 
-    // Reset the environment scope
-    environment.scope = &environment.global;
+    if(!config->package){
+        // Reset the environment scope
+        environment.scope = &environment.global;
 
-    // Write source code
-    compile(config, tokens, environment);
+        // Write source code
+        compile(config, tokens, environment);
 
-    log_assembler("Attempting to Compile and Link");
+        log_assembler("Attempting to Compile and Link");
 
-    // Build the result
-    build(config);
+        // Build the result
+        build(config);
+    }
+    else {
+        tokens_dump(config->output_filename, tokens);
+        cout << "Successfully Created Package '" + filename_name(config->output_filename) + "'" << endl;
+    }
+
 
     log_assembler("Build Successful");
 }

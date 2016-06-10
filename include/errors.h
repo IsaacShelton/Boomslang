@@ -4,11 +4,12 @@
 
 #include <string>
 #include "token.h"
+#include "management.h"
 
 #define DEV_ERRORS
 
-#define ERROR_INDICATOR                    (current_filename + " (" + getLineString(context.tokens,context.index) + "): ")
-#define NOLINE_ERROR_INDICATOR             (current_filename + ": ")
+#define ERROR_INDICATOR                    (filename_name(current_filename) + " (" + getLineString(context.tokens,context.index) + "): ")
+#define NOLINE_ERROR_INDICATOR             (filename_name(current_filename) + ": ")
 
 #define NO_MAIN                            (NOLINE_ERROR_INDICATOR + "Missing main method")
 #define INVALID_TOKEN                      (NOLINE_ERROR_INDICATOR + "Found valid operators but can't assemble them")
@@ -31,8 +32,9 @@
 #define INCOMPATIBLE_CLASSES(a,b)          (ERROR_INDICATOR + "Incompatible classes '" + a + "' and '" + b + "'")
 #define CANT_CALL_METHODS_OF_VOID          (ERROR_INDICATOR + "Can't call methods of void, it has no type")
 #define CANT_PASS_VOID_AS_ARGUMENT         (ERROR_INDICATOR + "Can't pass void as method argument, it has no type")
+#define PACKAGE_DOESNT_EXIST(a)            (ERROR_INDICATOR + "The Package '" + a + "' doesn't exist")
 
-#define DEV_BLANK_TYPE                (NOLINE_ERROR_INDICATOR + "Returning blank type at " + string(__LINE__))
+#define DEV_BLANK_TYPE                     (NOLINE_ERROR_INDICATOR + "Returning blank type at " + string(__LINE__))
 
 extern std::string current_filename;
 

@@ -4,6 +4,8 @@
 #include "../include/die.h"
 #include "../include/log.h"
 #include "../include/core.h"
+#include "../include/file.h"
+#include "../include/dump.h"
 #include "../include/scope.h"
 #include "../include/errors.h"
 #include "../include/context.h"
@@ -231,9 +233,35 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         }
         else if(context.tokens[context.index].data == "import"){
             std::string package;
-            std::string author;
+            std::string prev_filename;
+            TokenList tokens;
+            Configuration custom_config = *config;
+            custom_config.package = true;
 
-            index_increase(context);
+            token_force(context, TOKENINDEX_STRING_LITERAL , "Unexpected Termination in import statement", "Unexpected Termination in import statement\nExpected package name");
+            package = context.tokens[context.index].data;
+
+            if(file_exists(package)){
+                prev_filename = current_filename;
+                current_filename = package;
+
+                tokens_load(package, tokens);
+                enforce_package(&custom_config, tokens, environment);
+
+                current_filename = prev_filename;
+            }
+            else if( file_exists( filename_path(current_filename) + package ) ){
+                prev_filename = current_filename;
+                current_filename = filename_path(current_filename) + package;
+
+                tokens_load(filename_path(current_filename) + package, tokens);
+                enforce_package(&custom_config, tokens, environment);
+
+                current_filename = prev_filename;
+            }
+            else {
+                fail(PACKAGE_DOESNT_EXIST(package));
+            }
         }
         else {
             die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
@@ -434,7 +462,6 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 // Validate Token Stream
 Environment enforce(Configuration* config, TokenList& tokens){
     // Enforce grammer and context
-
     Environment environment;
 
     // Load Boomslang Core Classes
@@ -446,7 +473,7 @@ Environment enforce(Configuration* config, TokenList& tokens){
     }
 
     // Make sure a main method was declared
-    if( !environment_method_exists(environment.scope, Method{"main", &environment.global, std::vector<MethodArgument>(), IGNORE}) ){
+    if( !environment_method_exists(environment.scope, Method{"main", &environment.global, std::vector<MethodArgument>(), IGNORE}) and !config->package ){
         die(NO_MAIN);
     }
 
@@ -459,3 +486,17 @@ Environment enforce(Configuration* config, TokenList& tokens){
     return environment;
 }
 
+void enforce_package(Configuration* config, TokenList& tokens, Environment& environment){
+
+    // Validate Tokens
+    for(unsigned int index = 0; index < tokens.size(); index++){
+        enforce_token(config, TokenContext{tokens, index}, environment);
+    }
+
+    // Exit if mild errors were encountered
+    if(error_count > 0){
+        exit(1);
+    }
+
+    log_enforcer("The Package is Valid");
+}

@@ -14,7 +14,6 @@
 
 struct Configuration {
     std::string output_filename = "";
-    std::vector<std::string> filename_stack;
     unsigned int platform = 0;
     bool console = 0;
     bool optimize = 0;

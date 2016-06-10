@@ -1,5 +1,0 @@
-
-import sum by IsaacShelton
-
-on main()
-	sum(8, 13).output()

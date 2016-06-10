@@ -9,5 +9,6 @@
 #include "options.h"
 
 Environment enforce(Configuration* config, TokenList&);
+void enforce_package(Configuration* config, TokenList&, Environment&);
 
 #endif // ENFORCER_H_INCLUDED

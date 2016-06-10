@@ -30,6 +30,7 @@ Configuration configure(int* argc, char*** argv){
             cout << "  -help     : help" << endl;
             cout << "  -console  : uses the console" << endl;
             cout << "  -optimize : optimizes code" << endl;
+            cout << "  -package  : packages code" << endl;
             cout << "  -wait     : wait after complete" << endl;
             cout << "  -run      : run after compiled" << endl;
             cout << "  -windows  : compile for windows" << endl;
@@ -44,6 +45,9 @@ Configuration configure(int* argc, char*** argv){
         }
         else if(option == "-console"){
             config.console = true;
+        }
+        else if(option == "-package"){
+            config.package = true;
         }
         else if(option == "-wait"){
             config.wait = true;
@@ -72,10 +76,12 @@ Configuration configure(int* argc, char*** argv){
     option = (*argv)[1];
 
     // Set the current source file
-    current_filename = filename_name(option);
-    config.filename_stack.push_back(current_filename);
+    current_filename = option;
 
-    if(config.platform == PLATFORM_AUTO){
+    if(config.package){
+        config.output_filename = filename_change_ext(option, "branch");
+    }
+    else if(config.platform == PLATFORM_AUTO){
         #if defined(__WIN32__)
         config.output_filename = filename_change_ext(option, "exe");
 
@@ -85,7 +91,7 @@ Configuration configure(int* argc, char*** argv){
         #elif defined(__linux__)
         config.output_filename = filename_change_ext(option, "bin");
 
-        #endif // __APPLE__
+        #endif
     }
 
     return config;
