@@ -1,0 +1,20 @@
+
+import glfw/glfw
+
+on main()
+    glfwInit()
+    
+    GlfwWindow^ window
+    window = glfwCreateWindow(640, 480, "Simple Window", void, void)
+    
+    glfwSwapInterval(1)
+    glfwMakeContextCurrent(window)
+    glClearColor(1, 1, 1, 1)
+        
+    until glfwWindowShouldClose(window)
+        glClear()
+        glfwPollEvents()
+        glfwSwapBuffers(window)
+    
+    glfwDestroyWindow(window)
+    glfwTerminate()

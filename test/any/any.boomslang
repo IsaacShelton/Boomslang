@@ -1,0 +1,6 @@
+
+on main()
+    any^ message = create String
+    ^(cast String^ message) = "Hello World"
+    
+    cast String^(message).output()

@@ -1,0 +1,7 @@
+
+on main()
+    String^ x = create String
+    ^x = "Hello World"
+    
+    x.output()
+    delete x

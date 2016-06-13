@@ -1,0 +1,25 @@
+
+native link "libglfw3.a"
+native link "libglu32.a"
+native link "libgdi32.a"
+native link "libopengl32.a"
+native include "GLFW/glfw3.h"
+native include "glfwwrap.h"
+
+register class    GlfwWindow
+register class    GlfwMonitor
+register class    GlfwVidMode
+register class    GlfwGrammaRamp
+register function glfwCreateWindow(Number, Number, String, GlfwMonitor^, GlfwWindow^) -> GlfwWindow^
+register function glfwInit() -> void
+register function glfwTerminate() -> void
+register function glfwDestroyWindow(GlfwWindow^) -> void
+register function glfwWindowShouldClose(GlfwWindow^) -> Boolean
+register function glClearColor(Number, Number, Number, Number) -> void
+register function glClear() -> void
+register function glfwPollEvents() -> void
+register function glfwSwapBuffers(GlfwWindow^) -> void
+register function glfwMakeContextCurrent(GlfwWindow^) -> void
+register function glfwSwapInterval(Number) -> void
+register function glfwGetCurrentContext() -> GlfwWindow^
+register function glfwGetPrimaryMonitor() -> GlfwMonitor^

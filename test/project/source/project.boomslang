@@ -1,0 +1,6 @@
+
+import ../packages/glfw
+import ../packages/opengl
+
+on main()
+    Number window = glfwCreateWindow()

@@ -1,0 +1,9 @@
+
+on main()
+    String^ message = void
+    
+    if message = void
+        "Message is void".output()
+    
+    "Program should crash now...".output()
+    message.output()
