@@ -35,6 +35,7 @@
 #define TOKENINDEX_POINTER           27
 #define TOKENINDEX_LESSTHAN          28
 #define TOKENINDEX_GREATERTHAN       29
+#define TOKENINDEX_POINTERMEMBER     30
 
 #define TOKEN_STRING_LITERAL(a)  Token{ 0, a}
 #define TOKEN_NUMERIC_LITERAL(a) Token{ 1, a}
@@ -66,6 +67,7 @@
 #define TOKEN_POINTER            Token{27}
 #define TOKEN_LESSTHAN           Token{28}
 #define TOKEN_GREATERTHAN        Token{29}
+#define TOKEN_POINTERMEMBER      Token{30}
 
 struct Token {
     unsigned int id;

@@ -33,6 +33,7 @@ std::string string_get_until_or(std::string, std::string);
 std::string string_delete_until(std::string, std::string);
 std::string string_delete_until_or(std::string, std::string);
 std::string string_delete_amount(std::string, int);
+std::string string_get_until_last(std::string text, std::string character_set);
 
 unsigned int string_count(std::string, std::string);
 std::string string_replace(std::string, std::string, std::string);
@@ -42,7 +43,7 @@ std::string string_kill_whitespace(std::string);
 std::string string_kill_all_whitespace(std::string);
 std::string string_kill_newline(std::string);
 
-std::string delete_backslash(std::string);
+std::string delete_slash(std::string);
 std::string string_upper(std::string);
 
 std::string resource(std::string);

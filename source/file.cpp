@@ -1,11 +1,12 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include <boost/filesystem.hpp>
 #include "../include/file.h"
 
 using namespace std;
 
-string contents(string filename){
+string contents(string filename, string error_message){
     ifstream file(filename.c_str());
     string text;
     string line;
@@ -21,7 +22,7 @@ string contents(string filename){
         return text;
     }
     else {
-        cerr << "The file specified does not exist" << endl;
+        cerr << error_message << endl;
         exit(1);
     }
 }
@@ -33,4 +34,13 @@ bool file_exists(string filename){
     bool open = file;
     file.close();
     return open;
+}
+
+std::string full_path(std::string filename, std::string location){
+    if(location != ""){
+        return boost::filesystem::absolute(boost::filesystem::path(filename), boost::filesystem::path(location)).string();
+    }
+    else {
+        return boost::filesystem::absolute(boost::filesystem::path(filename)).string();
+    }
 }

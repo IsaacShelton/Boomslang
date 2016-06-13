@@ -20,6 +20,9 @@ struct Configuration {
     bool run = 0;
     bool wait = 0;
     bool package = 0;
+
+    std::string compiler_flags;
+    std::string linker_flags;
 };
 
 Configuration configure(int*, char***);

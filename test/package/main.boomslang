@@ -1,5 +1,5 @@
 
-import "sum.branch"
+import IsaacShelton/math
 
 on main()
     sum(8, 13).output()

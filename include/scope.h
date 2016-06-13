@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include "token.h"
 
 #define IGNORE      "..."
 #define IGNORE_ARGS {MethodArgument{Class{IGNORE}, 1}}
@@ -21,11 +22,12 @@ struct Environment;
 struct Variable {
     std::string name;
     std::string type;
+    bool is_final;
+    bool is_global;
 };
 
 struct Class {
     std::string name;
-    bool is_final;
 };
 
 struct MethodArgument {
@@ -70,9 +72,9 @@ void clean_scopes(Scope* scope);
 Scope* environment_get_child(Scope* scope, std::string name);
 
 // Methods
-bool environment_method_exists(Scope*, Method);
+bool environment_method_exists(TokenContext context, Scope*, Method);
 unsigned int environment_method_index(Scope*, Method);
-Method environment_method_get(Scope*, Method);
+Method environment_method_get(TokenContext context, Scope*, Method);
 
 // Classes
 bool environment_class_exists(Scope*, Class);

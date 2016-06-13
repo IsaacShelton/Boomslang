@@ -45,6 +45,7 @@ string token_name(Token token){
         case 27 : token_name = "pointer"; break;
         case 28 : token_name = "less than"; break;
         case 29 : token_name = "greater than"; break;
+        case 30 : token_name = "pointer member"; break;
     }
 
     return token_name;
@@ -83,6 +84,7 @@ string token_operator(Token token){
         case 27 : token_name = "^"; break;
         case 28 : token_name = "<"; break;
         case 29 : token_name = ">"; break;
+        case 30 : token_name = "."; break;
     }
 
     return token_name;

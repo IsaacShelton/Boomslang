@@ -2,6 +2,8 @@
 #include <iostream>
 #include "../include/die.h"
 #include "../include/scope.h"
+#include "../include/token.h"
+#include "../include/context.h"
 
 using namespace std;
 
@@ -57,7 +59,7 @@ Scope* environment_get_child(Scope* scope, std::string name){
 }
 
 // Arguments
-bool arguments_equal(std::vector<MethodArgument> a, std::vector<MethodArgument> b){
+bool arguments_equal(TokenContext context, std::vector<MethodArgument> a, std::vector<MethodArgument> b){
     if(a.size() == 1){
         if(a[0].type.name == IGNORE and a[0].optional == true){
             return true;
@@ -75,7 +77,9 @@ bool arguments_equal(std::vector<MethodArgument> a, std::vector<MethodArgument> 
     }
 
     for(unsigned int i = 0; i < a.size(); i++){
-        if(a[i].type.name != b[i].type.name){
+        if(a[i].type.name != b[i].type.name
+        and (a[i].type.name != "any^" and context_class_can_dereference(context, b[i].type))
+        and (b[i].type.name != "any^" and context_class_can_dereference(context, a[i].type)) ){
             return false;
         }
     }
@@ -84,24 +88,24 @@ bool arguments_equal(std::vector<MethodArgument> a, std::vector<MethodArgument> 
 }
 
 // Methods
-bool environment_method_exists(Scope* scope, Method method){
+bool environment_method_exists(TokenContext context, Scope* scope, Method method){
     for(unsigned int i = 0; i < scope->methods.size(); i++){
         if( (scope->methods[i].name == method.name               or method.name==IGNORE)
         and (scope->methods[i].parent == method.parent           or method.parent==NULL)
         and (scope->methods[i].return_type == method.return_type or method.return_type==IGNORE)
-        and (arguments_equal(scope->methods[i].arguments, method.arguments))){
+        and (arguments_equal(context, scope->methods[i].arguments, method.arguments))){
             return true;
         }
     }
 
     return false;
 }
-unsigned int environment_method_index(Scope* scope, Method method){
+unsigned int environment_method_index(TokenContext context, Scope* scope, Method method){
     for(unsigned int i = 0; i < scope->methods.size(); i++){
         if( (scope->methods[i].name == method.name               or method.name==IGNORE)
         and (scope->methods[i].parent == method.parent           or method.parent==NULL)
         and (scope->methods[i].return_type == method.return_type or method.return_type==IGNORE)
-        and (arguments_equal(scope->methods[i].arguments, method.arguments))){
+        and (arguments_equal(context, scope->methods[i].arguments, method.arguments))){
             return i;
         }
     }
@@ -112,12 +116,12 @@ unsigned int environment_method_index(Scope* scope, Method method){
 
     return 0;
 }
-Method environment_method_get(Scope* scope, Method method){
+Method environment_method_get(TokenContext context, Scope* scope, Method method){
     for(unsigned int i = 0; i < scope->methods.size(); i++){
         if( (scope->methods[i].name == method.name               or method.name==IGNORE)
         and (scope->methods[i].parent == method.parent           or method.parent==NULL)
         and (scope->methods[i].return_type == method.return_type or method.return_type==IGNORE)
-        and (arguments_equal(scope->methods[i].arguments, method.arguments))){
+        and (arguments_equal(context, scope->methods[i].arguments, method.arguments))){
             return scope->methods[i];
         }
     }
@@ -131,6 +135,12 @@ Method environment_method_get(Scope* scope, Method method){
 
 // Classes
 bool environment_class_exists(Scope* scope, Class type){
+    for(unsigned int i = 0; i < type.name.length(); i++){
+        if(type.name[i] == '^'){
+            type.name.erase(type.name.begin() + i);
+        }
+    }
+
     for(unsigned int i = 0; i < scope->classes.size(); i++){
         if( (scope->classes[i].name == type.name or type.name==IGNORE)){
             return true;
@@ -212,7 +222,7 @@ Variable environment_class_variable_get(Environment& environment, Class base, Va
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Variable{IGNORE, IGNORE};
+    return Variable{IGNORE, IGNORE, false, false};
 }
 
 // Variables
@@ -229,13 +239,8 @@ void environment_print_variables(Scope* scope, unsigned int indent){
         environment_print_variables(scope->children[i], indent+1);
     }
 }
+
 bool environment_variable_exists(Scope* scope, Variable variable){
-    if(scope->parent == NULL) return false;
-
-    if(environment_variable_exists(scope->parent, variable)){
-        return true;
-    }
-
     for(unsigned int v = 0; v < scope->variables.size(); v++){
         if( (scope->variables[v].name == variable.name or variable.name==IGNORE)
         and (scope->variables[v].type == variable.type or variable.type==IGNORE)){
@@ -243,22 +248,15 @@ bool environment_variable_exists(Scope* scope, Variable variable){
         }
     }
 
-    return false;
-}
-
-Variable environment_variable_get(Scope* scope, Variable variable){
-    if(scope->parent == NULL){
-        #ifdef DEV_ERRORS
-        fail(DEV_BLANK_TYPE);
-        #endif // DEV_ERRORS
-
-        return Variable{"",""};
-    }
+    if(scope->parent == NULL) return false;
 
     if(environment_variable_exists(scope->parent, variable)){
-        return environment_variable_get(scope->parent, variable);
+        return true;
     }
 
+    return false;
+}
+Variable environment_variable_get(Scope* scope, Variable variable){
     for(unsigned int v = 0; v < scope->variables.size(); v++){
         if( (scope->variables[v].name == variable.name or variable.name==IGNORE)
         and (scope->variables[v].type == variable.type or variable.type==IGNORE)){
@@ -266,9 +264,21 @@ Variable environment_variable_get(Scope* scope, Variable variable){
         }
     }
 
+    if(scope->parent == NULL){
+        #ifdef DEV_ERRORS
+        fail(DEV_BLANK_TYPE);
+        #endif // DEV_ERRORS
+
+        return Variable{"","", false, false};
+    }
+
+    if(environment_variable_exists(scope->parent, variable)){
+        return environment_variable_get(scope->parent, variable);
+    }
+
     #ifdef DEV_ERRORS
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Variable{"",""};
+    return Variable{"","", false, false};
 }

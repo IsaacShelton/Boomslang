@@ -2,15 +2,12 @@
 #include <string>
 #include <iostream>
 #include <stdlib.h>
-#include "../include/dump.h"
 #include "../include/file.h"
-#include "../include/lexer.h"
 #include "../include/token.h"
-#include "../include/errors.h"
+#include "../include/lexer.h"
 #include "../include/options.h"
 #include "../include/enforcer.h"
 #include "../include/assembler.h"
-#include "../include/management.h"
 
 using namespace std;
 

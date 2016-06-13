@@ -120,6 +120,15 @@ string string_delete_until_or(string parent_string, string characters){
     }
 }
 
+string string_get_until_last(string text, string character_set){
+    for(int i = text.length()-1; i >= 0; i--){
+        if(text[i] == character_set[0]){
+            return text.substr(i + 1, text.length()-i-1);
+        }
+    }
+    return text;
+}
+
 //Deletes the amount of characters from the start of the string
 string string_delete_amount(string str, int num){
     return str.substr(num,str.length()-num);
@@ -182,15 +191,17 @@ string string_kill_newline(string str){
 
 //Gets a boomslang resource name
 string resource(string a){
-    return "boomslang_" + string_replace_all(string_replace_all(a,":","::boomslang_"),".",".boomslang_");
+    return "boomslang_" + string_replace_all(string_replace_all(a,"^","*"),".",".boomslang_");
 }
 
 //Deletes Backslash if there is one
-string delete_backslash(string a){
-    if (a.substr(0,1)=="\\" or a.substr(0,1)=="/")
-        return string_delete_amount(a,1);
-    else
+string delete_slash(string a){
+    if (a.substr(0,1)=="\\" or a.substr(0,1)=="/"){
+        return string_delete_amount(a, 1);
+    }
+    else {
         return a;
+    }
 }
 
 //Turns the string uppercase
@@ -245,7 +256,7 @@ string filename_name(string a){
 //Gets the path of the file from path and filename
 string filename_path(string a){
     if (a.find_last_of("\\/")==string::npos){
-        return a;
+        return "";
     } else {
         return a.substr(0, a.find_last_of("\\/")) + "/";
     }

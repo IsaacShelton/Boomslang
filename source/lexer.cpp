@@ -48,6 +48,7 @@ TokenList tokenize(string code){
     process_indentation(tokens, code, indentation);
 
     if(code == ""){
+        tokens.push_back(TOKEN_TERMINATE);
         lexer_log_tokens(tokens);
         return tokens;
     }
@@ -177,7 +178,7 @@ TokenList tokenize(string code){
         }
         else if( code.substr(0,1) == "^"){                       // Pointer
             log_lexer(LEXER_LOG_PREFIX + "Found `exponent` symbol, adding pointer token");
-            tokens.push_back( TOKEN_ADDRESS );
+            tokens.push_back( TOKEN_POINTER );
             code = string_delete_amount(code,1);
         }
         else if( code.substr(0,1) == ":"){                       // Address Member
@@ -206,12 +207,33 @@ TokenList tokenize(string code){
 
             code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
-        }
-        else if( string_get_until(code," ") == "by"){            // by
-            log_lexer(LEXER_LOG_PREFIX + "Found `by` keyword");
-            tokens.push_back( TOKEN_KEYWORD("by") );
 
-            code = string_delete_amount(code,2);
+            if(code.substr(0,1) == "\""){ // String Literal
+                log_lexer(LEXER_LOG_PREFIX + "Found string literal, adding string literal token");
+                code = string_delete_amount(code,1);
+                tokens.push_back( TOKEN_STRING_LITERAL(string_get_until(code,"\"")) );
+                code = string_delete_until(code,"\"");
+                code = string_delete_amount(code,1);
+            }
+            else { // Word
+                tokens.push_back( TOKEN_WORD(string_get_until_or(code," \n")) );
+                code = string_delete_until_or(code," \n");
+                code = string_kill_whitespace(code);
+            }
+        }
+        else if( string_get_until(code," ") == "register"){      // register
+            log_lexer(LEXER_LOG_PREFIX + "Found `register` keyword");
+            tokens.push_back( TOKEN_KEYWORD("register") );
+
+            code = string_delete_amount(code,8);
+            code = string_kill_whitespace(code);
+
+            tokens.push_back( TOKEN_WORD(string_get_until(code," ")) );
+            code = string_delete_until(code," ");
+            code = string_kill_whitespace(code);
+
+            tokens.push_back( TOKEN_WORD(string_get_until(code,"\n")) );
+            code = string_delete_until(code,"\n");
             code = string_kill_whitespace(code);
         }
         else if( string_get_until(code," ") == "return"){        // return
@@ -226,6 +248,20 @@ TokenList tokenize(string code){
             tokens.push_back( TOKEN_KEYWORD("new") );
 
             code = string_delete_amount(code,3);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," (") == "create"){    // create
+            log_lexer(LEXER_LOG_PREFIX + "Found `create` keyword");
+            tokens.push_back( TOKEN_KEYWORD("create") );
+
+            code = string_delete_amount(code,6);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until(code," ") == "delete"){        // delete
+            log_lexer(LEXER_LOG_PREFIX + "Found `delete` keyword");
+            tokens.push_back( TOKEN_KEYWORD("delete") );
+
+            code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
         }
         else if( string_get_until(code," ") == "var"){           // var
@@ -306,16 +342,41 @@ TokenList tokenize(string code){
 
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until(code," ") == "unique"){        // Method Declaration
-            log_lexer(LEXER_LOG_PREFIX + "Found `unique` keyword");
-            tokens.push_back( TOKEN_KEYWORD("unique") );
+        else if( string_get_until(code," ") == "native"){        // native
+            log_lexer(LEXER_LOG_PREFIX + "Found `native` keyword");
+            tokens.push_back( TOKEN_KEYWORD("native") );
 
             code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
         }
-        else if( is_identifier(string_get_until_or(code, " ,()[]\n.+-*/=&:")) ){
-            tokens.push_back( TOKEN_WORD(string_get_until_or(code, " ,()[]\n.+-*/=&:")) );
-            code = string_delete_until_or(code, " ,()[]\n.+-*/=&:");
+        else if( string_get_until(code," ") == "any^"){          // any^
+            log_lexer(LEXER_LOG_PREFIX + "Found `any^` keyword");
+            tokens.push_back( TOKEN_KEYWORD("any^") );
+
+            code = string_delete_amount(code,4);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," ,)\n") == "void"){   // void
+            log_lexer(LEXER_LOG_PREFIX + "Found `void` keyword");
+            tokens.push_back( TOKEN_KEYWORD("void") );
+
+            code = string_delete_amount(code,4);
+            code = string_kill_whitespace(code);
+        }
+        else if(string_get_until_or(code," ") == "cast"){        // cast
+            log_lexer(LEXER_LOG_PREFIX + "Found `cast` keyword");
+            tokens.push_back( TOKEN_KEYWORD("cast") );
+
+            code = string_delete_amount(code,4);
+            code = string_kill_whitespace(code);
+
+            tokens.push_back( TOKEN_WORD(string_get_until_or(code, " (")) );
+            code = string_delete_until_or(code, " (");
+            code = string_kill_whitespace(code);
+        }
+        else if( is_identifier(string_get_until_or(code, " ,()[]\n.+-*/=&:^<>")) ){
+            tokens.push_back( TOKEN_WORD(string_get_until_or(code, " ,()[]\n.+-*/=&:^<>")) );
+            code = string_delete_until_or(code, " ,()[]\n.+-*/=&:^<>");
         }
 
         code = string_kill_whitespace(code);

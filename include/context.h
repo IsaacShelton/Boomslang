@@ -12,17 +12,22 @@
 
 bool context_variable_exists(Environment&, Variable);
 bool context_class_exists(Environment&, Class);
-bool context_method_exists(Environment&, Method);
-bool context_method_exists(Environment&, Class, Method);
+bool context_method_exists(TokenContext context, Environment&, Method);
+bool context_method_exists(TokenContext context, Environment&, Class, Method);
 
 Variable context_variable_get(Environment&, Variable);
 Class context_class_get(Environment&, Class);
-Method context_method_get(Environment&, Method);
+Method context_method_get(TokenContext context, Environment&, Method);
 
 void context_enforce_expression(TokenContext context, Environment& e, Class& type);
 void context_enforce_arguments(TokenContext context, Environment& e, Class& type);
 void context_enforce_method_declaration_arguments(TokenContext tokens, Environment& e, MethodArgumentList& method_arguments, std::string& argument_string);
 void context_enforce_following_method_calls(TokenContext context, Environment& e, Class& type);
+
+void context_class_dereference(TokenContext context, Class& type);
+bool context_class_dereference_ifcan(TokenContext context, Class& type);
+bool context_class_can_dereference(TokenContext context, Class type);
+bool context_class_compare(TokenContext context, Class a, Class b);
 
 bool name_is_class(std::string);
 std::string name_get_class(std::string);
