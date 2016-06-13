@@ -436,6 +436,7 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
                 else if(!context_class_compare(context, Class{type}, return_type)){
                     fail(INCOMPATIBLE_CLASSES(type, return_type.name));
                 }
+                context.index--;
             }
             else {
                 index_decrease(context);

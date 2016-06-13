@@ -70,9 +70,21 @@ void assemble_expression(TokenContext context, string& expression, Environment& 
         }
         else if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
             expression += "<";
+
+            context.index++;
+
+            if(context.tokens[context.index].id != TOKENINDEX_ASSIGN){
+                context.index--;
+            }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_GREATERTHAN){
             expression += ">";
+
+            context.index++;
+
+            if(context.tokens[context.index].id != TOKENINDEX_ASSIGN){
+                context.index--;
+            }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
             expression += "==";

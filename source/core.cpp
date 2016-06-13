@@ -33,43 +33,46 @@ void add_function(Environment& e, Method method){
 void load_core(Environment& environment){
     Scope* type_scope;
 
+    // Base Die Function
+    add_function(environment, Method{"die", &environment.global, std::vector<MethodArgument>(), "void"});
+
     // Base String Class
     type_scope = add_class(environment, Class{"String"});
-    add_method(environment, Class{"String"}, Method{"output",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"String"}, Method{"print",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"String"}, Method{"input",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"String"}, Method{"toNumber",type_scope, std::vector<MethodArgument>(),"Number"});
-    add_method(environment, Class{"String"}, Method{"toPositive",type_scope, std::vector<MethodArgument>(),"Number"});
-    add_method(environment, Class{"String"}, Method{"toInteger",type_scope, std::vector<MethodArgument>(),"Number"});
+    add_method(environment, Class{"String"}, Method{"output", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"String"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"String"}, Method{"input", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"String"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), "Number"});
+    add_method(environment, Class{"String"}, Method{"toPositive", type_scope, std::vector<MethodArgument>(), "Number"});
+    add_method(environment, Class{"String"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), "Number"});
 
     // Base Number Class
     type_scope = add_class(environment, Class{"Number"});
-    add_method(environment, Class{"Number"}, Method{"output",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"Number"}, Method{"print",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"Number"}, Method{"toString",type_scope, std::vector<MethodArgument>(),"String"});
-    add_method(environment, Class{"Number"}, Method{"toPositive",type_scope, std::vector<MethodArgument>(),"Positive"});
-    add_method(environment, Class{"Number"}, Method{"toInteger",type_scope, std::vector<MethodArgument>(),"Integer"});
+    add_method(environment, Class{"Number"}, Method{"output", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"Number"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"Number"}, Method{"toString", type_scope, std::vector<MethodArgument>(), "String"});
+    add_method(environment, Class{"Number"}, Method{"toPositive", type_scope, std::vector<MethodArgument>(), "Positive"});
+    add_method(environment, Class{"Number"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), "Integer"});
 
     // Base Positive Class
     type_scope = add_class(environment, Class{"Positive"});
-    add_method(environment, Class{"Positive"}, Method{"output",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"Positive"}, Method{"print",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"Positive"}, Method{"toString",type_scope, std::vector<MethodArgument>(),"String"});
-    add_method(environment, Class{"Positive"}, Method{"toNumber",type_scope, std::vector<MethodArgument>(),"Number"});
-    add_method(environment, Class{"Positive"}, Method{"toInteger",type_scope, std::vector<MethodArgument>(),"Integer"});
+    add_method(environment, Class{"Positive"}, Method{"output", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"Positive"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"Positive"}, Method{"toString", type_scope, std::vector<MethodArgument>(), "String"});
+    add_method(environment, Class{"Positive"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), "Number"});
+    add_method(environment, Class{"Positive"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), "Integer"});
 
     // Base Integer Class
     type_scope = add_class(environment, Class{"Integer"});
-    add_method(environment, Class{"Integer"}, Method{"output",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"Integer"}, Method{"print",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"Integer"}, Method{"toString",type_scope, std::vector<MethodArgument>(),"String"});
-    add_method(environment, Class{"Integer"}, Method{"toNumber",type_scope, std::vector<MethodArgument>(),"Number"});
-    add_method(environment, Class{"Integer"}, Method{"toPositive",type_scope, std::vector<MethodArgument>(),"Positive"});
+    add_method(environment, Class{"Integer"}, Method{"output", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"Integer"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"Integer"}, Method{"toString", type_scope, std::vector<MethodArgument>(), "String"});
+    add_method(environment, Class{"Integer"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), "Number"});
+    add_method(environment, Class{"Integer"}, Method{"toPositive", type_scope, std::vector<MethodArgument>(), "Positive"});
 
     // Base Boolean Class
     type_scope = add_class(environment, Class{"Boolean"});
-    add_method(environment, Class{"Boolean"}, Method{"output",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"Boolean"}, Method{"print",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"Boolean"}, Method{"input",type_scope, std::vector<MethodArgument>(),"void"});
-    add_method(environment, Class{"Boolean"}, Method{"toString",type_scope, std::vector<MethodArgument>(),"String"});
+    add_method(environment, Class{"Boolean"}, Method{"output", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"Boolean"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"Boolean"}, Method{"input", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"Boolean"}, Method{"toString", type_scope, std::vector<MethodArgument>(), "String"});
 }

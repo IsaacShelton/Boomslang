@@ -90,9 +90,9 @@ bool arguments_equal(TokenContext context, std::vector<MethodArgument> a, std::v
 // Methods
 bool environment_method_exists(TokenContext context, Scope* scope, Method method){
     for(unsigned int i = 0; i < scope->methods.size(); i++){
-        if( (scope->methods[i].name == method.name               or method.name==IGNORE)
-        and (scope->methods[i].parent == method.parent           or method.parent==NULL)
-        and (scope->methods[i].return_type == method.return_type or method.return_type==IGNORE)
+        if( (scope->methods[i].name == method.name or method.name==IGNORE)
+        and (scope->methods[i].parent == method.parent or method.parent==NULL)
+        and (context_class_compare(context, Class{scope->methods[i].return_type}, Class{method.return_type}) or method.return_type==IGNORE)
         and (arguments_equal(context, scope->methods[i].arguments, method.arguments))){
             return true;
         }
@@ -102,9 +102,9 @@ bool environment_method_exists(TokenContext context, Scope* scope, Method method
 }
 unsigned int environment_method_index(TokenContext context, Scope* scope, Method method){
     for(unsigned int i = 0; i < scope->methods.size(); i++){
-        if( (scope->methods[i].name == method.name               or method.name==IGNORE)
-        and (scope->methods[i].parent == method.parent           or method.parent==NULL)
-        and (scope->methods[i].return_type == method.return_type or method.return_type==IGNORE)
+        if( (scope->methods[i].name == method.name or method.name==IGNORE)
+        and (scope->methods[i].parent == method.parent or method.parent==NULL)
+        and (context_class_compare(context, Class{scope->methods[i].return_type}, Class{method.return_type}) or method.return_type==IGNORE)
         and (arguments_equal(context, scope->methods[i].arguments, method.arguments))){
             return i;
         }
@@ -118,9 +118,9 @@ unsigned int environment_method_index(TokenContext context, Scope* scope, Method
 }
 Method environment_method_get(TokenContext context, Scope* scope, Method method){
     for(unsigned int i = 0; i < scope->methods.size(); i++){
-        if( (scope->methods[i].name == method.name               or method.name==IGNORE)
-        and (scope->methods[i].parent == method.parent           or method.parent==NULL)
-        and (scope->methods[i].return_type == method.return_type or method.return_type==IGNORE)
+        if( (scope->methods[i].name == method.name or method.name==IGNORE)
+        and (scope->methods[i].parent == method.parent or method.parent==NULL)
+        and (context_class_compare(context, Class{scope->methods[i].return_type}, Class{method.return_type}) or method.return_type==IGNORE)
         and (arguments_equal(context, scope->methods[i].arguments, method.arguments))){
             return scope->methods[i];
         }

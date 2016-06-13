@@ -352,7 +352,8 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             if( construct != "class"
             and construct != "method"
-            and construct != "function" ){
+            and construct != "function"
+            and construct != "constant" ){
                 die(UNKNOWN_LANG_CONSTRUCT(construct));
             }
 
@@ -398,6 +399,17 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 structure = string_kill_whitespace(structure);
 
                 add_function(environment, Method{function_name, &environment.global, function_arguments, function_return_type});
+            }
+            else if(construct == "constant"){
+                std::string type = string_get_until(structure, " ");
+                structure = string_delete_until(structure, " ");
+                structure = string_kill_whitespace(structure);
+
+                std::string name = string_get_until(structure, " ");
+                structure = string_delete_until(structure, " ");
+                structure = string_kill_whitespace(structure);
+
+                environment.global.variables.push_back(Variable{name, type, true, false});
             }
 
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
