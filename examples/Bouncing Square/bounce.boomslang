@@ -1,0 +1,66 @@
+
+# Bouncing Square
+# (c) 2016 Isaac Shelton
+
+import glfw
+
+on main()
+    unless glfwInit()
+        die()
+    
+	GlfwMonitor^ monitor = glfwGetPrimaryMonitor()
+	final GlfwVideoMode^ videoMode = glfwGetVideoMode(monitor)
+	
+	GlfwWindow^ window = glfwCreateWindow(1366, 786, "Bouncing Square", monitor, void)
+	
+    final Number xspeed = 4
+    Number xposition = 0
+    Number xdirection = 1
+    
+    final Number yspeed = 4
+    Number yposition = 0
+    Number ydirection = 1
+    
+    if window = void
+        "Failed to init window".output()
+        die()
+    
+    glfwMakeContextCurrent(window)
+    glfwSwapInterval(1)
+    
+    glClearColor(1, 1, 1, 1)
+    
+    until glfwWindowShouldClose(window)
+        glClear()
+        glViewport(0, 0, 1366, 786)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        
+        glOrtho(0, 1366, 786, 0, 1, -1)
+        
+        glColor3f(1, 0, 0)
+        glBegin(GL_QUADS)
+          glVertex2f(0 + xposition,   0 + yposition)
+          glVertex2f(0 + xposition,   100 + yposition)
+          glVertex2f(100 + xposition, 100 + yposition)
+          glVertex2f(100 + xposition, 0 + yposition)
+        glEnd()
+        
+        if xposition >= 1266
+            xdirection = -1
+        else if xposition <= 0
+            xdirection = 1
+        
+        if yposition >= 686
+            ydirection = -1
+        else if yposition <= 0
+            ydirection = 1
+        
+        xposition += xspeed * xdirection
+        yposition += yspeed * ydirection
+        
+        glfwPollEvents()
+        glfwSwapBuffers(window)
+    
+    glfwDestroyWindow(window)
+    glfwTerminate()

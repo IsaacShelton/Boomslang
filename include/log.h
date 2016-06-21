@@ -4,6 +4,10 @@
 
 #include <string>
 
+extern bool LOGGING_LEXER;
+extern bool LOGGING_ENFORCER;
+extern bool LOGGING_ASSEMBLER;
+
 void log_lexer(std::string message);
 void log_enforcer(std::string message);
 void log_assembler(std::string message);

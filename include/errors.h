@@ -43,6 +43,10 @@
 #define EXPECTED_RETURN_TYPE               (ERROR_INDICATOR + "Expected return type indicator")
 #define EXPECTED_OPEN_IN_CONVERSION        (ERROR_INDICATOR + "Expected expression or variable name for value of type conversion")
 #define VARIBLE_ALREADY_FINAL              (ERROR_INDICATOR + "The Variable was already marked as final in declaration")
+#define RETURN_TYPE_ALREADY_STATED         (ERROR_INDICATOR + "The return type was already stated")
+#define NO_RETURN_TYPE_STATED              (ERROR_INDICATOR + "No return type was stated")
+#define UNEXPECTED_STRING_TERMINATION      (ERROR_INDICATOR + "Unexpected string literal termination")
+#define UNKNOWN_STRING_ESCAPE(a)           (ERROR_INDICATOR + "Unknown string literal escape symbol '" + a + "'")
 
 #define DEV_BLANK_TYPE                     (NOLINE_ERROR_INDICATOR + "Returning blank type at " + string(__LINE__))
 

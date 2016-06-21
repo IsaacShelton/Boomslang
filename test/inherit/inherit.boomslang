@@ -1,0 +1,9 @@
+
+class Animal
+	String name
+
+class Dog < Animal
+	String breed
+
+on main()
+	Dog ruff

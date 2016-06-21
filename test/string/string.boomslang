@@ -1,0 +1,4 @@
+
+on main()
+	var name = "Isaac"
+	"Hello \(name)".output()

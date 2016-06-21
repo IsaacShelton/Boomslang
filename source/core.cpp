@@ -3,6 +3,7 @@
 #include <vector>
 #include "../include/die.h"
 #include "../include/core.h"
+#include "../include/errors.h"
 #include "../include/context.h"
 
 using namespace std;
@@ -28,6 +29,22 @@ void add_method(Environment& e, Class type, Method method){
 void add_function(Environment& e, Method method){
     e.global.methods.push_back(method);
     e.global.children.push_back( new Scope{METHOD_PREFIX + method.name, &e.global} );
+
+    std::string func_type = "function^(";
+    for(unsigned int i = 0; i < method.arguments.size(); i++){
+        func_type += method.arguments[i].type.name;
+
+        if(i != method.arguments.size()-1){
+            func_type += ",";
+        }
+    }
+    func_type += ")->" + method.return_type;
+
+    e.global.variables.push_back( Variable{method.name, func_type} );
+}
+
+void add_field(Environment& environment, Class base, Variable variable){
+
 }
 
 void load_core(Environment& environment){

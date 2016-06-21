@@ -107,12 +107,12 @@ TokenList tokenize(string code){
             code = string_delete_amount(code,1);
         }
         else if( code.substr(0,1) == "<"){                       // Less Than
-            log_lexer(LEXER_LOG_PREFIX + "Found less than operator, adding open token");
+            log_lexer(LEXER_LOG_PREFIX + "Found less than operator, adding less than token");
             tokens.push_back( TOKEN_LESSTHAN );
             code = string_delete_amount(code,1);
         }
         else if( code.substr(0,1) == ">"){                       // Greater Than
-            log_lexer(LEXER_LOG_PREFIX + "Found greater than operator, adding close token");
+            log_lexer(LEXER_LOG_PREFIX + "Found greater than operator, adding greater than token");
             tokens.push_back( TOKEN_GREATERTHAN );
             code = string_delete_amount(code,1);
         }
@@ -179,11 +179,6 @@ TokenList tokenize(string code){
         else if( code.substr(0,1) == "^"){                       // Pointer
             log_lexer(LEXER_LOG_PREFIX + "Found `exponent` symbol, adding pointer token");
             tokens.push_back( TOKEN_POINTER );
-            code = string_delete_amount(code,1);
-        }
-        else if( code.substr(0,1) == ":"){                       // Address Member
-            log_lexer(LEXER_LOG_PREFIX + "Found colon, adding address member token");
-            tokens.push_back( TOKEN_ADDRESSMEMBER );
             code = string_delete_amount(code,1);
         }
         else if( code.substr(0,1) == "#"){                       // Line Comment
@@ -354,6 +349,13 @@ TokenList tokenize(string code){
             tokens.push_back( TOKEN_KEYWORD("any^") );
 
             code = string_delete_amount(code,4);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," (") == "function^"){ // function^
+            log_lexer(LEXER_LOG_PREFIX + "Found `function^` keyword");
+            tokens.push_back( TOKEN_KEYWORD("function^") );
+
+            code = string_delete_amount(code,9);
             code = string_kill_whitespace(code);
         }
         else if( string_get_until_or(code," ,)\n") == "void"){   // void

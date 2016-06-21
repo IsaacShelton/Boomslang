@@ -9,6 +9,7 @@
 #include "../include/scope.h"
 #include "../include/lexer.h"
 #include "../include/errors.h"
+#include "../include/locate.h"
 #include "../include/context.h"
 #include "../include/enforcer.h"
 #include "../include/management.h"
@@ -35,6 +36,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
         if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
             base_class.name = "String";
+            context_enforce_string(context, environment, context.tokens[context.index].data);
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
             base_class.name = "Number";
@@ -92,13 +94,13 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
     else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
         // Keyword
 
-        if(context.tokens[context.index].data == "new"){           // New Statement
+        if(context.tokens[context.index].data == "new"){            // New Statement
             die(UNEXPECTED_KEYWORD("new"));
         }
-        else if(context.tokens[context.index].data == "create"){   // Create Statement
+        else if(context.tokens[context.index].data == "create"){    // Create Statement
             die(UNEXPECTED_KEYWORD("create"));
         }
-        else if(context.tokens[context.index].data == "delete"){   // Delete Statement
+        else if(context.tokens[context.index].data == "delete"){    // Delete Statement
             Class base;
 
             index_increase(context);
@@ -111,7 +113,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
-        else if(context.tokens[context.index].data == "on"){       // Method Declaration
+        else if(context.tokens[context.index].data == "on"){        // Method Declaration
             string method_name;
             vector<MethodArgument> method_arguments;
             string arguments_string;
@@ -131,6 +133,18 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             // Add method reference to parent scope
             environment.scope->parent->methods.push_back( Method{method_name, environment.scope->parent, method_arguments, "void"} );
 
+            std::string func_type = "function^(";
+            for(unsigned int i = 0; i < method_arguments.size(); i++){
+                func_type += method_arguments[i].type.name;
+
+                if(i != method_arguments.size()-1){
+                    func_type += ",";
+                }
+            }
+            func_type += ")->void";
+
+            environment.global.variables.push_back( Variable{method_name, func_type} );
+
             // Add self variable to methods of a type
             if(name_is_class(environment.scope->parent->name)){
                 environment.scope->variables.push_back( Variable{"self", name_get_class(environment.scope->parent->name), false, false} );
@@ -142,7 +156,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 environment.scope = environment.scope->parent;
             }
         }
-        else if(context.tokens[context.index].data == "class"){    // Class Declaration
+        else if(context.tokens[context.index].data == "class"){     // Class Declaration
             string class_name;
 
             token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected class name in class declaration", ERROR_INDICATOR + "Expected class name in class declaration");
@@ -163,33 +177,44 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 }
             }
         }
-        else if(context.tokens[context.index].data == "return"){   // Return Statement
+        else if(context.tokens[context.index].data == "return"){    // Return Statement
             Class value_class;
+            std::string method_name = name_get_method(environment.scope->name);
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
 
             environment.global.methods[environment.global.methods.size()-1].return_type = value_class.name;
+
+            for(unsigned int i = 0; i < environment.global.variables.size(); i++){
+                if(environment.global.variables[i].name == method_name and environment.global.variables[i].type.length() >= 6){
+                    if(environment.global.variables[i].type.substr(environment.global.variables[i].type.length()-6, 6) == "->void"){
+                        environment.global.variables[i].type = environment.global.variables[i].type.substr(0, environment.global.variables[i].type.length()-4);
+                        environment.global.variables[i].type += value_class.name;
+                        break;
+                    }
+                }
+            }
         }
-        else if(context.tokens[context.index].data == "break"){    // Break Statement
+        else if(context.tokens[context.index].data == "break"){     // Break Statement
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
-        else if(context.tokens[context.index].data == "continue"){ // Continue Statement
+        else if(context.tokens[context.index].data == "continue"){  // Continue Statement
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
-        else if(context.tokens[context.index].data == "if"){       // If Statement
+        else if(context.tokens[context.index].data == "if"){        // If Statement
             Class value_class;
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
         }
-        else if(context.tokens[context.index].data == "unless"){   // Unless Statement
+        else if(context.tokens[context.index].data == "unless"){    // Unless Statement
             Class value_class;
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
         }
-        else if(context.tokens[context.index].data == "else"){     // Else Keyword
+        else if(context.tokens[context.index].data == "else"){      // Else Keyword
             index_increase(context);
 
             if(context.tokens[context.index].id == TOKENINDEX_KEYWORD and context.tokens[context.index].data == "if"){ // else if
@@ -209,19 +234,19 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
             }
         }
-        else if(context.tokens[context.index].data == "while"){    // While Statement
+        else if(context.tokens[context.index].data == "while"){     // While Statement
             Class value_class;
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
         }
-        else if(context.tokens[context.index].data == "until"){    // Until Statement
+        else if(context.tokens[context.index].data == "until"){     // Until Statement
             Class value_class;
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
         }
-        else if(context.tokens[context.index].data == "var"){      // Var Statement
+        else if(context.tokens[context.index].data == "var"){       // Var Statement
             std::string variable_name;
             Class value_class;
             unsigned int var_token = context.index;
@@ -249,7 +274,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             index_decrease(context);
         }
-        else if(context.tokens[context.index].data == "import"){   // Import Statement
+        else if(context.tokens[context.index].data == "import"){    // Import Statement
             std::string package;
             std::string prev_filename;
             bool is_package;
@@ -310,6 +335,21 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
                 current_filename = prev_filename;
             }
+            else if( file_exists( PACKAGEHOME + delete_slash(package) ) ){ // Package Path
+                prev_filename = current_filename;
+                current_filename = PACKAGEHOME + delete_slash(package);
+
+                if(is_package){
+                    if(!tokens_load(current_filename, tokens)) die("Failed to load package '" + package + "'");
+                    enforce_package(&custom_config, tokens, environment);
+                }
+                else {
+                    tokens = tokenize(contents(current_filename));
+                    enforce_package(&custom_config, tokens, environment);
+                }
+
+                current_filename = prev_filename;
+            }
             else {
                 if(is_package){
                     fail(PACKAGE_DOESNT_EXIST(package));
@@ -319,7 +359,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 }
             }
         }
-        else if(context.tokens[context.index].data == "native"){   // Native Statement
+        else if(context.tokens[context.index].data == "native"){    // Native Statement
             std::string action;
             std::string filename;
             index_increase(context);
@@ -341,7 +381,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
-        else if(context.tokens[context.index].data == "register"){ // Register Statement
+        else if(context.tokens[context.index].data == "register"){  // Register Statement
             std::string construct; // Type of Language Construct
             std::string structure; // Structure of Data
 
@@ -358,17 +398,20 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             }
 
             if(construct == "class"){
-                add_class(environment, Class{structure});
+                std::string class_name = string_get_until_or(string_kill_whitespace(structure), " \n");
+
+                add_class(environment, Class{class_name});
             }
             else if(construct == "function"){
                 std::string function_name;
                 std::vector<MethodArgument> function_arguments;
                 std::string function_return_type;
+                Class arg_type;
 
                 // Function Name
                 structure = string_kill_whitespace(structure);
                 function_name = string_get_until_or(structure, " (");
-                structure = string_delete_until_or(structure, " (");
+                structure = string_delete_amount(structure, function_name.length());
                 structure = string_kill_whitespace(structure);
 
                 // Function Arguments
@@ -380,10 +423,20 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                     if(structure.substr(0,1) == ","){
                         structure = string_delete_amount(structure, 1);
                     }
+
                     structure = string_kill_whitespace(structure);
-                    function_arguments.push_back( MethodArgument{Class{string_get_until_or(structure, " ,)")}, false} );
-                    structure = string_delete_until_or(structure, " ,)");
+                    arg_type.name = string_get_until_or(structure, " ,)");
                     structure = string_kill_whitespace(structure);
+                    structure = string_delete_amount(structure, arg_type.name.length());
+                    structure = string_kill_whitespace(structure);
+
+                    if(!context_class_exists(context, environment, arg_type)){
+                        Class arg_type_clone = arg_type;
+                        context_class_dereference_ifcan(context, arg_type_clone);
+                        fail(UNDECLARED_CLASS(arg_type_clone.name));
+                    }
+
+                    function_arguments.push_back( MethodArgument{arg_type, false} );
                 }
                 structure = string_delete_amount(structure, 1);
                 structure = string_kill_whitespace(structure);
@@ -395,26 +448,30 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 structure = string_delete_amount(structure, 2);
                 structure = string_kill_whitespace(structure);
                 function_return_type = string_get_until_or(structure, " \n");
-                structure = string_delete_until_or(structure, " \n");
+                structure = string_delete_amount(structure, function_return_type.length());
                 structure = string_kill_whitespace(structure);
 
                 add_function(environment, Method{function_name, &environment.global, function_arguments, function_return_type});
             }
             else if(construct == "constant"){
                 std::string type = string_get_until(structure, " ");
-                structure = string_delete_until(structure, " ");
+                structure = string_delete_amount(structure, type.length());
                 structure = string_kill_whitespace(structure);
 
                 std::string name = string_get_until(structure, " ");
-                structure = string_delete_until(structure, " ");
+                structure = string_delete_amount(structure, name.length());
                 structure = string_kill_whitespace(structure);
+
+                if(!context_class_exists(context, environment, Class{type})){
+                    fail(UNDECLARED_CLASS(type));
+                }
 
                 environment.global.variables.push_back(Variable{name, type, true, false});
             }
 
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
-        else if(context.tokens[context.index].data == "any^"){     // any^ Statement
+        else if(context.tokens[context.index].data == "any^"){      // any^ Statement
             Class type = Class{"any^"};
 
             index_increase(context);
@@ -435,7 +492,117 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
-        else if(context.tokens[context.index].data == "cast"){       // Cast Statement
+        else if(context.tokens[context.index].data == "function^"){ // function^ Statement
+            Class type = Class{"function^"};
+
+            std::string function_return_type = "";
+            std::vector<std::string> function_args;
+
+            index_increase(context);
+            if(context.tokens[context.index].id != TOKENINDEX_OPEN){
+                die(UNEXPECTED_OPERATOR);
+            }
+            index_increase(context);
+
+            while(context.tokens[context.index].id != TOKENINDEX_CLOSE){
+                std::string arg;
+
+                if(context.tokens[context.index].id != TOKENINDEX_WORD and context.tokens[context.index].id != TOKENINDEX_KEYWORD){
+                    die(UNEXPECTED_OPERATOR);
+                }
+
+                if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
+                    if(context.tokens[context.index].data == "void"){
+                        arg = "any^";
+                    }
+                    else {
+                        die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
+                    }
+                }
+                else {
+                    arg = context.tokens[context.index].data;
+                }
+
+                if(!context_class_exists(context, environment, Class{arg})){
+                    die(UNDECLARED_CLASS(arg));
+                }
+
+                function_args.push_back(arg);
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_NEXT){
+                    index_increase(context);
+                }
+                else if(context.tokens[context.index].id != TOKENINDEX_CLOSE){
+                    die(UNEXPECTED_OPERATOR);
+                }
+            }
+
+            index_increase(context);
+
+            if(context.tokens[context.index].id == TOKENINDEX_SUBTRACT){
+                index_increase(context);
+                if(context.tokens[context.index].id == TOKENINDEX_GREATERTHAN){
+                    index_increase(context);
+
+                    if(context.tokens[context.index].id != TOKENINDEX_WORD and context.tokens[context.index].id != TOKENINDEX_KEYWORD){
+                        die(UNEXPECTED_OPERATOR);
+                    }
+
+                    if(context.tokens[context.index].id == TOKENINDEX_WORD){
+                        if(!context_class_exists(context, environment, Class{context.tokens[context.index].data})){
+                            die(UNDECLARED_CLASS(context.tokens[context.index].data));
+                        }
+
+                        function_return_type = context.tokens[context.index].data;
+                    }
+                    else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
+                        if(context.tokens[context.index].data == "void"){
+                            function_return_type = "void";
+                        }
+                        else {
+                            die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
+                        }
+                    }
+
+                    index_increase(context);
+                }
+                else {
+                    die(NO_RETURN_TYPE_STATED);
+                }
+            }
+            else {
+                die(NO_RETURN_TYPE_STATED);
+            }
+
+            type.name += "(";
+            for(unsigned int i = 0; i < function_args.size(); i++){
+                type.name += function_args[i];
+
+                if(i != function_args.size() - 1){
+                    type.name += ",";
+                }
+            }
+            type.name += ")->" + function_return_type;
+
+            if(context.tokens[context.index].id != TOKENINDEX_WORD){
+                die(UNEXPECTED_OPERATOR);
+            }
+
+            string variable_name = context.tokens[context.index].data;
+            environment.scope->variables.push_back( Variable{variable_name, type.name, false, false} );
+            index_increase(context);
+
+            // Are we gonna assign it to something
+            if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                index_increase(context);
+                context_enforce_expression(context, environment, type);
+            }
+
+            index_decrease(context);
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+        }
+        else if(context.tokens[context.index].data == "cast"){      // Cast Statement
             index_increase(context);
 
             if(context.tokens[context.index].id != TOKENINDEX_WORD){

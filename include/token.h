@@ -7,8 +7,8 @@
 
 #define TOKENINDEX_STRING_LITERAL     0
 #define TOKENINDEX_NUMERIC_LITERAL    1
-#define TOKENINDEX_METHOD_CALL        2 // Obsolete
-#define TOKENINDEX_FUNCTION_CALL      3 // Obsolete
+//#define TOKENINDEX_METHOD_CALL      2 // Obsolete
+//#define TOKENINDEX_FUNCTION_CALL    3 // Obsolete
 #define TOKENINDEX_ASSIGN             4
 #define TOKENINDEX_ADD                5
 #define TOKENINDEX_SUBTRACT           6
@@ -31,16 +31,16 @@
 #define TOKENINDEX_NOT               23
 #define TOKENINDEX_ADDRESS           24
 #define TOKENINDEX_MEMBER            25
-#define TOKENINDEX_ADDRESSMEMBER     26
+//#define TOKENINDEX_ADDRESSMEMBER   26 // Obsolete
 #define TOKENINDEX_POINTER           27
 #define TOKENINDEX_LESSTHAN          28
 #define TOKENINDEX_GREATERTHAN       29
-#define TOKENINDEX_POINTERMEMBER     30
+#define TOKENINDEX_POINTERMEMBER     30 // Generated
 
 #define TOKEN_STRING_LITERAL(a)  Token{ 0, a}
 #define TOKEN_NUMERIC_LITERAL(a) Token{ 1, a}
-#define TOKEN_METHOD_CALL(a)     Token{ 2, a} // Obsolete
-#define TOKEN_FUNCTION_CALL(a)   Token{ 3, a} // Obsolete
+//#define TOKEN_METHOD_CALL(a)   Token{ 2, a} // Obsolete
+//#define TOKEN_FUNCTION_CALL(a) Token{ 3, a} // Obsolete
 #define TOKEN_ASSIGN             Token{ 4}
 #define TOKEN_ADD                Token{ 5}
 #define TOKEN_SUBTRACT           Token{ 6}
@@ -63,11 +63,11 @@
 #define TOKEN_NOT                Token{23}
 #define TOKEN_ADDRESS            Token{24}
 #define TOKEN_MEMBER             Token{25}
-#define TOKEN_ADDRESSMEMBER      Token{26}
+//#define TOKEN_ADDRESSMEMBER    Token{26} // Obsolete
 #define TOKEN_POINTER            Token{27}
 #define TOKEN_LESSTHAN           Token{28}
 #define TOKEN_GREATERTHAN        Token{29}
-#define TOKEN_POINTERMEMBER      Token{30}
+#define TOKEN_POINTERMEMBER      Token{30} // Generated
 
 struct Token {
     unsigned int id;

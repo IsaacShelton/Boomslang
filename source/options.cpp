@@ -12,18 +12,22 @@ using namespace std;
 
 void show_help(){
     cout << "BoomslangCompiler <filename> [options]" << endl << endl;
-    cout << "  -help     : help" << endl;
-    cout << "  -console  : uses the console" << endl;
-    cout << "  -optimize : optimizes code" << endl;
-    cout << "  -package  : packages code" << endl;
-    cout << "  -output   : sets output destination" << endl;
-    cout << "  -wait     : wait after complete" << endl;
-    cout << "  -run      : run after compiled" << endl;
-    cout << "  -windows  : compile for windows" << endl;
-    cout << "  -osx      : compile for mac osx" << endl;
-    cout << "  -jvm      : compile for the jvm" << endl;
-    cout << "  -linux    : compile for linux" << endl;
-    cout << "  -debian   : compile for debian linux" << endl;
+
+    cout << "             General" << endl;
+    cout << "  -help         : help" << endl;
+    cout << "  -console      : uses the console" << endl;
+    cout << "  -optimize     : optimizes code" << endl;
+    cout << "  -package      : packages code" << endl;
+    cout << "  -output       : sets output destination" << endl << endl;
+    cout << "            Platform" << endl;
+    cout << "  -windows      : compile for windows" << endl;
+    cout << "  -osx          : compile for mac osx" << endl;
+    cout << "  -linux        : compile for linux" << endl;
+    cout << "  -debian       : compile for debian linux" << endl << endl;
+    cout << "            Utilities" << endl;
+    cout << "  -wait         : wait after compiled" << endl;
+    cout << "  -run          : run after compiled" << endl;
+    cout << "  -log          : log everything" << endl;
 }
 
 Configuration configure(int* argc, char*** argv){
@@ -32,7 +36,7 @@ Configuration configure(int* argc, char*** argv){
 
     // Make sure we have at least to arguments
     if(*argc < 2){
-        cout << "BoomslangCompiler <filename> [options]" << endl;
+        show_help();
         exit(1);
     }
 
@@ -96,6 +100,9 @@ Configuration configure(int* argc, char*** argv){
         else if(option == "-run"){
             config.run = true;
         }
+        else if(option == "-log"){
+            config.log = true;
+        }
         else if(option == "-windows"){
             config.platform = PLATFORM_WINDOWS;
         }
@@ -104,6 +111,12 @@ Configuration configure(int* argc, char*** argv){
             cerr << "Type -help for a list of options" << endl;
             exit(1);
         }
+    }
+
+    if(config.log){
+        LOGGING_LEXER = true;
+        LOGGING_ENFORCER = true;
+        LOGGING_ASSEMBLER = true;
     }
 
     clear_lexer_log();

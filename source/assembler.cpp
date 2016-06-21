@@ -24,7 +24,9 @@ void assemble_expression(TokenContext context, string& expression, Environment& 
 
     while(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
         if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
-            expression += "boomslang_String(\"" + context.tokens[context.index].data + "\")";
+            string str;
+            context_assemble_string(context, environment, context.tokens[context.index].data, str);
+            expression += str;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
             expression += "boomslang_Number(" + context.tokens[context.index].data + ")";
@@ -130,10 +132,14 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
     else { // Other tokens
 
         if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
-            output += "boomslang_String(\"" + context.tokens[context.index].data + "\")";
+            string str;
+            context_assemble_string(context, environment, context.tokens[context.index].data, str);
+            output += str;
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
             output += "boomslang_Number(" + context.tokens[context.index].data + ")";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_WORD){
             string name = context.tokens[context.index].data;
@@ -168,14 +174,13 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
 
             terminate_needed = true;
         }
-        else if(context.tokens[context.index].id == TOKENINDEX_METHOD_CALL){
-            output += "." + resource(context.tokens[context.index].data);
-        }
         else if(context.tokens[context.index].id == TOKENINDEX_OPEN){
             output += "(";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_CLOSE){
             output += ")";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_INDENT){
             indentation++;
@@ -328,9 +333,11 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 }
 
                 header << class_code + "\n};\n";
+                terminate_needed = true;
             }
             else if(context.tokens[context.index].data == "return"){
                 output += "return ";
+                terminate_needed = true;
             }
             else if(context.tokens[context.index].data == "break"){
                 output += "break;";
@@ -340,6 +347,7 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
             }
             else if(context.tokens[context.index].data == "void"){
                 output += "NULL";
+                terminate_needed = true;
             }
             else if(context.tokens[context.index].data == "if"){
                 std::string expression;
@@ -571,9 +579,11 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 class_name = context.tokens[context.index].data;
 
                 output += resource(class_name) + "()";
+                terminate_needed = true;
             }
             else if(context.tokens[context.index].data == "delete"){
                 output += "delete ";
+                terminate_needed = true;
             }
             else if(context.tokens[context.index].data == "create"){
                 std::string class_name;
@@ -582,6 +592,7 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 class_name = context.tokens[context.index].data;
 
                 output += "new " + resource(class_name) + "()";
+                terminate_needed = true;
             }
             else if(context.tokens[context.index].data == "import"){
                 std::string package;
@@ -635,6 +646,18 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                         tokens = tokenize(contents(filename_path(current_filename) + delete_slash(package)));
                     }
                 }
+                else if( file_exists(PACKAGEHOME + delete_slash(package)) ){ // Package Path
+                    prev_filename = current_filename;
+                    current_filename = PACKAGEHOME + delete_slash(package);
+
+                    if(is_package){
+                        if(!tokens_load(current_filename, tokens)) die("Failed to load Package '" + package + "'");
+                    }
+                    else {
+                        tokens = tokenize(contents(current_filename));
+                    }
+                }
+
 
                 // Process tokens
                 for(unsigned int index = 0; index < tokens.size(); index++){
@@ -673,6 +696,11 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
 
                         header << contents(path);
                     }
+                    else if( file_exists(PACKAGEHOME + delete_slash(filename)) ){
+                        std::string path = full_path(PACKAGEHOME + delete_slash(filename));
+
+                        header << contents(path);
+                    }
                     else if(file_exists(filename)){
                         std::string path = full_path(filename);
 
@@ -689,6 +717,105 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
             }
             else if(context.tokens[context.index].data == "any^"){
                 output += "void* ";
+                terminate_needed = true;
+            }
+            else if(context.tokens[context.index].data == "function^"){
+                std::string function_return_type = "";
+                std::vector<std::string> function_args;
+                std::string value;
+
+                context.index += 2;
+
+                while(context.tokens[context.index].id != TOKENINDEX_CLOSE){
+                    std::string arg;
+
+                    if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
+                        if(context.tokens[context.index].data == "void"){
+                            arg = "any^";
+                        }
+                    }
+                    else {
+                        arg = context.tokens[context.index].data;
+                    }
+
+                    function_args.push_back(arg);
+                    index_increase(context);
+
+                    if(context.tokens[context.index].id == TOKENINDEX_NEXT){
+                        index_increase(context);
+                    }
+                }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_SUBTRACT){
+                    index_increase(context);
+                    if(context.tokens[context.index].id == TOKENINDEX_GREATERTHAN){
+                        index_increase(context);
+
+                        if(context.tokens[context.index].id != TOKENINDEX_WORD and context.tokens[context.index].id != TOKENINDEX_KEYWORD){
+                            die(UNEXPECTED_OPERATOR);
+                        }
+
+                        if(context.tokens[context.index].id == TOKENINDEX_WORD){
+                            if(!context_class_exists(context, environment, Class{context.tokens[context.index].data})){
+                                die(UNDECLARED_CLASS(context.tokens[context.index].data));
+                            }
+
+                            function_return_type = context.tokens[context.index].data;
+                        }
+                        else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
+                            if(context.tokens[context.index].data == "void"){
+                                function_return_type = "void";
+                            }
+                            else {
+                                die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
+                            }
+                        }
+
+                        index_increase(context);
+                    }
+                    else {
+                        die(NO_RETURN_TYPE_STATED);
+                    }
+                }
+                else {
+                    die(NO_RETURN_TYPE_STATED);
+                }
+
+                string variable_name = context.tokens[context.index].data;
+                index_increase(context);
+
+                // Are we gonna assign it to something
+                if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                    index_increase(context);
+                    assemble_expression(context, value, environment);
+                }
+
+                index_decrease(context);
+
+                if(function_return_type != "void"){
+                    output += resource(function_return_type) + "(*" + resource(variable_name) + ")(";
+                }
+                else {
+                    output += "void (*" + resource(variable_name) + ")(";
+                }
+
+                for(unsigned int i = 0; i < function_args.size(); i++){
+                    output += resource(function_args[i]);
+
+                    if(i != function_args.size() - 1){
+                        output += ",";
+                    }
+                }
+
+                output += ")";
+                if(value != ""){
+                    output += "=" + value;
+                }
+                output += ";\n";
+
+                terminate_needed = true;
             }
             else if(context.tokens[context.index].data == "cast"){
                 context.index++;
@@ -701,6 +828,8 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 else {
                     context.index--;
                 }
+
+                terminate_needed = true;
             }
             else {
                 die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
@@ -708,39 +837,44 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ADDRESS){
             output += "&";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
             output += ".";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_POINTERMEMBER){
             output += "->";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NEXT){
             output += ",";
-        }
-        else if(context.tokens[context.index].id == TOKENINDEX_ADDRESSMEMBER){
-            output += "->";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NOT){
             output += "!";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
             output += "=";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ADD){
             output += "+";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_SUBTRACT){
             output += "-";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_MULTIPLY){
             output += "*";
+            terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_DIVIDE){
             output += "/";
+            terminate_needed = true;
         }
-
-        terminate_needed = true;
     }
 }
 
@@ -831,7 +965,9 @@ void build(Configuration* config){
     }
     #endif
 
-    cout << "Successfully Built '" + filename_name(config->output_filename) + "'" << endl;
+    if(!config->run){
+        cout << "Successfully Built '" + filename_name(config->output_filename) + "'" << endl;
+    }
 }
 
 void assemble(Configuration* config, TokenList& tokens, Environment& environment){

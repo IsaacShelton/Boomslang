@@ -2,10 +2,12 @@
 #include "../include/die.h"
 #include "../include/log.h"
 #include "../include/token.h"
+#include "../include/lexer.h"
 #include "../include/scope.h"
 #include "../include/errors.h"
 #include "../include/context.h"
 #include "../include/enforcer.h"
+#include "../include/assembler.h"
 #include "../include/management.h"
 
 using namespace std;
@@ -13,7 +15,10 @@ using namespace std;
 bool context_variable_exists(Environment& e, Variable variable){
     return (environment_variable_exists(e.scope, variable) or environment_variable_exists(&e.global, variable));
 }
-bool context_class_exists(Environment& e, Class base){
+bool context_class_exists(TokenContext context, Environment& e, Class base){
+    if(base.name == "any^") return true;
+
+    context_class_dereference_ifcan(context, base);
     return environment_class_exists(&e.global, base);
 }
 bool context_method_exists(TokenContext context, Environment& e, Method method){
@@ -63,7 +68,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             index_increase(context);
 
             while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                if( context_class_exists(e, base_class) ){
+                if( context_class_exists(context, e, base_class) ){
                     index_increase(context);
 
                     if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
@@ -111,7 +116,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 Class base_class{environment_variable_get(e.scope, Variable{name, IGNORE, false, false}).type};
 
                 while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                    if( context_class_exists(e, base_class) ){
+                    if( context_class_exists(context, e, base_class) ){
                         index_increase(context);
 
                         if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data,IGNORE}) ){
@@ -185,7 +190,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 Class base_class{environment_variable_get(e.scope, Variable{name, IGNORE, false, false}).type};
 
                 while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                    if( context_class_exists(e, base_class) ){
+                    if( context_class_exists(context, e, base_class) ){
                         index_increase(context);
 
                         if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
@@ -226,7 +231,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
 
                 class_name = context.tokens[context.index].data;
 
-                if(!context_class_exists(e, Class{class_name})){
+                if(!context_class_exists(context, e, Class{class_name})){
                     die(UNDECLARED_CLASS(class_name));
                 }
 
@@ -248,7 +253,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
 
                 class_name = context.tokens[context.index].data + "^";
 
-                if(!context_class_exists(e, Class{class_name})){
+                if(!context_class_exists(context, e, Class{class_name})){
                     die(UNDECLARED_CLASS(class_name));
                 }
 
@@ -305,7 +310,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             index_increase(context);
 
             while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                if( context_class_exists(e, base_class) ){
+                if( context_class_exists(context, e, base_class) ){
                     index_increase(context);
 
                     if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
@@ -339,7 +344,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             index_increase(context);
 
             while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                if( context_class_exists(e, base_class) ){
+                if( context_class_exists(context, e, base_class) ){
                     index_increase(context);
 
                     if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
@@ -559,7 +564,7 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
         die(CANT_CALL_METHODS_OF_VOID);
     }
     else if(base_class.name != ""){
-        if(!context_class_exists(e, base_class)){
+        if(!context_class_exists(context, e, base_class)){
             die(UNDECLARED_CLASS(base_class.name));
         }
 
@@ -594,7 +599,8 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
     }
     else {
         if( !environment_method_exists(context, e.scope, Method{method_name, &e.global, arguments, IGNORE})
-        and !environment_method_exists(context, &e.global, Method{method_name, &e.global, arguments, IGNORE})){
+        and !environment_method_exists(context, &e.global, Method{method_name, &e.global, arguments, IGNORE})
+        and !context_variable_exists(e, Variable{method_name, IGNORE}) ){
             if(environment_method_exists(context, e.scope, Method{method_name, &e.global, IGNORE_ARGS, IGNORE}) or environment_method_exists(context, &e.global, Method{method_name, &e.global, IGNORE_ARGS, IGNORE})){
                 if(base_class.name != ""){
                     string call_string = base_class.name + "."  + method_name + "(";
@@ -640,6 +646,10 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
         }
         else if(environment_method_exists(context, &e.global, Method{method_name, &e.global, arguments, IGNORE})){
             base_class.name = environment_method_get(context, &e.global, Method{method_name, &e.global, arguments, IGNORE}).return_type;
+        }
+        else if(context_variable_exists(e, Variable{method_name, IGNORE})){
+            std::string type = context_variable_get(e, Variable{method_name, IGNORE}).type;
+            base_class.name = string_kill_whitespace(string_delete_amount(string_get_until(type,"->"),2));
         }
         else {
             log_enforcer("Method exists, but no implementation for the scope");
@@ -769,6 +779,122 @@ void context_enforce_following_method_calls(TokenContext context, Environment& e
             die(UNDECLARED_CLASS(type.name));
         }
     }
+}
+void context_enforce_string(TokenContext context, Environment& e, std::string str){
+    for(unsigned int i = 0; i < str.length(); i++){
+        if(str[i] == '\\'){
+            i++;
+
+            if(i < str.length()){
+                if(str[i] == '\\'){
+                    // Fine with that
+                }
+                else if(str[i] == '"'){
+                    // Fine with that
+                }
+                else if(str[i] == '('){
+                    i++;
+
+                    std::string expression;
+                    TokenList expression_tokens;
+                    unsigned int expression_index = 0;
+                    unsigned int balance = 0;
+                    Class base = Class{"String"};
+
+                    if(i >= str.length()){
+                        die(UNEXPECTED_STRING_TERMINATION);
+                    }
+
+                    while(str[i] != ')' or balance != 0){
+                        if(str[i] == '('){
+                            balance++;
+                        }
+                        else if(str[i] == ')'){
+                            balance--;
+                        }
+
+                        expression += str[i];
+
+                        i++;
+                        if(i >= str.length()){
+                            die(UNEXPECTED_STRING_TERMINATION);
+                        }
+                    }
+
+                    expression_tokens = tokenize(expression);
+                    context_enforce_expression(TokenContext{expression_tokens, expression_index}, e, base);
+                }
+                else if(str[i] == 'x'){
+                    // Fine with that
+                }
+                else {
+                    fail(UNKNOWN_STRING_ESCAPE(str[i]));
+                }
+            }
+            else {
+                die(UNEXPECTED_STRING_TERMINATION);
+            }
+        }
+    }
+}
+
+void context_assemble_string(TokenContext context, Environment& e, std::string str, std::string& output){
+    output += "(boomslang_String(\"";
+
+    for(unsigned int i = 0; i < str.length(); i++){
+        if(str[i] == '\\'){
+            i++;
+
+            if(i < str.length()){
+                if(str[i] == '\\'){
+                    // Fine with that
+                    output += "\\\\";
+                }
+                else if(str[i] == '"'){
+                    // Fine with that
+                    output += "\\\"";
+                }
+                else if(str[i] == '('){
+                    i++;
+
+                    std::string expression;
+                    std::string expression_output;
+                    TokenList expression_tokens;
+                    unsigned int expression_index = 0;
+                    unsigned int balance = 0;
+
+                    while(str[i] != ')' or balance != 0){
+                        if(str[i] == '('){
+                            balance++;
+                        }
+                        else if(str[i] == ')'){
+                            balance--;
+                        }
+
+                        expression += str[i];
+
+                        i++;
+                        if(i >= str.length()){
+                            die(UNEXPECTED_STRING_TERMINATION);
+                        }
+                    }
+
+                    expression_tokens = tokenize(expression);
+                    assemble_expression(TokenContext{expression_tokens, expression_index}, expression_output, e);
+                    output += "\")+(" + expression_output + ")+boomslang_String(\"";
+                }
+                else if(str[i] == 'x'){
+                    // Fine with that
+                    output += "\\x";
+                }
+            }
+        }
+        else {
+            output += str[i];
+        }
+    }
+
+    output += "\"))";
 }
 
 void context_class_dereference(TokenContext context, Class& type){
