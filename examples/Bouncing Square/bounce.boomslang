@@ -8,11 +8,11 @@ on main()
     unless glfwInit()
         die()
     
-	GlfwMonitor^ monitor = glfwGetPrimaryMonitor()
-	final GlfwVideoMode^ videoMode = glfwGetVideoMode(monitor)
-	
-	GlfwWindow^ window = glfwCreateWindow(1366, 786, "Bouncing Square", monitor, void)
-	
+    GlfwMonitor^ monitor = glfwGetPrimaryMonitor()
+    final GlfwVideoMode^ videoMode = glfwGetVideoMode(monitor)
+    
+    GlfwWindow^ window = glfwCreateWindow(1366, 786, "Bouncing Square", monitor, void)
+    
     final Number xspeed = 4
     Number xposition = 0
     Number xdirection = 1
