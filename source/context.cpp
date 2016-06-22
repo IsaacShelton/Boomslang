@@ -368,7 +368,9 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             if(type.name == ""){
                 type.name = base_class.name;
             }
-            else if(!context_class_compare(context, type, base_class)){
+            else if(!context_class_compare(context, type, base_class)
+            and type.name!="Integer"
+            and type.name!="UnsignedInteger"){
                 fail( INCOMPATIBLE_CLASSES(type.name, base_class.name) );
             }
         }

@@ -78,7 +78,7 @@ TokenList tokenize(string code){
         }
         else if( (int)code[0] >= 48 and (int)code[0] <= 57){     // Numeric Literal
             std::string number = string_get_until_or(code," ,)].\n");
-            code = string_delete_until_or(code," ,)].\n");
+            code = string_delete_amount(code, number.length());
 
             if(code.substr(0,1) == "."){
                 if( (int)code[1] >= 48 and (int)code[1] <= 57){

@@ -1,0 +1,11 @@
+
+on main()
+    # Numeric Literals are flexible
+    Number a = -42.234
+    Integer b = -21.942
+    UnsignedInteger c = 32.634
+    
+    # Numeric Literals are converted automatically
+    a.output()
+    b.output()
+    c.output()

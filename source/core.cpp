@@ -59,7 +59,7 @@ void load_core(Environment& environment){
     add_method(environment, Class{"String"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
     add_method(environment, Class{"String"}, Method{"input", type_scope, std::vector<MethodArgument>(), "void"});
     add_method(environment, Class{"String"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), "Number"});
-    add_method(environment, Class{"String"}, Method{"toPositive", type_scope, std::vector<MethodArgument>(), "Number"});
+    add_method(environment, Class{"String"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), "Number"});
     add_method(environment, Class{"String"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), "Number"});
 
     // Base Number Class
@@ -67,16 +67,16 @@ void load_core(Environment& environment){
     add_method(environment, Class{"Number"}, Method{"output", type_scope, std::vector<MethodArgument>(), "void"});
     add_method(environment, Class{"Number"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
     add_method(environment, Class{"Number"}, Method{"toString", type_scope, std::vector<MethodArgument>(), "String"});
-    add_method(environment, Class{"Number"}, Method{"toPositive", type_scope, std::vector<MethodArgument>(), "Positive"});
+    add_method(environment, Class{"Number"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), "UnsignedInteger"});
     add_method(environment, Class{"Number"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), "Integer"});
 
-    // Base Positive Class
-    type_scope = add_class(environment, Class{"Positive"});
-    add_method(environment, Class{"Positive"}, Method{"output", type_scope, std::vector<MethodArgument>(), "void"});
-    add_method(environment, Class{"Positive"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
-    add_method(environment, Class{"Positive"}, Method{"toString", type_scope, std::vector<MethodArgument>(), "String"});
-    add_method(environment, Class{"Positive"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), "Number"});
-    add_method(environment, Class{"Positive"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), "Integer"});
+    // Base Unsigned Integer Class
+    type_scope = add_class(environment, Class{"UnsignedInteger"});
+    add_method(environment, Class{"UnsignedInteger"}, Method{"output", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"UnsignedInteger"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
+    add_method(environment, Class{"UnsignedInteger"}, Method{"toString", type_scope, std::vector<MethodArgument>(), "String"});
+    add_method(environment, Class{"UnsignedInteger"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), "Number"});
+    add_method(environment, Class{"UnsignedInteger"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), "Integer"});
 
     // Base Integer Class
     type_scope = add_class(environment, Class{"Integer"});
@@ -84,7 +84,7 @@ void load_core(Environment& environment){
     add_method(environment, Class{"Integer"}, Method{"print", type_scope, std::vector<MethodArgument>(), "void"});
     add_method(environment, Class{"Integer"}, Method{"toString", type_scope, std::vector<MethodArgument>(), "String"});
     add_method(environment, Class{"Integer"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), "Number"});
-    add_method(environment, Class{"Integer"}, Method{"toPositive", type_scope, std::vector<MethodArgument>(), "Positive"});
+    add_method(environment, Class{"Integer"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), "UnsignedInteger"});
 
     // Base Boolean Class
     type_scope = add_class(environment, Class{"Boolean"});
