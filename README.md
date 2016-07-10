@@ -9,7 +9,7 @@ The Boomslang Programming Language is an open-source programming language that c
 
 ###Hello World
 ```python
-on main()
+def main()
     "Hello World".output()
 ```
 
@@ -18,26 +18,26 @@ NOTE: Ensure to use the -console compiler flag when compiling console programs s
 ###Creating a Method
 ```python
 
-on greet(String name)
+def greet(String name)
     ("Welcome " + name).output()
 
-on main()
+def main()
     greet("Isaac")
 ```
 
 ###Specifing Default Arguments
 ```python
 
-on greet(name = "Anonymous")
+def greet(name = "Anonymous")
     ("Welcome " + name).output()
 
-on main()
+def main()
     greet()
 ```
 
 ###Taking input
 ```python
-on main()
+def main()
     String name
     
     "Enter your name:".output()
@@ -48,35 +48,37 @@ on main()
 
 ###Displaying the current time
 ```python
-import time from boomslang
+import boomslang/time
 
-on main()
+def main()
     Time.now().output()
 ```
 ###Creating a basic window
 ```python
-import window from boomslang
+import boomslang/ui
 
-on main()
-    window = new Window
+def main()
+    Window window
     window.show()
 ```
 ###Drawing a rectangle
 ```python
-import window from boomslang
+import boomslang/ui
 
 class AppWindow < Window
-    on display()
-        new Rectangle(100,100).draw(0,0)
+    Rectangle rect(100,100)
+    
+    def display()
+        rect.draw(0,0)
 
-on main()
+def main()
     AppWindow window
     window.show()
 ```
 
 ###Declaring Variables
 ```python
-on main()
+def main()
     # All the following are equivalent
     Number a
     Number b = new Number
@@ -92,12 +94,12 @@ on main()
 
 class Dog
     String name
-    Positive id
+    Integer id
     
-    on bark()
+    def bark()
         "BARK ".print()
 
-on main()
+def main()
     Dog ruff
     ruff.bark()
 ```
@@ -107,19 +109,19 @@ on main()
 
 class Dog
     String name = "Unnamed"
-    Positive id
+    Integer id = 0
     
-    on new(String name, Positive id)
+    def new(String name, Integer id)
         self.name = name
         self.id = id
     
-    on bark()
+    def bark()
         "BARK ".print()
     
-    on info()
+    def info()
         ("Dog " + name + " has an id of " + id.toString() + ".").output()
 
-on main()
+def main()
     Dog ruff("Ruff", 1)
     
     ruff.info()
@@ -129,7 +131,7 @@ on main()
 ###Working with Pointers
 ```python
 
-on main()
+def main()
     String^ message = create String("Hello World")
     message.output()
     
@@ -140,7 +142,7 @@ on main()
 ###Getting a Value from a pointer
 ```python
 
-on main()
+def main()
     String name = "Isaac"
     String^ greeting = create String("Welcome ")
     
@@ -153,7 +155,7 @@ on main()
 ###Using Pointers with Already Existing Values
 ```python
 
-on main()
+def main()
     String name = "Isaac"
     String^ pointer = &name
     
