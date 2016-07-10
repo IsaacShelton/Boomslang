@@ -1,0 +1,52 @@
+
+import glfw
+import opengl
+import boomslang/image
+import "gamedata.boomslang"
+
+GameData gamedata
+
+import "scene.boomslang"
+
+def main()
+	unless glfwInit()
+		die()
+	
+	GlfwWindow^ window = glfwCreateWindow(640, 480, "Keyboard Input with Image Loading", void, void)
+	
+	if window = void
+		"Failed to create window".output()
+		die()
+	
+	# Initialize
+	glfwMakeContextCurrent(window)
+	glfwSwapInterval(1)
+	glClearColor(0, 0.8, 0, 1)
+	
+	gamedata.resources.load()
+	gamedata.load()
+	
+	until glfwWindowShouldClose(window)
+		Number width
+		Number height
+		
+		# Get Window Width and Height
+		glfwGetFramebufferSize(window, &width, &height)
+		
+		# Clear Screen
+		glClear(GL_COLOR_BUFFER_BIT)
+		
+		# Set View
+		glViewport(0, 0, width, height)
+		glMatrixMode(GL_PROJECTION)
+		glLoadIdentity()
+		glOrtho(0, width, height, 0, 1, -1)
+		
+		update(window)
+		render(window)
+		
+		glfwPollEvents()
+		glfwSwapBuffers(window)
+	
+	glfwDestroyWindow(window)
+	glfwTerminate()

@@ -1,0 +1,11 @@
+
+def main()
+	List<String> names
+	names.append("Jeff")
+	names.append("Isaac")
+	names.append("Bob")
+	
+	Integer count = 0
+	while count < names.length()
+		names.get(count).output()
+		count += 1

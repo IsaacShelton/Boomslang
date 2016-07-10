@@ -1,0 +1,5 @@
+
+@error "This is a custom error message"
+
+def main()
+	# ...

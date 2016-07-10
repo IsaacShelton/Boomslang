@@ -1,0 +1,6 @@
+
+def main()
+	Number^ ten = create Number(10)
+	ten.output()
+	
+	delete ten

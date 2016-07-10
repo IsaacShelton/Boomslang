@@ -1,0 +1,48 @@
+
+import glfw
+import opengl
+import boomslang/image
+
+def main()
+	unless glfwInit()
+		die()
+	
+	GlfwWindow^ window = glfwCreateWindow(640, 480, "Drawing an Image", void, void)
+	Image character
+	
+	if window = void
+		"Failed to create window".output()
+		die()
+	
+	# Create Context
+	glfwMakeContextCurrent(window)
+	glfwSwapInterval(1)
+	glClearColor(1, 1, 1, 1)
+	
+	# Load Image
+	character.load("character.png")
+	
+	until glfwWindowShouldClose(window)
+		Number width
+		Number height
+		
+		# Get Window Width and Height
+		glfwGetFramebufferSize(window, &width, &height)
+		
+		# Clear Screen
+		glClear(GL_COLOR_BUFFER_BIT)
+		
+		# Set View
+		glViewport(0, 0, width, height)
+		glMatrixMode(GL_PROJECTION)
+		glLoadIdentity()
+		glOrtho(0, width, height, 0, 1, -1)
+		
+		# Draw Image
+		character.draw(0, 0)
+		
+		glfwPollEvents()
+		glfwSwapBuffers(window)
+	
+	glfwDestroyWindow(window)
+	glfwTerminate()

@@ -1,0 +1,30 @@
+
+final Number movespeed = 4
+
+def render(GlfwWindow^ window)
+	gamedata.resources.flower.draw(64, 64)
+	gamedata.resources.flower.draw(256, 128)
+	gamedata.resources.flower.draw(320, 320)
+	gamedata.resources.flower.draw(32, 320)
+	gamedata.resources.flower.draw(480, 96)
+	
+	gamedata.player.draw()
+
+def update(GlfwWindow^ window)
+	if glfwGetKey(window, GLFW_KEY_RIGHT) = GLFW_PRESS
+		# Right
+		gamedata.player.x += movespeed
+		gamedata.player.image = &gamedata.resources.player_right
+	
+	if glfwGetKey(window, GLFW_KEY_LEFT) = GLFW_PRESS
+		# Left
+		gamedata.player.x -= movespeed
+		gamedata.player.image = &gamedata.resources.player_left
+	
+	if glfwGetKey(window, GLFW_KEY_DOWN) = GLFW_PRESS
+		# Down
+		gamedata.player.y += movespeed
+	
+	if glfwGetKey(window, GLFW_KEY_UP) = GLFW_PRESS
+		# Up
+		gamedata.player.y -= movespeed
