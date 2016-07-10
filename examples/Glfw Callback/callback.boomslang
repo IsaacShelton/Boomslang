@@ -1,0 +1,42 @@
+
+import glfw
+import opengl
+
+def keypress(GlfwWindow^ window, Integer key, Integer scancode, Integer action, Integer mods)
+	if key = GLFW_KEY_ENTER and action = GLFW_PRESS
+		# Enter Pressed - Set Background Color to Green
+		glClearColor(0, 0.5, 0, 1)
+	else if key = GLFW_KEY_ESCAPE and action = GLFW_PRESS
+		# Escape Pressed - Set Background Color to Red
+		glClearColor(0.5, 0, 0, 1)
+	else if key = GLFW_KEY_SPACE and action = GLFW_PRESS
+		# Space Pressed - Set Background Color to Blue
+		glClearColor(0, 0, 0.5, 1)
+	else if action = GLFW_PRESS
+		# Other Pressed - Set Background Color to White
+		glClearColor(1, 1, 1, 1)
+
+def main()
+	unless glfwInit()
+		die()
+	
+	GlfwMonitor^ monitor = glfwGetPrimaryMonitor()
+	GlfwWindow^ window = glfwCreateWindow(640, 480, "Enter - green  |  Escape - red  |  Space - blue  |  Other - white", void, void)
+	
+	if window = void
+		"Failed to create window".output()
+		die()
+	
+	glfwMakeContextCurrent(window)
+	glfwSwapInterval(1)
+	glfwSetKeyCallback(window, keypress)
+	glClearColor(1, 1, 1, 1)
+	
+	until glfwWindowShouldClose(window)
+		glClear()
+		
+		glfwPollEvents()
+		glfwSwapBuffers(window)
+	
+	glfwDestroyWindow(window)
+	glfwTerminate()

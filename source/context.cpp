@@ -1,4 +1,23 @@
 
+/*
+    (c) 2016 Isaac Shelton
+
+    This file is part of Boomslang.
+
+    Boomslang is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Boomslang is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "../include/die.h"
 #include "../include/log.h"
 #include "../include/token.h"
@@ -10,13 +29,12 @@
 #include "../include/assembler.h"
 #include "../include/management.h"
 
-using namespace std;
-
 bool context_variable_exists(Environment& e, Variable variable){
     return (environment_variable_exists(e.scope, variable) or environment_variable_exists(&e.global, variable));
 }
 bool context_class_exists(TokenContext context, Environment& e, Class base){
     if(base.name == "any^") return true;
+    if(base.name.substr(0, 10) == "function^(") return true;
 
     context_class_dereference_ifcan(context, base);
     return environment_class_exists(&e.global, base);
@@ -30,6 +48,14 @@ bool context_method_exists(TokenContext context, Environment& e, Class base, Met
     }
 
     return environment_method_exists(context, environment_get_child(&e.global, CLASS_PREFIX + base.name), method);
+}
+Class context_root_class(Class base){
+    base.name = string_get_until(base.name, "<");
+    return base;
+}
+std::string context_root_class(std::string base){
+    base = string_get_until(base, "<");
+    return base;
 }
 
 Variable context_variable_get(Environment& e, Variable variable){
@@ -71,8 +97,8 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 if( context_class_exists(context, e, base_class) ){
                     index_increase(context);
 
-                    if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
-                        base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}).type;
+                    if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}) ){
+                        base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}).type.name;
                         index_increase(context);
                     }
                     else {
@@ -109,18 +135,18 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 std::string name = context.tokens[context.index].data;
                 index_increase(context);
 
-                if( !environment_variable_exists(e.scope, Variable{name, IGNORE, false, false}) ){
+                if( !environment_variable_exists(e.scope, Variable{name, IGNORE_CLASS, false, false}) ){
                     fail(UNDECLARED_VARIABLE(name));
                 }
 
-                Class base_class{environment_variable_get(e.scope, Variable{name, IGNORE, false, false}).type};
+                Class base_class{environment_variable_get(e.scope, Variable{name, IGNORE_CLASS, false, false}).type};
 
                 while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
                     if( context_class_exists(context, e, base_class) ){
                         index_increase(context);
 
-                        if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data,IGNORE}) ){
-                            base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data,IGNORE}).type;
+                        if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}) ){
+                            base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}).type.name;
                             index_increase(context);
                         }
                         else {
@@ -164,37 +190,25 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 die(UNEXPECTED_OPERATOR_INEXP);
             }
         }
-        else if(context.tokens[context.index].id == TOKENINDEX_WORD){
-            std::string name = context.tokens[context.index].data;
+        else if(context.tokens[context.index].id == TOKENINDEX_ADDRESS){
             index_increase(context);
 
-            if(context.tokens[context.index].id == TOKENINDEX_OPEN){ // Function call
-                if(!context_method_exists(context, e, Method{name, NULL, IGNORE_ARGS, IGNORE})){
-                    fail(UNDECLARED_METHOD(name));
-                }
-
-                Class base;
-
-                index_decrease(context);
-                context_enforce_arguments(context, e, base);
+            if(context.tokens[context.index].id == TOKENINDEX_WORD){
+                std::string name = context.tokens[context.index].data;
                 index_increase(context);
 
-                context_enforce_following_method_calls(context, e, base);
-                index_decrease(context);
-            }
-            else { // Variable with possible method calls after
-                if( !environment_variable_exists(e.scope, Variable{name, IGNORE, false, false}) ){
+                if( !environment_variable_exists(e.scope, Variable{name, IGNORE_CLASS, false, false}) ){
                     fail(UNDECLARED_VARIABLE(name));
                 }
 
-                Class base_class{environment_variable_get(e.scope, Variable{name, IGNORE, false, false}).type};
+                Class base_class = environment_variable_get(e.scope, Variable{name, IGNORE_CLASS, false, false}).type;
 
                 while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
                     if( context_class_exists(context, e, base_class) ){
                         index_increase(context);
 
-                        if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
-                            base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}).type;
+                        if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}) ){
+                            base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}).type.name;
                             index_increase(context);
                         }
                         else {
@@ -210,6 +224,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 }
 
                 index_decrease(context);
+                base_class.name += "^";
 
                 if(type.name == ""){
                     type.name = base_class.name;
@@ -217,6 +232,116 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 else if(!context_class_compare(context, type, base_class)){
                     fail( INCOMPATIBLE_CLASSES(type.name, base_class.name) );
                 }
+            }
+            else if(context.tokens[context.index].id == TOKENINDEX_OPEN){
+                Class base;
+
+                index_increase(context);
+                context_enforce_expression(context, e, base);
+
+                base.name += "^";
+
+                if(type.name == ""){
+                    type.name = base.name;
+                }
+                else if(!context_class_compare(context, type, base)){
+                    fail( INCOMPATIBLE_CLASSES(type.name, base.name) );
+                }
+            }
+            else {
+                die(UNEXPECTED_OPERATOR_INEXP);
+            }
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_WORD){
+            index_increase(context);
+
+            if(context.tokens[context.index].id == TOKENINDEX_OPEN){ // Function call
+                if(e.scope == &e.global){
+                    die(GLOBAL_STATEMENT);
+                }
+
+                index_decrease(context);
+
+                std::string method_name = context.tokens[context.index].data;
+                Class return_type;
+
+                context_enforce_arguments(context, e, return_type);
+
+                if( !advance_index(context.index, context.tokens.size()) ){
+                    die(ERROR_INDICATOR + UNEXPECTED_TERMINATE);
+                }
+
+                while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                    token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+
+                    context_enforce_arguments(context, e, return_type);
+                    index_increase(context);
+                }
+
+                index_decrease(context);
+            }
+            else { // Variable with possible method calls after
+                std::string variable_name;
+                Class base_class;
+
+                // Go back to the word token containing the variable data
+                retreat_index(context.index);
+                variable_name = context.tokens[context.index].data;
+
+                // See whats after the variable name
+                index_increase(context);
+
+                // Ensure variable is declared
+                if( !environment_variable_exists(e.scope, Variable{variable_name, IGNORE_CLASS, false, false}) ){
+                    fail(UNDECLARED_VARIABLE(variable_name));
+                }
+
+                // Get the class name depending on where the variable was found
+                if(environment_variable_exists(e.scope, Variable{variable_name, IGNORE_CLASS, false, false})){
+                    base_class = environment_variable_get(e.scope, Variable{variable_name, IGNORE_CLASS, false, false}).type;
+                }
+                else if(environment_variable_exists(&e.global, Variable{variable_name, IGNORE_CLASS, false, false})){
+                    base_class = environment_variable_get(&e.global, Variable{variable_name, IGNORE_CLASS, false, false}).type;
+                }
+
+                Class root_class = context_root_class(base_class);
+
+                // Handle following fields and methods
+                if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                    while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                        bool dereferenced = context_class_dereference_ifcan(context, root_class);
+
+                        if(dereferenced){
+                            context.tokens[context.index].id = TOKENINDEX_POINTERMEMBER;
+                        }
+
+                        if( context_class_exists(context, e, root_class) ){ // Make sure the current class is valid
+                            // Next token should be a word
+                            index_increase(context);
+
+                            if(context.tokens[context.index].id != TOKENINDEX_WORD){
+                                die(UNEXPECTED_OPERATOR);
+                            }
+
+                            // Is it a field of the class
+                            if( environment_class_variable_exists(e, root_class, Variable{variable_name, IGNORE_CLASS, false, false}) ){
+                                base_class = environment_class_variable_get(e, root_class, Variable{variable_name, IGNORE_CLASS, false, false}).type;
+                                index_increase(context);
+                            }
+                            else { // Method of the class
+                                context_enforce_arguments(context, e, base_class);
+                                index_increase(context);
+                            }
+                        }
+                        else { // Undeclared Class
+                            die(UNDECLARED_CLASS(root_class.name));
+                        }
+                    }
+                }
+
+                type = base_class;
+
+                index_decrease(context);
             }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
@@ -241,6 +366,18 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 else if(!context_class_compare(context, type, Class{class_name})){
                     fail( INCOMPATIBLE_CLASSES(type.name, class_name) );
                 }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_OPEN){
+                    Class created_class(class_name);
+
+                    index_decrease(context);
+                    context_enforce_arguments(context, e, created_class, "new");
+                }
+                else {
+                    index_decrease(context);
+                }
             }
             else if(context.tokens[context.index].data == "create"){
                 std::string class_name;
@@ -251,6 +388,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                     die(UNEXPECTED_OPERATOR_INEXP);
                 }
 
+                Class created_class(context.tokens[context.index].data);
                 class_name = context.tokens[context.index].data + "^";
 
                 if(!context_class_exists(context, e, Class{class_name})){
@@ -263,8 +401,28 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 else if(!context_class_compare(context, type, Class{class_name})){
                     fail( INCOMPATIBLE_CLASSES(type.name, class_name) );
                 }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_OPEN){
+                    index_decrease(context);
+                    context_enforce_arguments(context, e, created_class, "new");
+                }
+                else {
+                    index_decrease(context);
+                }
             }
             else if(context.tokens[context.index].data == "void"){
+                if(type.name == ""){
+                    type.name = "any^";
+                }
+                else if(!context_class_compare(context, type, Class{"any^"})){
+                    fail( INCOMPATIBLE_CLASSES(type.name, "any^") );
+                }
+            }
+            else if(context.tokens[context.index].data == "and"){
+            }
+            else if(context.tokens[context.index].data == "or"){
             }
             else if(context.tokens[context.index].data == "cast"){
                 index_increase(context);
@@ -287,10 +445,10 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 else if(context.tokens[context.index].id == TOKENINDEX_WORD){
                     std::string variable_name = context.tokens[context.index].data;
 
-                    if(!context_variable_exists(e, Variable{variable_name, IGNORE, false, false})){
+                    if(!context_variable_exists(e, Variable{variable_name, IGNORE_CLASS, false, false})){
                         die(UNDECLARED_CLASS(variable_name));
                     }
-                    expression_type.name = context_variable_get(e, Variable{variable_name, IGNORE, false, false}).type;
+                    expression_type = context_variable_get(e, Variable{variable_name, IGNORE_CLASS, false, false}).type;
                 }
 
                 if(type.name == ""){
@@ -313,8 +471,8 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 if( context_class_exists(context, e, base_class) ){
                     index_increase(context);
 
-                    if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
-                        base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}).type;
+                    if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}) ){
+                        base_class = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}).type;
                         index_increase(context);
                     }
                     else {
@@ -347,8 +505,8 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 if( context_class_exists(context, e, base_class) ){
                     index_increase(context);
 
-                    if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
-                        base_class.name = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data, IGNORE, false, false}).type;
+                    if( environment_class_variable_exists(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}) ){
+                        base_class = environment_class_variable_get(e, base_class, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}).type;
                         index_increase(context);
                     }
                     else {
@@ -370,7 +528,8 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             }
             else if(!context_class_compare(context, type, base_class)
             and type.name!="Integer"
-            and type.name!="UnsignedInteger"){
+            and type.name!="UnsignedInteger"
+            and type.name!="Byte"){
                 fail( INCOMPATIBLE_CLASSES(type.name, base_class.name) );
             }
         }
@@ -380,7 +539,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
         or context.tokens[context.index].id == TOKENINDEX_DIVIDE
         or context.tokens[context.index].id == TOKENINDEX_ASSIGN
         or context.tokens[context.index].id == TOKENINDEX_NOT){
-            // ok
+            // We're fine with that
         }
         else {
             die(UNEXPECTED_OPERATOR_INEXP);
@@ -389,190 +548,93 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
         index_increase(context);
     }
 }
-void context_enforce_arguments(TokenContext context, Environment& e, Class& base_class){
-    int balance = 1;
-    vector<MethodArgument> arguments;
-    string type;
-    string method_name = context.tokens[context.index].data;
+void context_enforce_arguments(TokenContext context, Environment& e, Class& base_class, std::string override_method){
+    std::vector<MethodArgument> arguments;
+    std::string type;
+    std::string method_name = context.tokens[context.index].data;
+    std::string function_type = "function^(";
+
+    Class root_class = context_root_class(base_class);
+
+    if(method_name == "new"){
+        die(NEW_METHOD_RESERVED);
+    }
+
+    // Override Method Name
+    if(override_method != ""){
+        method_name = override_method;
+    }
 
     token_force(context, TOKENINDEX_OPEN, ERROR_INDICATOR + "Unexpected statement termination\nExpected opening parentheses", ERROR_INDICATOR + "Expected opening parentheses");
 
-    while(balance != 0){
+    index_increase(context);
+    if(context.tokens[context.index].id != TOKENINDEX_CLOSE){
+        context.index--;
+    }
+
+    while(context.tokens[context.index].id != TOKENINDEX_CLOSE){
+        Class expression_type = Class{""};
         if(!advance_index(context.index,context.tokens.size())){
             die(UNEXPECTED_TERMINATE);
         }
 
-        if(context.tokens[context.index].id == TOKENINDEX_OPEN){
-            balance++;
-        }
-        else if(context.tokens[context.index].id == TOKENINDEX_CLOSE){
-            balance--;
-        }
-        else if(context.tokens[context.index].id == TOKENINDEX_WORD){
-            index_increase(context);
+        context_enforce_expression(context, e, expression_type);
 
-            if(context.tokens[context.index].id == TOKENINDEX_OPEN){ // Function Call
-                if(e.scope == &e.global){
-                    die(GLOBAL_STATEMENT);
-                }
-
-                index_decrease(context);
-                string method_name = context.tokens[context.index].data;
-                Class return_type;
-                context_enforce_arguments(context, e, return_type);
-
-                if( !advance_index(context.index, context.tokens.size()) ){
-                    die(ERROR_INDICATOR + UNEXPECTED_TERMINATE);
-                }
-
-                index_increase(context);
-                while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                    token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
-                    context_enforce_arguments(context, e, return_type);
-                    index_increase(context);
-                }
-
-                index_decrease(context);
-
-                if(return_type.name == "void"){
-                    die(CANT_PASS_VOID_AS_ARGUMENT);
-                }
-                else if(type == ""){
-                    type = return_type.name;
-                }
-                else if(!context_class_compare(context, Class{type}, return_type)){
-                    fail(INCOMPATIBLE_CLASSES(type, return_type.name));
-                }
-                context.index--;
-            }
-            else {
-                index_decrease(context);
-
-                if( !environment_variable_exists(e.scope, Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
-                    die(UNDECLARED_VARIABLE(context.tokens[context.index].data));
-                }
-
-                Class variable_type;
-
-                if(environment_variable_exists(e.scope, Variable{context.tokens[context.index].data, IGNORE, false, false})){
-                    variable_type.name = environment_variable_get(e.scope, Variable{context.tokens[context.index].data, IGNORE, false, false}).type;
-                }
-                else if(environment_variable_exists(&e.global, Variable{context.tokens[context.index].data, IGNORE, false, false})){
-                    variable_type.name = environment_variable_get(&e.global, Variable{context.tokens[context.index].data,IGNORE}).type;
-                }
-
-                index_increase(context);
-                while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                    token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
-                    context_enforce_arguments(context, e, variable_type);
-                    index_increase(context);
-                }
-
-                index_decrease(context);
-
-                if(variable_type.name == "void"){
-                    die(CANT_PASS_VOID_AS_ARGUMENT);
-                }
-                else if(type == ""){
-                    type = variable_type.name;
-                }
-                else if(!context_class_compare(context, Class{type}, variable_type)){
-                    fail(INCOMPATIBLE_CLASSES(type, variable_type.name));
-                }
-            }
-        }
-        else if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
-            Class base_class = Class{"String"};
-
-            index_increase(context);
-            while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
-                context_enforce_arguments(context, e, base_class);
-                index_increase(context);
-            }
-
-            index_decrease(context);
-
-            if(base_class.name == "void"){
-                die(CANT_PASS_VOID_AS_ARGUMENT);
-            }
-            else if(type == ""){
-                type = base_class.name;
-            }
-            else if(!context_class_compare(context, Class{type}, base_class)){
-                fail(INCOMPATIBLE_CLASSES(type, base_class.name));
-            }
-        }
-        else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
-            Class base_class = Class{"Number"};
-
-            index_increase(context);
-            while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
-                context_enforce_arguments(context, e, base_class);
-                index_increase(context);
-            }
-
-            index_decrease(context);
-
-            if(base_class.name == "void"){
-                die(CANT_PASS_VOID_AS_ARGUMENT);
-            }
-            else if(type == ""){
-                type = base_class.name;
-            }
-            else if(!context_class_compare(context, Class{type}, base_class)){
-                fail(INCOMPATIBLE_CLASSES(type, base_class.name));
-            }
-        }
-        else if(context.tokens[context.index].id == TOKENINDEX_ADD
-        or context.tokens[context.index].id == TOKENINDEX_SUBTRACT
-        or context.tokens[context.index].id == TOKENINDEX_MULTIPLY
-        or context.tokens[context.index].id == TOKENINDEX_DIVIDE
-        or context.tokens[context.index].id == TOKENINDEX_ASSIGN
-        or context.tokens[context.index].id == TOKENINDEX_NOT){
-            // ok
-        }
-        else if(context.tokens[context.index].id == TOKENINDEX_NEXT){
-            arguments.push_back( MethodArgument{Class{type},0} );
-            type = "";
-        }
-        else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
-            if(context.tokens[context.index].data == "void"){
-                Class void_class = Class{"any^"};
-
-                if(type == ""){
-                    type = "any^";
-                }
-                else if(!context_class_compare(context, Class{type}, Class{"any^"})){
-                    die(INCOMPATIBLE_CLASSES(type,"any^"));
-                }
-            }
-            else {
-                die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
-            }
+        if(expression_type.name != ""){
+            arguments.push_back( MethodArgument{expression_type, 0} );
+            expression_type.name = "";
         }
         else {
-            die(UNEXPECTED_OPERATOR_INEXP);
+            die(EMPTY_EXPRESSION);
         }
-    }
-
-    if(type != ""){
-        arguments.push_back( MethodArgument{Class{type},0} );
-        type = "";
     }
 
     if(base_class.name == "void"){
         die(CANT_CALL_METHODS_OF_VOID);
     }
     else if(base_class.name != ""){
-        if(!context_class_exists(context, e, base_class)){
-            die(UNDECLARED_CLASS(base_class.name));
+        if(!context_class_exists(context, e, root_class)){
+            die(UNDECLARED_CLASS(root_class.name));
         }
 
-        if( !context_method_exists(context, e, base_class, Method{method_name, NULL, arguments, IGNORE})){
-            if( context_method_exists(context, e, base_class, Method{method_name, NULL, IGNORE_ARGS, IGNORE}) ){
-                string call_string = base_class.name + "."  + method_name + "(";
+        // Process Generics
+        if(!environment_method_exists(context, environment_get_child(&e.global, CLASS_PREFIX + root_class.name), Method{method_name, NULL, IGNORE_ARGS, IGNORE})){
+            die(UNDECLARED_METHOD(root_class.name + "." + method_name));
+        }
+        Method method = environment_method_get(context, environment_get_child(&e.global, CLASS_PREFIX + root_class.name), Method{method_name, NULL, IGNORE_ARGS, IGNORE});
+        Class actual_class = context_class_get(e, root_class);
+
+        if(arguments.size() != method.arguments.size()){
+            std::string call_string = root_class.name + "."  + method_name + "(";
+
+            for(unsigned int i = 0; i < arguments.size(); i++){
+                call_string += arguments[i].type.name;
+
+                if(i != arguments.size()-1){
+                    call_string += ", ";
+                }
+            }
+
+            call_string += ")";
+            die(UNDECLARED_METHOD_OTHERS(call_string));
+        }
+
+        if(actual_class.generics.size() != base_class.generics.size()){
+            die(GENERIC_MISMATCH(root_class.name));
+        }
+        for(size_t a = 0; a < arguments.size(); a++){
+            for(size_t g = 0; g < base_class.generics.size(); g++){
+                if(method.arguments[a].type.name == actual_class.generics[g] and base_class.generics[g] == arguments[a].type.name){
+                    arguments[a].type.name = actual_class.generics[g];
+                    break;
+                }
+            }
+        }
+
+        // Ensure method exists
+        if( !context_method_exists(context, e, root_class, Method{method_name, NULL, arguments, IGNORE})){
+            if( context_method_exists(context, e, root_class, Method{method_name, NULL, IGNORE_ARGS, IGNORE}) ){
+                std::string call_string = root_class.name + "."  + method_name + "(";
 
                 for(unsigned int i = 0; i < arguments.size(); i++){
                     call_string += arguments[i].type.name;
@@ -586,14 +648,24 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
                 die(UNDECLARED_METHOD_OTHERS(call_string));
             }
             else {
-                die(UNDECLARED_METHOD(base_class.name + "." + method_name));
+                die(UNDECLARED_METHOD(root_class.name + "." + method_name));
             }
         }
 
-        if( context_method_exists(context, e, base_class, Method{method_name, NULL, arguments, IGNORE}) ){
-            context_method_get(context, e, base_class, Method{method_name, NULL, arguments, IGNORE});
+        // Update return type
+        if( context_method_exists(context, e, root_class, Method{method_name, NULL, arguments, IGNORE}) ){
+            context_method_get(context, e, root_class, Method{method_name, NULL, arguments, IGNORE});
 
-            base_class.name = context_method_get(context, e, base_class, Method{method_name, NULL, arguments, IGNORE}).return_type;
+            base_class.name = context_method_get(context, e, root_class, Method{method_name, NULL, arguments, IGNORE}).return_type;
+
+            for(size_t g = 0; g < actual_class.generics.size(); g++){
+                if(method.return_type == actual_class.generics[g]){
+                    base_class.name = base_class.generics[g];
+                    break;
+                }
+            }
+
+            base_class.generics.clear();
         }
         else {
             log_enforcer("Method exists, but no implementation for the scope");
@@ -602,10 +674,10 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
     else {
         if( !environment_method_exists(context, e.scope, Method{method_name, &e.global, arguments, IGNORE})
         and !environment_method_exists(context, &e.global, Method{method_name, &e.global, arguments, IGNORE})
-        and !context_variable_exists(e, Variable{method_name, IGNORE}) ){
+        /*and !environment_variable_exists(e.scope, Variable{method_name, IGNORE})*/ ){
             if(environment_method_exists(context, e.scope, Method{method_name, &e.global, IGNORE_ARGS, IGNORE}) or environment_method_exists(context, &e.global, Method{method_name, &e.global, IGNORE_ARGS, IGNORE})){
                 if(base_class.name != ""){
-                    string call_string = base_class.name + "."  + method_name + "(";
+                    std::string call_string = base_class.name + "."  + method_name + "(";
 
                     for(unsigned int i = 0; i < arguments.size(); i++){
                         call_string += arguments[i].type.name;
@@ -619,7 +691,7 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
                     die(UNDECLARED_METHOD_OTHERS(call_string));
                 }
                 else {
-                    string call_string = method_name + "(";
+                    std::string call_string = method_name + "(";
 
                     for(unsigned int i = 0; i < arguments.size(); i++){
                         call_string += arguments[i].type.name;
@@ -649,22 +721,22 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
         else if(environment_method_exists(context, &e.global, Method{method_name, &e.global, arguments, IGNORE})){
             base_class.name = environment_method_get(context, &e.global, Method{method_name, &e.global, arguments, IGNORE}).return_type;
         }
-        else if(context_variable_exists(e, Variable{method_name, IGNORE})){
+        /*else if(environment_variable_exists(e.scope, Variable{method_name, IGNORE})){
             std::string type = context_variable_get(e, Variable{method_name, IGNORE}).type;
             base_class.name = string_kill_whitespace(string_delete_amount(string_get_until(type,"->"),2));
-        }
+        }*/
         else {
             log_enforcer("Method exists, but no implementation for the scope");
         }
     }
 }
 void context_enforce_method_declaration_arguments(TokenContext context, Environment& e, MethodArgumentList& method_arguments, std::string& argument_string){
-    string type;
+    std::string type;
     bool optional = false;
 
-    string variable_name;
-    string class_name;
-    string method_name = context.tokens[context.index].data;
+    std::string variable_name;
+    std::string class_name;
+    std::string method_name = context.tokens[context.index].data;
 
     if(!is_identifier(method_name)){
         die(INVALID_METHOD_NAME(context.tokens[context.index].data));
@@ -685,8 +757,18 @@ void context_enforce_method_declaration_arguments(TokenContext context, Environm
             if(context.tokens[context.index].id ==TOKENINDEX_WORD){
                 if(environment_class_exists(e.scope, Class{context.tokens[context.index].data}) or environment_class_exists(&e.global, Class{context.tokens[context.index].data})){
                     if(accept_type){
+                        // Add type to type list
                         type += context.tokens[context.index].data;
                         argument_string += context.tokens[context.index].data;
+
+                        // Allow Pointers
+                        index_increase(context);
+                        while(context.tokens[context.index].id == TOKENINDEX_POINTER){
+                            type += "^";
+                            argument_string += "^";
+                            index_increase(context);
+                        }
+                        index_decrease(context);
                     }
                     else {
                         die(UNEXPECTED_WORD);
@@ -767,8 +849,8 @@ void context_enforce_following_method_calls(TokenContext context, Environment& e
 
             index_increase(context);
 
-            if( environment_class_variable_exists(e, type ,Variable{context.tokens[context.index].data, IGNORE, false, false}) ){
-                type.name = environment_class_variable_get(e, type, Variable{context.tokens[context.index].data, IGNORE, false, false}).type;
+            if( environment_class_variable_exists(e, type ,Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}) ){
+                type = environment_class_variable_get(e, type, Variable{context.tokens[context.index].data, IGNORE_CLASS, false, false}).type;
             }
             else {
                 index_decrease(context);
@@ -839,6 +921,55 @@ void context_enforce_string(TokenContext context, Environment& e, std::string st
         }
     }
 }
+void context_enforce_type(TokenContext context, Environment& e, Class& type){
+
+    if(context.tokens[context.index].id != TOKENINDEX_WORD){
+        die(UNEXPECTED_OPERATOR);
+    }
+
+    type.name = context.tokens[context.index].data;
+    type.generics.clear();
+
+    index_increase(context);
+
+    if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
+        unsigned int balance = 0;
+
+        type.name += "<";
+        index_increase(context);
+
+        while(context.tokens[context.index].id != TOKENINDEX_GREATERTHAN or balance != 0){
+            if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
+                type.name += "<";
+            }
+            else if(context.tokens[context.index].id == TOKENINDEX_GREATERTHAN){
+                type.name += ">";
+            }
+            else if(context.tokens[context.index].id == TOKENINDEX_NEXT){
+                type.name += ",";
+            }
+            else if(context.tokens[context.index].id == TOKENINDEX_WORD){
+                type.name += context.tokens[context.index].data;
+
+                if(balance == 0){
+                    type.generics.push_back( context.tokens[context.index].data );
+                }
+            }
+
+            index_increase(context);
+        }
+
+        type.name += ">";
+    }
+    else if(context.tokens[context.index].id == TOKENINDEX_POINTER){
+        type.name += "^";
+    }
+    else {
+        index_decrease(context);
+    }
+
+    index_increase(context);
+}
 
 void context_assemble_string(TokenContext context, Environment& e, std::string str, std::string& output){
     output += "(boomslang_String(\"";
@@ -902,7 +1033,7 @@ void context_assemble_string(TokenContext context, Environment& e, std::string s
 void context_class_dereference(TokenContext context, Class& type){
     if( type.name.length() == 0 ) {
         #ifdef DEV_ERRORS
-        cerr << "A blank string was passed to context_class_dereference, returning" << endl;
+        std::cerr << "A blank string was passed to context_class_dereference, returning" << std::endl;
         #endif // DEV_ERRORS
 
         return;
@@ -951,15 +1082,15 @@ bool context_class_compare(TokenContext context, Class a, Class b){
 }
 
 bool name_is_class(std::string name){
-    return (name.substr(0, string(CLASS_PREFIX).length()) == CLASS_PREFIX);
+    return (name.substr(0, std::string(CLASS_PREFIX).length()) == CLASS_PREFIX);
 }
 std::string name_get_class(std::string name){
-    return name.substr(string(CLASS_PREFIX).length(), name.length() - string(CLASS_PREFIX).length());
+    return name.substr(std::string(CLASS_PREFIX).length(), name.length() - std::string(CLASS_PREFIX).length());
 }
 bool name_is_method(std::string name){
-    return (name.substr(0, string(METHOD_PREFIX).length()) == METHOD_PREFIX);
+    return (name.substr(0, std::string(METHOD_PREFIX).length()) == METHOD_PREFIX);
 }
 std::string name_get_method(std::string name){
-    return name.substr(string(METHOD_PREFIX).length(), name.length() - string(METHOD_PREFIX).length());
+    return name.substr(std::string(METHOD_PREFIX).length(), name.length() - std::string(METHOD_PREFIX).length());
 }
 

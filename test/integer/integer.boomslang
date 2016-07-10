@@ -1,5 +1,5 @@
 
-on main()
+def main()
     Integer x = (10 / 3).toInteger()
     
     ("10 / 3 = " + x.toString()).output()

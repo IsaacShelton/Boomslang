@@ -1,5 +1,5 @@
 
-on main()
+def main()
 	String pin
 	
 	"Enter you PIN: ".print()

@@ -2,12 +2,32 @@
 #ifndef SCOPE_H_INCLUDED
 #define SCOPE_H_INCLUDED
 
+/*
+    (c) 2016 Isaac Shelton
+
+    This file is part of Boomslang.
+
+    Boomslang is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Boomslang is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <string>
 #include <vector>
 #include "token.h"
 
 #define IGNORE      "..."
 #define IGNORE_ARGS {MethodArgument{Class{IGNORE}, 1}}
+#define IGNORE_CLASS Class{IGNORE}
 
 #define METHOD_PREFIX   std::string("METHOD ")
 #define CLASS_PREFIX std::string("CLASS ")
@@ -19,15 +39,20 @@ struct MethodArgument;
 struct Method;
 struct Environment;
 
-struct Variable {
-    std::string name;
-    std::string type;
-    bool is_final;
-    bool is_global;
+struct Class {
+    std::string name = "";
+    std::vector<std::string> generics;
+
+    Class();
+    Class(std::string);
+    Class(std::string, std::vector<std::string>);
 };
 
-struct Class {
+struct Variable {
     std::string name;
+    Class type;
+    bool is_final;
+    bool is_global;
 };
 
 struct MethodArgument {

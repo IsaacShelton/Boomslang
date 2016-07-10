@@ -1,5 +1,5 @@
 
-on main()
+def main()
 	Number count
 	
 	while count < 10

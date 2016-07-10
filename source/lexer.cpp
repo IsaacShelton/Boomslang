@@ -1,4 +1,23 @@
 
+/*
+    (c) 2016 Isaac Shelton
+
+    This file is part of Boomslang.
+
+    Boomslang is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Boomslang is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <iostream>
 #include <stdlib.h>
 #include "../include/die.h"
@@ -10,9 +29,7 @@
 
 #define LEXER_LOG_PREFIX (to_string(tokens.size()) + " ")
 
-using namespace std;
-
-void process_indentation(TokenList& tokens, string& code, unsigned int& indentation){
+void process_indentation(TokenList& tokens, std::string& code, unsigned int& indentation){
     unsigned int line_indentaion = 0;
 
     while(is_indent(code)){
@@ -38,12 +55,12 @@ void process_indentation(TokenList& tokens, string& code, unsigned int& indentat
     }
 }
 
-TokenList tokenize(string code){
+TokenList tokenize(std::string code){
     // Converts code into a stream of tokens
 
     TokenList tokens;
     unsigned int indentation = 0;
-    string prev;
+    std::string prev;
 
     process_indentation(tokens, code, indentation);
 
@@ -76,7 +93,7 @@ TokenList tokenize(string code){
             code = string_delete_until(code,"\"");
             code = string_delete_amount(code,1);
         }
-        else if( (int)code[0] >= 48 and (int)code[0] <= 57){     // Numeric Literal
+        else if( (int)code[0] >= 48 and (int)code[0] <= 57){    // Numeric Literal
             std::string number = string_get_until_or(code," ,)].\n");
             code = string_delete_amount(code, number.length());
 
@@ -91,106 +108,115 @@ TokenList tokenize(string code){
             log_lexer(LEXER_LOG_PREFIX + "Found numeric literal, adding numeric literal token");
             tokens.push_back( TOKEN_NUMERIC_LITERAL(number) );
         }
-        else if( code.substr(0,1) == "."){                       // Member
+        else if( code.substr(0,1) == "."){                      // Member
             log_lexer(LEXER_LOG_PREFIX + "Found member operator, adding member token");
             code = string_delete_amount(code,1);
             tokens.push_back( TOKEN_MEMBER );
         }
-        else if( code.substr(0,1) == "("){                       // Open
+        else if( code.substr(0,1) == "("){                      // Open
             log_lexer(LEXER_LOG_PREFIX + "Found open operator, adding open token");
             tokens.push_back( TOKEN_OPEN );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == ")"){                       // Close
+        else if( code.substr(0,1) == ")"){                      // Close
             log_lexer(LEXER_LOG_PREFIX + "Found close operator, adding close token");
             tokens.push_back( TOKEN_CLOSE );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "<"){                       // Less Than
+        else if( code.substr(0,1) == "<"){                      // Less Than
             log_lexer(LEXER_LOG_PREFIX + "Found less than operator, adding less than token");
             tokens.push_back( TOKEN_LESSTHAN );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == ">"){                       // Greater Than
+        else if( code.substr(0,1) == ">"){                      // Greater Than
             log_lexer(LEXER_LOG_PREFIX + "Found greater than operator, adding greater than token");
             tokens.push_back( TOKEN_GREATERTHAN );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "["){                       // Square Open
+        else if( code.substr(0,1) == "["){                      // Square Open
             log_lexer(LEXER_LOG_PREFIX + "Found opening square bracket, adding sq open token");
             tokens.push_back( TOKEN_SQOPEN );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "]"){                       // Square Close
+        else if( code.substr(0,1) == "]"){                      // Square Close
             log_lexer(LEXER_LOG_PREFIX + "Found closing square bracket, adding sq close token");
             tokens.push_back( TOKEN_SQCLOSE );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "{"){                       // Curly Open
+        else if( code.substr(0,1) == "{"){                      // Curly Open
             log_lexer(LEXER_LOG_PREFIX + "Found opening curly bracket, adding curly open token");
             tokens.push_back( TOKEN_CURLYOPEN );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "}"){                       // Curly Close
+        else if( code.substr(0,1) == "}"){                      // Curly Close
             log_lexer(LEXER_LOG_PREFIX + "Found closing curly bracket, adding curly close token");
             tokens.push_back( TOKEN_CURLYCLOSE );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "="){                       // Assign
+        else if( code.substr(0,1) == "="){                      // Assign
             log_lexer(LEXER_LOG_PREFIX + "Found equal sign, adding assign token");
             tokens.push_back( TOKEN_ASSIGN );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "+"){                       // Add
+        else if( code.substr(0,1) == "+"){                      // Add
             log_lexer(LEXER_LOG_PREFIX + "Found addition sign, adding add token");
             tokens.push_back( TOKEN_ADD );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "-"){                       // Subtract
+        else if( code.substr(0,1) == "-"){                      // Subtract
             log_lexer(LEXER_LOG_PREFIX + "Found subtraction sign, adding subtract token");
             tokens.push_back( TOKEN_SUBTRACT );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "*"){                       // Multiply
+        else if( code.substr(0,1) == "*"){                      // Multiply
             log_lexer(LEXER_LOG_PREFIX + "Found asterisk, adding multiplication token");
             tokens.push_back( TOKEN_MULTIPLY );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "/"){                       // Divide
+        else if( code.substr(0,1) == "/"){                      // Divide
             log_lexer(LEXER_LOG_PREFIX + "Found forward slash, adding division token");
             tokens.push_back( TOKEN_DIVIDE );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == ","){                       // Next
+        else if( code.substr(0,1) == ","){                      // Next
             log_lexer(LEXER_LOG_PREFIX + "Found comma, adding next argument token");
             tokens.push_back( TOKEN_NEXT );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "!"){                       // Not
+        else if( code.substr(0,1) == "!"){                      // Not
             log_lexer(LEXER_LOG_PREFIX + "Found exclamation point, adding not token");
             tokens.push_back( TOKEN_NOT );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "&"){                       // Address
+        else if( code.substr(0,1) == "&"){                      // Address
             log_lexer(LEXER_LOG_PREFIX + "Found `and` symbol, adding address token");
             tokens.push_back( TOKEN_ADDRESS );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "^"){                       // Pointer
+        else if( code.substr(0,1) == "^"){                      // Pointer
             log_lexer(LEXER_LOG_PREFIX + "Found `exponent` symbol, adding pointer token");
             tokens.push_back( TOKEN_POINTER );
             code = string_delete_amount(code,1);
         }
-        else if( code.substr(0,1) == "#"){                       // Line Comment
+        else if( code.substr(0,1) == "@"){                      // Macro
+            std::string macro;
+            log_lexer(LEXER_LOG_PREFIX + "Found `at` symbol, adding macro token");
+            code = string_delete_amount(code,1);
+            macro = string_get_until_or(code, " \n");
+            code = string_delete_amount(code, macro.length());
+
+            tokens.push_back( TOKEN_MACRO(macro) );
+        }
+        else if( code.substr(0,1) == "#"){                      // Line Comment
             log_lexer(LEXER_LOG_PREFIX + "Found hashtag, ignoring comment");
             code = string_delete_amount(code,1);
             code = string_delete_until(code, "\n");
         }
-        else if( string_get_until(code," ") == "on"){            // Method Declaration
-            log_lexer(LEXER_LOG_PREFIX + "Found `on` keyword");
-            tokens.push_back( TOKEN_KEYWORD("on") );
+        else if( string_get_until(code," ") == "def"){           // Method Declaration
+            log_lexer(LEXER_LOG_PREFIX + "Found `def` keyword");
+            tokens.push_back( TOKEN_KEYWORD("def") );
 
-            code = string_delete_amount(code,2);
+            code = string_delete_amount(code,3);
             code = string_kill_whitespace(code);
 
             tokens.push_back( TOKEN_WORD(string_get_until_or(code," (\n")) );
@@ -376,9 +402,24 @@ TokenList tokenize(string code){
             code = string_delete_until_or(code, " (");
             code = string_kill_whitespace(code);
         }
-        else if( is_identifier(string_get_until_or(code, " ,()[]\n.+-*/=&:^<>")) ){
-            tokens.push_back( TOKEN_WORD(string_get_until_or(code, " ,()[]\n.+-*/=&:^<>")) );
-            code = string_delete_until_or(code, " ,()[]\n.+-*/=&:^<>");
+        else if( string_get_until_or(code," \n") == "and"){      // and
+            log_lexer(LEXER_LOG_PREFIX + "Found `and` keyword");
+            tokens.push_back( TOKEN_KEYWORD("and") );
+
+            code = string_delete_amount(code,3);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," \n") == "or"){       // or
+            log_lexer(LEXER_LOG_PREFIX + "Found `or` keyword");
+            tokens.push_back( TOKEN_KEYWORD("or") );
+
+            code = string_delete_amount(code,2);
+            code = string_kill_whitespace(code);
+        }
+        else if( is_identifier(string_get_until_or(code, " ,()[]{}\n.+-*/=&:^<>")) ){
+            std::string word = string_get_until_or(code, " ,()[]{}\n.+-*/=&:^<>");
+            tokens.push_back( TOKEN_WORD(word) );
+            code = string_delete_amount(code, word.length());
         }
 
         code = string_kill_whitespace(code);

@@ -1,5 +1,5 @@
 
 import IsaacShelton/math
 
-on main()
+def main()
     sum(8, 13).output()

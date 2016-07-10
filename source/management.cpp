@@ -24,32 +24,31 @@
 #include <iostream>
 #include <algorithm>
 
-using namespace std;
-
 //Converts string to double
-double to_double(string str){
+double to_double(std::string str){
     double dec;
     if( ! (std::istringstream(str) >> dec) ) dec = 0;
     return dec;
 }
 
 //Converts double to string
-string to_string(double dec){
+std::string to_string(double dec){
     std::ostringstream convert;
     convert << dec;
     return convert.str();
 }
 
 //Checks if parent string contains substring
-bool string_contains(string parent_string, string sub_string){
-    if (parent_string.find(sub_string)==string::npos)
+bool string_contains(std::string parent_string, std::string sub_string){
+    if (parent_string.find(sub_string)==std::string::npos){
         return false;
-    else
+    } else {
         return true;
+    }
 }
 
 //Gets text until character
-string string_get_until(string parent_string, string character){
+std::string string_get_until(std::string parent_string, std::string character){
     unsigned int index = 0;
 
     while(!( parent_string.substr(index,1)==character or index >= parent_string.length() )){
@@ -64,7 +63,7 @@ string string_get_until(string parent_string, string character){
     }
 }
 
-unsigned int string_count(string a, string character){
+unsigned int string_count(std::string a, std::string character){
     unsigned int char_count = 0;
     for(unsigned int i = 0; i < a.length(); i++){
         if(a.substr(i,1)==character) char_count++;
@@ -73,7 +72,7 @@ unsigned int string_count(string a, string character){
 }
 
 //Deletes text until character
-string string_delete_until(string parent_string, string character){
+std::string string_delete_until(std::string parent_string, std::string character){
     unsigned int index = 0;
 
     while(!( parent_string.substr(index,1)==character or index >= parent_string.length() )){
@@ -89,7 +88,7 @@ string string_delete_until(string parent_string, string character){
 }
 
 //Gets text until character(s)
-string string_get_until_or(string parent_string, string characters){
+std::string string_get_until_or(std::string parent_string, std::string characters){
     unsigned int index = 0;
 
     while(!( string_contains(characters,parent_string.substr(index,1)) or index >= parent_string.length() )){
@@ -105,7 +104,7 @@ string string_get_until_or(string parent_string, string characters){
 }
 
 //Deletes text until character(s)
-string string_delete_until_or(string parent_string, string characters){
+std::string string_delete_until_or(std::string parent_string, std::string characters){
     unsigned int index = 0;
 
     while(!( string_contains(characters,parent_string.substr(index,1)) or index >= parent_string.length() )){
@@ -120,7 +119,7 @@ string string_delete_until_or(string parent_string, string characters){
     }
 }
 
-string string_get_until_last(string text, string character_set){
+std::string string_get_until_last(std::string text, std::string character_set){
     for(int i = text.length()-1; i >= 0; i--){
         if(text[i] == character_set[0]){
             return text.substr(i + 1, text.length()-i-1);
@@ -130,12 +129,12 @@ string string_get_until_last(string text, string character_set){
 }
 
 //Deletes the amount of characters from the start of the string
-string string_delete_amount(string str, int num){
+std::string string_delete_amount(std::string str, int num){
     return str.substr(num,str.length()-num);
 }
 
 //Replaces first string with new string
-string string_replace(string str, const std::string from, const string to) {
+std::string string_replace(std::string str, std::string from, std::string to) {
     size_t start_pos = str.find(from);
     if(start_pos == std::string::npos)
         return "";
@@ -144,7 +143,7 @@ string string_replace(string str, const std::string from, const string to) {
 }
 
 //Replaces all string(s) with new string
-string string_replace_all(string str, const std::string from, const string to) {
+std::string string_replace_all(std::string str, std::string from, std::string to) {
     if(from.empty())
         return "";
     size_t start_pos = 0;
@@ -157,7 +156,7 @@ string string_replace_all(string str, const std::string from, const string to) {
 }
 
 //Kills spaces and tabs
-string string_kill_whitespace(string str){
+std::string string_kill_whitespace(std::string str){
     int n = 0;
 
     while(!(str.substr(n,1)!=" " and str.substr(n,1)!="\t")){
@@ -168,7 +167,7 @@ string string_kill_whitespace(string str){
 }
 
 //Kills spaces, tabs, and newlines
-string string_kill_all_whitespace(string str){
+std::string string_kill_all_whitespace(std::string str){
     int n = 0;
 
     while(!(str.substr(n,1)!=" " and str.substr(n,1)!="\t" and str.substr(n,1)!="\n"  and str.substr(n,1)!="\r")){
@@ -179,7 +178,7 @@ string string_kill_all_whitespace(string str){
 }
 
 //Kills newlines
-string string_kill_newline(string str){
+std::string string_kill_newline(std::string str){
     int n = 0;
 
     while((str.substr(n,1)=="\n" and str.substr(n,1)!="\r")){
@@ -189,13 +188,24 @@ string string_kill_newline(string str){
     return string_delete_amount(str,n);
 }
 
+// Remove all spaces from a string
+std::string string_flatten(std::string str){
+    for(unsigned int i = 0; i < str.length(); i++){
+        if(str[i] == ' '){
+            str.erase(str.begin() + i);
+        }
+    }
+
+    return str;
+}
+
 //Gets a boomslang resource name
-string resource(string a){
+std::string resource(std::string a){
     return "boomslang_" + string_replace_all(string_replace_all(a,"^","*"),".",".boomslang_");
 }
 
 //Deletes Backslash if there is one
-string delete_slash(string a){
+std::string delete_slash(std::string a){
     if (a.substr(0,1)=="\\" or a.substr(0,1)=="/"){
         return string_delete_amount(a, 1);
     }
@@ -205,13 +215,13 @@ string delete_slash(string a){
 }
 
 //Turns the string uppercase
-string string_upper(string a){
-    ::transform(a.begin(), a.end(), a.begin(), ::toupper);
+std::string string_upper(std::string a){
+    std::transform(a.begin(), a.end(), a.begin(), ::toupper);
     return a;
 }
 
 //Checks to see if the string is an identifier
-bool is_identifier(string what){
+bool is_identifier(std::string what){
     char character;
 
     //Is it blank?
@@ -237,7 +247,7 @@ bool is_identifier(string what){
 }
 
 //Checks the see if the string is an indent character
-bool is_indent(string what){
+bool is_indent(std::string what){
     if(what.substr(0,1)=="\t" or what.substr(0,4)=="    ")
         return true;
     else
@@ -245,8 +255,8 @@ bool is_indent(string what){
 }
 
 //Gets the name of the file from path and filename
-string filename_name(string a){
-    if (a.find_last_of("\\/")==string::npos){
+std::string filename_name(std::string a){
+    if (a.find_last_of("\\/") == std::string::npos){
         return a;
     } else {
         return string_delete_amount(a.substr(a.find_last_of("\\/"), a.length() - a.find_last_of("\\/")),1);
@@ -254,8 +264,8 @@ string filename_name(string a){
 }
 
 //Gets the path of the file from path and filename
-string filename_path(string a){
-    if (a.find_last_of("\\/")==string::npos){
+std::string filename_path(std::string a){
+    if (a.find_last_of("\\/") == std::string::npos){
         return "";
     } else {
         return a.substr(0, a.find_last_of("\\/")) + "/";
@@ -263,23 +273,14 @@ string filename_path(string a){
 }
 
 //Gets the new filename from filename and new extension
-string filename_change_ext(string filename, string ext_without_dot){
-    string file_no_ext = string_get_until(filename,".");
+std::string filename_change_ext(std::string filename, std::string ext_without_dot){
+    std::string file_no_ext = string_get_until(filename,".");
     return file_no_ext + "." + ext_without_dot;
 }
 
-ifstream::pos_type file_size(string size_filename){
+std::ifstream::pos_type file_size(std::string size_filename){
     std::ifstream file_stream(size_filename.c_str(), std::ifstream::ate | std::ifstream::binary);
     unsigned int size_of_file = file_stream.tellg();
     file_stream.close();
     return size_of_file;
-}
-
-string encode_function_name(string name){
-    return "boomslang_function_" + name;
-}
-
-std::string encode_method_name(string name, string class_name){
-    class_name = string_replace_all(class_name,"_","_U");
-    return "boomslang_method_" + class_name + "_" + name;
 }

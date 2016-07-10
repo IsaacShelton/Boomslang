@@ -1,4 +1,23 @@
 
+/*
+    (c) 2016 Isaac Shelton
+
+    This file is part of Boomslang.
+
+    Boomslang is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Boomslang is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <fstream>
 #include <iostream>
 #include "../include/die.h"
@@ -17,14 +36,14 @@
 #include "../include/assembler.h"
 #include "../include/management.h"
 
-using namespace std;
-
-void assemble_expression(TokenContext context, string& expression, Environment& environment){
+void assemble_expression(TokenContext context, std::string& expression, Environment& environment){
     log_assembler("Assembling Expression");
 
-    while(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+    int balance = 0;
+
+    while( (context.tokens[context.index].id != TOKENINDEX_TERMINATE and context.tokens[context.index].id != TOKENINDEX_NEXT and context.tokens[context.index].id != TOKENINDEX_CLOSE) or balance != 0 ){
         if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
-            string str;
+            std::string str;
             context_assemble_string(context, environment, context.tokens[context.index].data, str);
             expression += str;
         }
@@ -32,7 +51,7 @@ void assemble_expression(TokenContext context, string& expression, Environment& 
             expression += "boomslang_Number(" + context.tokens[context.index].data + ")";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_WORD){
-            string name = context.tokens[context.index].data;
+            std::string name = context.tokens[context.index].data;
 
             if(name != "final"){
                 expression += resource(name);
@@ -53,6 +72,12 @@ void assemble_expression(TokenContext context, string& expression, Environment& 
             if(context.tokens[context.index].data == "void"){
                 expression += "NULL";
             }
+            else if(context.tokens[context.index].data == "and"){
+                expression += " && ";
+            }
+            else if(context.tokens[context.index].data == "or"){
+                expression += " || ";
+            }
             else if(context.tokens[context.index].data == "cast"){
                 context.index++;
                 expression += "(" + context.tokens[context.index].data + ")";
@@ -66,9 +91,14 @@ void assemble_expression(TokenContext context, string& expression, Environment& 
         }
         else if(context.tokens[context.index].id == TOKENINDEX_OPEN){
             expression += "(";
+            balance++;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_CLOSE){
             expression += ")";
+            balance--;
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_NEXT){
+            expression += ",";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
             expression += "<";
@@ -121,8 +151,10 @@ void assemble_expression(TokenContext context, string& expression, Environment& 
     // Next token will be a terminate
 }
 
-void assemble_token(Configuration* config, TokenContext context, bool& terminate_needed, string& output, ofstream& write, ofstream& header, unsigned int& indentation, Environment& environment){
+void assemble_token(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
     log_assembler("Assembling Token '" + token_name(context.tokens[context.index]) + "' with a value of '" + context.tokens[context.index].data + "'");
+
+    static unsigned int next_lib = 0;
 
     // Terminate
     if(context.tokens[context.index].id == TOKENINDEX_TERMINATE and terminate_needed){
@@ -132,7 +164,7 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
     else { // Other tokens
 
         if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
-            string str;
+            std::string str;
             context_assemble_string(context, environment, context.tokens[context.index].data, str);
             output += str;
             terminate_needed = true;
@@ -142,7 +174,7 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
             terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_WORD){
-            string name = context.tokens[context.index].data;
+            std::string name = context.tokens[context.index].data;
 
             if(name != "final"){
                 output += resource(name);
@@ -189,11 +221,11 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
             indentation--;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
-            if(context.tokens[context.index].data == "on"){
-                string return_value;
-                string method_name;
-                string method_code;
-                string method_arguments;
+            if(context.tokens[context.index].data == "def"){
+                std::string return_value;
+                std::string method_name;
+                std::string method_code;
+                std::string method_arguments;
                 bool of_class = false;
 
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
@@ -243,6 +275,10 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                         method_arguments += ", ";
                         value = false;
                         first_word = true;
+                    }
+                    else if(context.tokens[context.index].id == TOKENINDEX_POINTER){
+                        method_arguments += "*";
+                        first_word = false;
                     }
                     else if(context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL){
                         if(value == false){
@@ -304,8 +340,8 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 }
             }
             else if(context.tokens[context.index].data == "class"){
-                string class_name;
-                string class_code;
+                std::string class_name;
+                std::string class_code;
 
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
@@ -578,7 +614,14 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 index_increase(context);
                 class_name = context.tokens[context.index].data;
 
-                output += resource(class_name) + "()";
+                output += resource(class_name);
+
+                context.index++;
+                if(context.tokens[context.index].id != TOKENINDEX_OPEN){
+                    output += "()";
+                }
+                context.index--;
+
                 terminate_needed = true;
             }
             else if(context.tokens[context.index].data == "delete"){
@@ -591,7 +634,14 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 index_increase(context);
                 class_name = context.tokens[context.index].data;
 
-                output += "new " + resource(class_name) + "()";
+                output += "new " + resource(class_name);
+
+                context.index++;
+                if(context.tokens[context.index].id != TOKENINDEX_OPEN){
+                    output += "()";
+                }
+                context.index--;
+
                 terminate_needed = true;
             }
             else if(context.tokens[context.index].data == "import"){
@@ -679,7 +729,18 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                     std::string path = MINGWHOME + "lib\\" + delete_slash(filename);
 
                     if(file_exists(path)){
-                        config->linker_flags += path + " ";
+                        bool exists = false;
+                        for(unsigned int i = 0; i < config->linked.size(); i++){
+                            if(config->linked[i] == path){
+                                exists = true;
+                                break;
+                            }
+                        }
+
+                        if(!exists){
+                            config->linker_flags += path + " ";
+                            config->linked.push_back(path);
+                        }
                     }
                     else {
                         die(FILE_DOESNT_EXIST(path));
@@ -783,7 +844,7 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                     die(NO_RETURN_TYPE_STATED);
                 }
 
-                string variable_name = context.tokens[context.index].data;
+                std::string variable_name = context.tokens[context.index].data;
                 index_increase(context);
 
                 // Are we gonna assign it to something
@@ -835,6 +896,13 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
             }
         }
+        else if(context.tokens[context.index].id == TOKENINDEX_HEADERFILE){
+            header << context.tokens[context.index].data;
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_LIBRARYFILE){
+            config->linker_flags = HOME + "library" + to_string(next_lib) + ".a " + config->linker_flags;
+            next_lib++;
+        }
         else if(context.tokens[context.index].id == TOKENINDEX_ADDRESS){
             output += "&";
             terminate_needed = true;
@@ -875,17 +943,32 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
             output += "/";
             terminate_needed = true;
         }
+        else if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
+            output += "<";
+            terminate_needed = true;
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_GREATERTHAN){
+            output += ">";
+
+            context.index++;
+            if(context.tokens[context.index].id == TOKENINDEX_WORD){
+                output += " ";
+            }
+            context.index--;
+
+            terminate_needed = true;
+        }
     }
 }
 
 void compile(Configuration* config, TokenList& tokens, Environment& environment){
     // Writes resulting c++ source code
 
-    ofstream write( (HOME + CPP_SOURCE).c_str() );
-    ofstream header( (HOME + CPP_HEADER).c_str() );
+    std::ofstream write( (HOME + CPP_SOURCE).c_str() );
+    std::ofstream header( (HOME + CPP_HEADER).c_str() );
 
     bool terminate_needed = false;
-    string global;
+    std::string global;
 
     // Ensure file(s) are open
     if(!write.is_open()){
@@ -915,8 +998,8 @@ void compile(Configuration* config, TokenList& tokens, Environment& environment)
 void build(Configuration* config){
     // Builds the executable/package
 
-    string compile_flags = "-std=c++11 " + config->compiler_flags;
-    string linker_flags = config->linker_flags;
+    std::string compile_flags = "-std=c++11 " + config->compiler_flags;
+    std::string linker_flags = config->linker_flags;
 
     #if defined(__WIN32__)
     //Compile without console unless specified
@@ -966,7 +1049,7 @@ void build(Configuration* config){
     #endif
 
     if(!config->run){
-        cout << "Successfully Built '" + filename_name(config->output_filename) + "'" << endl;
+        std::cout << "Successfully Built '" + filename_name(config->output_filename) + "'" << std::endl;
     }
 }
 
@@ -987,7 +1070,7 @@ void assemble(Configuration* config, TokenList& tokens, Environment& environment
     }
     else {
         tokens_dump(config->output_filename, tokens);
-        cout << "Successfully Created Package '" + filename_name(config->output_filename) + "'" << endl;
+        std::cout << "Successfully Created Package '" + filename_name(config->output_filename) + "'" << std::endl;
     }
 
     log_assembler("Build Successful");

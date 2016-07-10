@@ -1,4 +1,23 @@
 
+/*
+    (c) 2016 Isaac Shelton
+
+    This file is part of Boomslang.
+
+    Boomslang is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Boomslang is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <fstream>
 #include <iostream>
 #include "../include/die.h"
@@ -46,6 +65,8 @@ string token_name(Token token){
         case 28 : token_name = "less than"; break;
         case 29 : token_name = "greater than"; break;
         case 30 : token_name = "pointer member"; break;
+        case 31 : token_name = "header file"; break;
+        case 32 : token_name = "library file"; break;
     }
 
     return token_name;
@@ -85,6 +106,8 @@ string token_operator(Token token){
         case 28 : token_name = "<"; break;
         case 29 : token_name = ">"; break;
         case 30 : token_name = "."; break;
+        case 31 : token_name = "N/A"; break;
+        case 32 : token_name = "N/A"; break;
     }
 
     return token_name;

@@ -2,6 +2,25 @@
 #ifndef INCLUDED_TOKEN_H
 #define INCLUDED_TOKEN_H
 
+/*
+    (c) 2016 Isaac Shelton
+
+    This file is part of Boomslang.
+
+    Boomslang is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Boomslang is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <string>
 #include <vector>
 
@@ -36,6 +55,8 @@
 #define TOKENINDEX_LESSTHAN          28
 #define TOKENINDEX_GREATERTHAN       29
 #define TOKENINDEX_POINTERMEMBER     30 // Generated
+#define TOKENINDEX_HEADERFILE        31 // Generated
+#define TOKENINDEX_LIBRARYFILE       32 // Generated
 
 #define TOKEN_STRING_LITERAL(a)  Token{ 0, a}
 #define TOKEN_NUMERIC_LITERAL(a) Token{ 1, a}
@@ -68,6 +89,8 @@
 #define TOKEN_LESSTHAN           Token{28}
 #define TOKEN_GREATERTHAN        Token{29}
 #define TOKEN_POINTERMEMBER      Token{30} // Generated
+#define TOKEN_HEADERFILE(a)      Token{31,a} // Generated
+#define TOKEN_LIBRARYFILE(a)     Token{32,a} // Generated
 
 struct Token {
     unsigned int id;

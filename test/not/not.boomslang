@@ -1,5 +1,5 @@
 
-on main()
+def main()
 	String x
 	
 	"Enter a Number: ".print()

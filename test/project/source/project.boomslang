@@ -2,5 +2,5 @@
 import ../packages/glfw
 import ../packages/opengl
 
-on main()
+def main()
     Number window = glfwCreateWindow()

@@ -1,4 +1,23 @@
 
+/*
+    (c) 2016 Isaac Shelton
+
+    This file is part of Boomslang.
+
+    Boomslang is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Boomslang is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <iostream>
 #include "../include/die.h"
 #include "../include/scope.h"
@@ -6,6 +25,15 @@
 #include "../include/context.h"
 
 using namespace std;
+
+Class::Class(){}
+Class::Class(std::string class_name){
+    name = class_name;
+}
+Class::Class(std::string class_name, std::vector<std::string> class_generics){
+    name = class_name;
+    generics = class_generics;
+}
 
 // Scopes
 void print_scopes(Scope* scope, unsigned int indent){
@@ -30,7 +58,7 @@ void print_scopes_variables(Scope* scope, unsigned int indent){
         for(unsigned int i = 0; i < indent + 1; i++){
             cout << "    ";
         }
-        cout << scope->variables[i].type << " " << scope->variables[i].name << endl;
+        cout << scope->variables[i].type.name << " " << scope->variables[i].name << endl;
     }
 
     for(unsigned int i = 0; i < scope->children.size(); i++){
@@ -77,9 +105,9 @@ bool arguments_equal(TokenContext context, std::vector<MethodArgument> a, std::v
     }
 
     for(unsigned int i = 0; i < a.size(); i++){
-        if(a[i].type.name != b[i].type.name
-        and (a[i].type.name != "any^" and context_class_can_dereference(context, b[i].type))
-        and (b[i].type.name != "any^" and context_class_can_dereference(context, a[i].type)) ){
+        if( a[i].type.name != b[i].type.name
+        and !(a[i].type.name == "any^" and context_class_can_dereference(context, b[i].type))
+        and !(b[i].type.name == "any^" and context_class_can_dereference(context, a[i].type)) ){
             return false;
         }
     }
@@ -199,7 +227,7 @@ bool environment_class_variable_exists(Environment& environment, Class base, Var
 
     for(unsigned int i = 0; i < variables_size; i++){
         if( (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].name == variable.name or variable.name == IGNORE)
-        and (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].type == variable.type or variable.type == IGNORE) ){
+        and (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].type.name == variable.type.name or variable.type.name == IGNORE) ){
             // Variable Found
             return true;
         }
@@ -212,7 +240,7 @@ Variable environment_class_variable_get(Environment& environment, Class base, Va
 
     for(unsigned int i = 0; i < variables_size; i++){
         if( (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].name == variable.name or variable.name == IGNORE)
-        and (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].type == variable.type or variable.type == IGNORE) ){
+        and (environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i].type.name == variable.type.name or variable.type.name == IGNORE) ){
             // Variable Found
             return environment_get_child(&environment.global, string(CLASS_PREFIX) + base.name)->variables[i];
         }
@@ -222,7 +250,7 @@ Variable environment_class_variable_get(Environment& environment, Class base, Va
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Variable{IGNORE, IGNORE, false, false};
+    return Variable{IGNORE, IGNORE_CLASS, false, false};
 }
 
 // Variables
@@ -232,7 +260,7 @@ void environment_print_variables(Scope* scope, unsigned int indent){
             cout << "    ";
         }
 
-        cout << scope->variables[v].type + " " + scope->variables[v].name << endl;
+        cout << scope->variables[v].type.name + " " + scope->variables[v].name << endl;
     }
 
     for(unsigned int i = 0; i < scope->children.size(); i++){
@@ -243,7 +271,7 @@ void environment_print_variables(Scope* scope, unsigned int indent){
 bool environment_variable_exists(Scope* scope, Variable variable){
     for(unsigned int v = 0; v < scope->variables.size(); v++){
         if( (scope->variables[v].name == variable.name or variable.name==IGNORE)
-        and (scope->variables[v].type == variable.type or variable.type==IGNORE)){
+        and (scope->variables[v].type.name == variable.type.name or variable.type.name==IGNORE)){
             return true;
         }
     }
@@ -259,7 +287,7 @@ bool environment_variable_exists(Scope* scope, Variable variable){
 Variable environment_variable_get(Scope* scope, Variable variable){
     for(unsigned int v = 0; v < scope->variables.size(); v++){
         if( (scope->variables[v].name == variable.name or variable.name==IGNORE)
-        and (scope->variables[v].type == variable.type or variable.type==IGNORE)){
+        and (scope->variables[v].type.name == variable.type.name or variable.type.name==IGNORE)){
             return scope->variables[v];
         }
     }
@@ -269,7 +297,7 @@ Variable environment_variable_get(Scope* scope, Variable variable){
         fail(DEV_BLANK_TYPE);
         #endif // DEV_ERRORS
 
-        return Variable{"","", false, false};
+        return Variable{"", Class(), false, false};
     }
 
     if(environment_variable_exists(scope->parent, variable)){
@@ -280,5 +308,5 @@ Variable environment_variable_get(Scope* scope, Variable variable){
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Variable{"","", false, false};
+    return Variable{"", Class(), false, false};
 }

@@ -5,5 +5,5 @@ class Animal
 class Dog < Animal
 	String breed
 
-on main()
+def main()
 	Dog ruff

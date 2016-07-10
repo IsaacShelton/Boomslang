@@ -1,6 +1,6 @@
 
-on greet(String name)
+def greet(String name)
 	("Welcome " + name).output()
 
-on main()
+def main()
 	greet("Isaac")

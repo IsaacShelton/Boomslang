@@ -1,5 +1,5 @@
 
-on main()
+def main()
     any^ message = create String
     ^(cast String^ message) = "Hello World"
     

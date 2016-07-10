@@ -4,7 +4,7 @@
 
 import glfw
 
-on main()
+def main()
     unless glfwInit()
         die()
     

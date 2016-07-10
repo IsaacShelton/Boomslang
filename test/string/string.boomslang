@@ -1,4 +1,4 @@
 
-on main()
+def main()
 	var name = "Isaac"
 	"Hello \(name)".output()

@@ -1,4 +1,4 @@
 
-on main()
+def main()
 	var value = new Boolean
 	value.output()

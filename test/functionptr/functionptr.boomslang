@@ -1,7 +1,7 @@
 
-on greet(String message)
+def greet(String message)
 	message.output()
 
-on main()
+def main()
 	function^(String)->void action = greet
 	action("Hi World")
