@@ -70,6 +70,10 @@ void load_core(Environment& environment){
     // Base Die Function
     add_function(environment, Method{"die", &environment.global, std::vector<MethodArgument>(), "void"});
 
+    // Base Constants
+    environment.global.variables.push_back(Variable{"true", Class{"Boolean"}, true, false});
+    environment.global.variables.push_back(Variable{"false", Class{"Boolean"}, true, false});
+
     // Base String Class
     type_scope = add_class(environment, Class{"String"});
     add_method(environment, Class{"String"}, Method{"output", type_scope, std::vector<MethodArgument>(), "void"});

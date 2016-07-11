@@ -74,6 +74,7 @@
 #define DEV_BLANK_TYPE                     (NOLINE_ERROR_INDICATOR + "Returning blank type at " + string(__LINE__))
 
 extern std::string current_filename;
+extern unsigned int current_line;
 
 unsigned int getLineNumber(const TokenList&, unsigned int);
 std::string getLineString(const TokenList&, unsigned int);

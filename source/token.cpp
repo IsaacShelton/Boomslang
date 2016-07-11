@@ -67,6 +67,8 @@ string token_name(Token token){
         case 30 : token_name = "pointer member"; break;
         case 31 : token_name = "header file"; break;
         case 32 : token_name = "library file"; break;
+        case 33 : token_name = "set filename"; break;
+        case 34 : token_name = "set line number"; break;
     }
 
     return token_name;
@@ -108,6 +110,8 @@ string token_operator(Token token){
         case 30 : token_name = "."; break;
         case 31 : token_name = "N/A"; break;
         case 32 : token_name = "N/A"; break;
+        case 33 : token_name = "N/A"; break;
+        case 34 : token_name = "N/A"; break;
     }
 
     return token_name;

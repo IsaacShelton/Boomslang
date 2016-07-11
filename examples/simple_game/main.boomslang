@@ -3,9 +3,6 @@ import glfw
 import opengl
 import boomslang/image
 import "gamedata.boomslang"
-
-GameData gamedata
-
 import "scene.boomslang"
 
 def main()
@@ -13,6 +10,7 @@ def main()
 		die()
 	
 	GlfwWindow^ window = glfwCreateWindow(640, 480, "Keyboard Input with Image Loading", void, void)
+	GameData gamedata
 	
 	if window = void
 		"Failed to create window".output()
@@ -42,8 +40,8 @@ def main()
 		glLoadIdentity()
 		glOrtho(0, width, height, 0, 1, -1)
 		
-		update(window)
-		render(window)
+		update(window, &gamedata)
+		render(window, &gamedata)
 		
 		glfwPollEvents()
 		glfwSwapBuffers(window)

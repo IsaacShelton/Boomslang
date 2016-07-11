@@ -42,6 +42,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
     if(context.tokens[context.index].id == TOKENINDEX_TERMINATE){
         // Terminate
+        current_line++;
     }
     else if( context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL or context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
         // Literal
@@ -70,6 +71,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
         index_decrease(context);
         token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+        current_line++;
     }
     else if(context.tokens[context.index].id == TOKENINDEX_OPEN){
         // Expression
@@ -98,6 +100,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
         index_decrease(context);
         token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+        current_line++;
     }
     else if(context.tokens[context.index].id == TOKENINDEX_INDENT){
         // Indentaion
@@ -135,6 +138,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(context.tokens[context.index].data == "def"){       // Method Declaration
             std::string method_name;
@@ -152,6 +156,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             // Enforce method declaration arguments
             context_enforce_method_declaration_arguments(context, environment, method_arguments, arguments_string);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
 
             // Add method reference to parent scope
             environment.scope->parent->methods.push_back( Method{method_name, environment.scope->parent, method_arguments, "void"} );
@@ -185,6 +190,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected class name in class declaration", ERROR_INDICATOR + "Expected class name in class declaration");
             class_name = context.tokens[context.index].data;
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
 
             environment.scope->children.push_back(new Scope{CLASS_PREFIX + class_name, environment.scope});
             environment.scope = environment.scope->children[environment.scope->children.size()-1];
@@ -218,24 +224,32 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                     }
                 }
             }
+
+            index_decrease(context);
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(context.tokens[context.index].data == "break"){     // Break Statement
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(context.tokens[context.index].data == "continue"){  // Continue Statement
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(context.tokens[context.index].data == "if"){        // If Statement
             Class value_class;
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
+            current_line++;
         }
         else if(context.tokens[context.index].data == "unless"){    // Unless Statement
             Class value_class;
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
+            current_line++;
         }
         else if(context.tokens[context.index].data == "else"){      // Else Keyword
             index_increase(context);
@@ -256,18 +270,22 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 index_decrease(context);
                 token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
             }
+
+            current_line++;
         }
         else if(context.tokens[context.index].data == "while"){     // While Statement
             Class value_class;
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
+            current_line++;
         }
         else if(context.tokens[context.index].data == "until"){     // Until Statement
             Class value_class;
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
+            current_line++;
         }
         else if(context.tokens[context.index].data == "var"){       // Var Statement
             std::string variable_name;
@@ -296,10 +314,13 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             environment.scope->variables.push_back( Variable{variable_name, value_class.name, false, false} );
 
             index_decrease(context);
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(context.tokens[context.index].data == "import"){    // Import Statement
             std::string package;
             std::string prev_filename;
+            unsigned int prev_line = current_line;
             TokenList::iterator statement;
             bool is_package;
             TokenList tokens;
@@ -336,54 +357,78 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 current_filename = package;
 
                 if(is_package){
+                    current_line = 0;
                     if(!tokens_load(current_filename, tokens)) die("Failed to load package '" + package + "'");
                     enforce_package(&custom_config, tokens, environment);
+                    current_line = prev_line;
+                    current_filename = prev_filename;
                 }
                 else {
                     tokens = tokenize(contents(current_filename));
+
+                    if(!config->package){
+                        current_line = 0;
+                        tokens.push_back( TOKEN_SETFILENAME(prev_filename) );
+                        tokens.push_back( TOKEN_SETLINENUMBER( to_string(prev_line) ) );
+                    }
+
                     context.tokens.erase(statement, statement + 2);
                     context.index -= 2;
 
                     context.tokens.insert(statement, tokens.begin(), tokens.end());
                 }
-
-                current_filename = prev_filename;
             }
             else if( file_exists( filename_path(current_filename) + delete_slash(package) ) ){ // Relative Path
                 prev_filename = current_filename;
                 current_filename = filename_path(current_filename) + delete_slash(package);
 
                 if(is_package){
+                    current_line = 0;
                     if(!tokens_load(current_filename, tokens)) die("Failed to load package '" + package + "'");
                     enforce_package(&custom_config, tokens, environment);
+                    current_line = prev_line;
+                    current_filename = prev_filename;
                 }
                 else {
                     tokens = tokenize(contents(current_filename));
+
+                    if(!config->package){
+                        current_line = 0;
+                        tokens.push_back( TOKEN_SETFILENAME(prev_filename) );
+                        tokens.push_back( TOKEN_SETLINENUMBER( to_string(prev_line) ) );
+                    }
+
                     context.tokens.erase(statement, statement + 2);
                     context.index -= 2;
 
                     context.tokens.insert(statement, tokens.begin(), tokens.end());
                 }
-
-                current_filename = prev_filename;
             }
             else if( file_exists( PACKAGEHOME + delete_slash(package) ) ){ // Package Path
                 prev_filename = current_filename;
                 current_filename = PACKAGEHOME + delete_slash(package);
 
                 if(is_package){
+                    current_line = 0;
                     if(!tokens_load(current_filename, tokens)) die("Failed to load package '" + package + "'");
                     enforce_package(&custom_config, tokens, environment);
+                    current_line = prev_line;
+                    current_filename = prev_filename;
                 }
                 else {
                     tokens = tokenize(contents(current_filename));
+
+                    if(!config->package){
+                        current_line = 0;
+                        tokens.push_back( TOKEN_SETFILENAME(prev_filename) );
+                        tokens.push_back( TOKEN_SETLINENUMBER( to_string(prev_line) ) );
+                    }
+
                     context.tokens.erase(statement, statement + 2);
                     context.index -= 2;
 
                     context.tokens.insert(statement, tokens.begin(), tokens.end());
                 }
-
-                current_filename = prev_filename;
             }
             else {
                 if(is_package){
@@ -393,6 +438,9 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                     fail(FILE_DOESNT_EXIST(package));
                 }
             }
+
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(context.tokens[context.index].data == "native"){    // Native Statement
             std::string action;
@@ -416,6 +464,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             }
 
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
 
             if(action == "include"){
                 if(file_exists( MINGWHOME + "include\\" + delete_slash(filename) )){
@@ -634,7 +683,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 environment.global.variables.push_back(Variable{name, type, true, false});
             }
 
-            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(context.tokens[context.index].data == "any^"){      // any^ Statement
             Class type = Class{"any^"};
@@ -656,6 +705,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(context.tokens[context.index].data == "function^"){ // function^ Statement
             Class type = Class{"function^"};
@@ -766,6 +816,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(context.tokens[context.index].data == "cast"){      // Cast Statement
             index_increase(context);
@@ -824,6 +875,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else {
             die(UNEXPECTED_KEYWORD(context.tokens[context.index].data));
@@ -844,6 +896,10 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         else {
             die(UNKNOWN_MACRO(context.tokens[context.index].data));
         }
+
+        index_decrease(context);
+        token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+        current_line++;
     }
     else if(context.tokens[context.index].id == TOKENINDEX_WORD){
         // Identifier
@@ -879,6 +935,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE,  ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else if(environment_class_exists(&environment.global, Class{class_name}) or (class_name == "final")){ // Variable Declaration
             bool is_final = false;
@@ -891,26 +948,17 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 and  ( context.tokens[context.index].data == "final") ){
                     if(!is_final){
                         is_final = true;
-                    }
-                    else {
+                    } else {
                         fail(VARIBLE_ALREADY_FINAL);
                     }
+
                     index_increase(context);
                 }
 
-                if(context.tokens[context.index].id != TOKENINDEX_WORD){
-                    die(UNEXPECTED_OPERATOR_INEXP);
-                }
-
-                class_name = context.tokens[context.index].data;
-                type.name = class_name;
-
                 index_increase(context);
             }
-            else {
-                index_decrease(context);
-            }
 
+            index_decrease(context);
             context_enforce_type(context, environment, type);
 
             if(context.tokens[context.index].id != TOKENINDEX_WORD){
@@ -964,6 +1012,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             // At this point token should be a terminate
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
         else { // Plain Variable
             std::string variable_name;
@@ -994,7 +1043,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             // Handle following fields and methods
             if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
                 while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
-                    bool dereferenced = context_class_dereference_ifcan(context, root_class);
+                    bool dereferenced = context_class_can_dereference(context, base_class);
 
                     if(dereferenced){
                         context.tokens[context.index].id = TOKENINDEX_POINTERMEMBER;
@@ -1008,13 +1057,17 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                             die(UNEXPECTED_OPERATOR);
                         }
 
+                        variable_name = context.tokens[context.index].data;
+
                         // Is it a field of the class
                         if( environment_class_variable_exists(environment, root_class, Variable{variable_name, IGNORE_CLASS, false, false}) ){
                             base_class = environment_class_variable_get(environment, root_class, Variable{variable_name, IGNORE_CLASS, false, false}).type;
+                            root_class = context_root_class(base_class);
                             index_increase(context);
                         }
                         else { // Method of the class
                             context_enforce_arguments(context, environment, base_class);
+                            root_class = context_root_class(base_class);
                             index_increase(context);
                         }
                     }
@@ -1028,6 +1081,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
                 index_increase(context);
                 context_enforce_expression(context, environment, base_class);
+                root_class = context_root_class(base_class);
             }
             else {
                 Token token_one = context.tokens[context.index];
@@ -1063,6 +1117,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             // At this point token should be a terminate
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
         }
     }
     else if(context.tokens[context.index].id == TOKENINDEX_POINTER){
@@ -1167,6 +1222,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         // At this point token should be a terminate
         index_decrease(context);
         token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+        current_line++;
     }
     else if(context.tokens[context.index].id == TOKENINDEX_HEADERFILE){
         // We're fine with that
@@ -1183,6 +1239,12 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         else {
             die("Failed to create tmp library");
         }
+    }
+    else if(context.tokens[context.index].id == TOKENINDEX_SETFILENAME){
+        current_filename = context.tokens[context.index].data;
+    }
+    else if(context.tokens[context.index].id == TOKENINDEX_SETLINENUMBER){
+        current_line = to_double( context.tokens[context.index].data );
     }
     else { // Unexpected operator
         die(UNEXPECTED_OPERATOR);
