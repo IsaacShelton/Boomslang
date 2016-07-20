@@ -1,0 +1,40 @@
+
+import boomslang/filesystem
+
+final String FILENAME = "test.txt"
+
+def write()
+	File file
+	file.open_write(FILENAME)
+	
+	if !file.isopen()
+		"Failed to open file for writing".output()
+		die()
+	
+	file.write("Hello World\r\n")
+	file.write("This is an example file\r\n")
+	file.close()
+	
+	("Wrote to File '" + FILENAME + "'").output()
+
+def read()
+	String text
+	File file
+	file.open_read(FILENAME)
+	
+	if !file.isopen()
+		"Failed to open file for reading".output()
+		die()
+	
+	text += file.readline() + "\n"
+	until file.eof()
+		text += file.readline()
+	
+	("Read from File '" + FILENAME + "'\n").output()
+	"------------Text Read from File------------".output()
+	text.output()
+	"-------------------------------------------".print()
+
+def main()
+	write()
+	read()

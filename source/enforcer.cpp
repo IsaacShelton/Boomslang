@@ -519,6 +519,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             if( construct != "class"
             and construct != "method"
             and construct != "function"
+            and construct != "field"
             and construct != "constant" ){
                 die(UNKNOWN_LANG_CONSTRUCT(construct));
             }
@@ -681,6 +682,28 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 }
 
                 environment.global.variables.push_back(Variable{name, type, true, false});
+            }
+            else if(construct == "field"){
+                std::string class_name = string_get_until(structure, " ");
+                structure = string_delete_amount(structure, class_name.length());
+                structure = string_kill_whitespace(structure);
+
+                std::string type = string_get_until(structure, " ");
+                structure = string_delete_amount(structure, type.length());
+                structure = string_kill_whitespace(structure);
+
+                std::string name = string_get_until(structure, " ");
+                structure = string_delete_amount(structure, name.length());
+                structure = string_kill_whitespace(structure);
+
+                if(!context_class_exists(context, environment, Class{class_name})){
+                    fail(UNDECLARED_CLASS(class_name));
+                }
+                else if(!context_class_exists(context, environment, Class{type})){
+                    fail(UNDECLARED_CLASS(type));
+                }
+
+                add_field(environment, Class{class_name}, Variable{name, Class{type}, false, false});
             }
 
             current_line++;

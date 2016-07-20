@@ -139,6 +139,18 @@ void assemble_expression(TokenContext context, std::string& expression, Environm
                 context.index--;
             }
         }
+        else if(context.tokens[context.index].id == TOKENINDEX_ADD){
+            expression += "+";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_SUBTRACT){
+            expression += "-";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_MULTIPLY){
+            expression += "*";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_DIVIDE){
+            expression += "/";
+        }
         else {
             die(UNEXPECTED_OPERATOR_INEXP + " while assembling");
         }

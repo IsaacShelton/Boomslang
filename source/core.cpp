@@ -60,8 +60,9 @@ void add_function(Environment& e, Method method){
     e.global.variables.push_back( Variable{method.name, func_type} );
 }
 
-void add_field(Environment& environment, Class base, Variable variable){
-
+void add_field(Environment& e, Class base, Variable variable){
+    Scope* child = environment_get_child(&e.global, CLASS_PREFIX + base.name);
+    child->variables.push_back(variable);
 }
 
 void load_core(Environment& environment){

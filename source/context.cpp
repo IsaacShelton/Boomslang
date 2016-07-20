@@ -307,6 +307,13 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                     index_increase(context);
                 }
 
+                if(type.name == ""){
+                    type = return_type;
+                }
+                else if(!context_class_compare(context, type, return_type)){
+                    fail( INCOMPATIBLE_CLASSES(type.name, return_type.name) );
+                }
+
                 index_decrease(context);
             }
             else { // Variable with possible method calls after
@@ -334,7 +341,6 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 }
 
                 Class root_class = context_root_class(base_class);
-
 
                 // Handle following fields and methods
                 if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
@@ -373,7 +379,12 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                     }
                 }
 
-                type = base_class;
+                if(type.name == ""){
+                    type = base_class;
+                }
+                else if(!context_class_compare(context, type, base_class)){
+                    fail( INCOMPATIBLE_CLASSES(type.name, base_class.name) );
+                }
 
                 index_decrease(context);
             }
@@ -524,7 +535,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             index_decrease(context);
 
             if(type.name == ""){
-                type.name = base_class.name;
+                type = base_class;
             }
             else if(!context_class_compare(context, type, base_class)){
                 fail( INCOMPATIBLE_CLASSES(type.name, base_class.name) );
@@ -558,7 +569,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             index_decrease(context);
 
             if(type.name == ""){
-                type.name = base_class.name;
+                type = base_class;
             }
             else if(!context_class_compare(context, type, base_class)
             and type.name!="Integer"
@@ -908,6 +919,21 @@ void context_enforce_string(TokenContext context, Environment& e, std::string st
                 if(str[i] == '\\'){
                     // Fine with that
                 }
+                else if(str[i] == 'n'){
+                    // Fine with that
+                }
+                else if(str[i] == 'r'){
+                    // Fine with that
+                }
+                else if(str[i] == 'a'){
+                    // Fine with that
+                }
+                else if(str[i] == 't'){
+                    // Fine with that
+                }
+                else if(str[i] == 'v'){
+                    // Fine with that
+                }
                 else if(str[i] == '"'){
                     // Fine with that
                 }
@@ -1017,6 +1043,26 @@ void context_assemble_string(TokenContext context, Environment& e, std::string s
                 if(str[i] == '\\'){
                     // Fine with that
                     output += "\\\\";
+                }
+                else if(str[i] == 'n'){
+                    // Fine with that
+                    output += "\\n";
+                }
+                else if(str[i] == 'r'){
+                    // Fine with that
+                    output += "\\r";
+                }
+                else if(str[i] == 'a'){
+                    // Fine with that
+                    output += "\\a";
+                }
+                else if(str[i] == 't'){
+                    // Fine with that
+                    output += "\\t";
+                }
+                else if(str[i] == 'v'){
+                    // Fine with that
+                    output += "\\v";
                 }
                 else if(str[i] == '"'){
                     // Fine with that
