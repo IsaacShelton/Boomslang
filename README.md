@@ -89,7 +89,7 @@ def main()
     var e = 0
 ```
 
-###Declaring Templates
+###Declaring Classes
 ```python
 
 class Dog
@@ -104,7 +104,7 @@ def main()
     ruff.bark()
 ```
 
-###Declaring Constructors for Templates
+###Declaring Constructors for Classes
 ```python
 
 class Dog
