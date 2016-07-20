@@ -162,7 +162,7 @@ def main()
     name.output()
     pointer.output()
     
-    # This will change the value pointed to by nameAddress
+    # This will change the value pointed to by pointer
     ^pointer = "Changed"
 
     name.output()
