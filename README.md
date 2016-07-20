@@ -85,8 +85,8 @@ def main()
     Number c = 0
     
     # Types can also be infered
-    d = new Number
-    e = 0
+    var d = new Number
+    var e = 0
 ```
 
 ###Declaring Templates
