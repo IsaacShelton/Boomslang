@@ -85,11 +85,11 @@ def main()
     Number c = 0
     
     # Types can also be infered
-    d = new Number
-    e = 0
+    var d = new Number
+    var e = 0
 ```
 
-###Declaring Templates
+###Declaring Classes
 ```python
 
 class Dog
@@ -104,7 +104,7 @@ def main()
     ruff.bark()
 ```
 
-###Declaring Constructors for Templates
+###Declaring Constructors for Classes
 ```python
 
 class Dog
@@ -162,7 +162,7 @@ def main()
     name.output()
     pointer.output()
     
-    # This will change the value pointed to by nameAddress
+    # This will change the value pointed to by pointer
     ^pointer = "Changed"
 
     name.output()
