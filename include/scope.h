@@ -100,6 +100,8 @@ Scope* environment_get_child(Scope* scope, std::string name);
 bool environment_method_exists(TokenContext context, Scope*, Method);
 unsigned int environment_method_index(Scope*, Method);
 Method environment_method_get(TokenContext context, Scope*, Method);
+bool environment_generic_method_exists(TokenContext context, Scope*, Method, Class, Class);
+Method environment_generic_method_get(TokenContext context, Scope*, Method, Class, Class);
 
 // Classes
 bool environment_class_exists(Scope*, Class);

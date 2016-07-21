@@ -21,6 +21,7 @@
     along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string>
 #include <iostream>
 #include <stdlib.h>
 

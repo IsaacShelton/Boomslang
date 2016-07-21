@@ -141,10 +141,16 @@ void load_core(Environment& environment){
     // Base List Class
     type_scope = add_class(environment, Class{"List", {"Type"}});
     add_method(environment, Class{"List"}, Method{"append", type_scope, { MethodArgument{Class{"Type"}, false} }, "void"});
+    add_method(environment, Class{"List"}, Method{"append", type_scope, { MethodArgument{Class{"List", {"Type"}}, false} }, "void"});
     add_method(environment, Class{"List"}, Method{"prepend", type_scope, { MethodArgument{Class{"Type"}, false} }, "void"});
+    add_method(environment, Class{"List"}, Method{"prepend", type_scope, { MethodArgument{Class{"List", {"Type"}}, false} }, "void"});
     add_method(environment, Class{"List"}, Method{"insert", type_scope, { MethodArgument{Class{"Number"}, false}, MethodArgument{Class{"Type"}, false} }, "void"});
-    add_method(environment, Class{"List"}, Method{"remove", type_scope, { MethodArgument{Class{"Number"}, false} }, "void"});
+    add_method(environment, Class{"List"}, Method{"insert", type_scope, { MethodArgument{Class{"Integer"}, false}, MethodArgument{Class{"Type"}, false} }, "void"});
+    add_method(environment, Class{"List"}, Method{"insert", type_scope, { MethodArgument{Class{"Number"}, false}, MethodArgument{Class{"List", {"Type"}}, false} }, "void"});
+    add_method(environment, Class{"List"}, Method{"insert", type_scope, { MethodArgument{Class{"Integer"}, false}, MethodArgument{Class{"List", {"Type"}}, false} }, "void"});
     add_method(environment, Class{"List"}, Method{"remove", type_scope, { MethodArgument{Class{"Integer"}, false} }, "void"});
+    add_method(environment, Class{"List"}, Method{"remove", type_scope, { MethodArgument{Class{"Number"}, false} }, "void"});
+    add_method(environment, Class{"List"}, Method{"remove", type_scope, std::vector<MethodArgument>(), "void"});
     add_method(environment, Class{"List"}, Method{"get", type_scope, { MethodArgument{Class{"Number"}, false} }, "Type"});
     add_method(environment, Class{"List"}, Method{"get", type_scope, { MethodArgument{Class{"Integer"}, false} }, "Type"});
     add_method(environment, Class{"List"}, Method{"length", type_scope, std::vector<MethodArgument>(), "Integer"});

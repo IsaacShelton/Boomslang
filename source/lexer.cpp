@@ -94,19 +94,36 @@ TokenList tokenize(std::string code){
             code = string_delete_amount(code,1);
         }
         else if( (int)code[0] >= 48 and (int)code[0] <= 57){    // Numeric Literal
-            std::string number = string_get_until_or(code," ,)].\n");
+            std::string number = string_get_until_or(code,",)].\n iuf");
             code = string_delete_amount(code, number.length());
 
             if(code.substr(0,1) == "."){
                 if( (int)code[1] >= 48 and (int)code[1] <= 57){
                     code = string_delete_amount(code, 1);
-                    number += "." + string_get_until_or(code," ,)].\n");
-                    code = string_delete_until_or(code," ,)].\n");
+                    number += "." + string_get_until_or(code,",)].\n iuf");
+                    code = string_delete_until_or(code,",)].\n iuf");
                 }
             }
 
-            log_lexer(LEXER_LOG_PREFIX + "Found numeric literal, adding numeric literal token");
-            tokens.push_back( TOKEN_NUMERIC_LITERAL(number) );
+            if(code.substr(0,1) == "f"){
+                code = string_delete_amount(code, 1);
+                log_lexer(LEXER_LOG_PREFIX + "Found number literal, adding number literal token");
+                tokens.push_back( TOKEN_NUMBER_LITERAL(number) );
+            }
+            else if(code.substr(0,1) == "i"){
+                code = string_delete_amount(code, 1);
+                log_lexer(LEXER_LOG_PREFIX + "Found integer literal, adding integer literal token");
+                tokens.push_back( TOKEN_INTEGER_LITERAL(number) );
+            }
+            else if(code.substr(0,1) == "u"){
+                code = string_delete_amount(code, 1);
+                log_lexer(LEXER_LOG_PREFIX + "Found unsigned integer literal, adding unsigned integer literal token");
+                tokens.push_back( TOKEN_UNSIGNED_LITERAL(number) );
+            }
+            else {
+                log_lexer(LEXER_LOG_PREFIX + "Found numeric literal, adding numeric literal token");
+                tokens.push_back( TOKEN_NUMERIC_LITERAL(number) );
+            }
         }
         else if( code.substr(0,1) == "."){                      // Member
             log_lexer(LEXER_LOG_PREFIX + "Found member operator, adding member token");

@@ -69,6 +69,10 @@ string token_name(Token token){
         case 32 : token_name = "library file"; break;
         case 33 : token_name = "set filename"; break;
         case 34 : token_name = "set line number"; break;
+        case 35 : token_name = "number literal"; break;
+        case 36 : token_name = "integer literal"; break;
+        case 37 : token_name = "unsigned integer literal"; break;
+        case 38 : token_name = "raw word"; break;
     }
 
     return token_name;
@@ -112,6 +116,10 @@ string token_operator(Token token){
         case 32 : token_name = "N/A"; break;
         case 33 : token_name = "N/A"; break;
         case 34 : token_name = "N/A"; break;
+        case 35 : token_name = "number"; break;
+        case 36 : token_name = "integer"; break;
+        case 37 : token_name = "unsigned integer"; break;
+        case 38 : token_name = "raw word"; break;
     }
 
     return token_name;

@@ -44,7 +44,9 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         // Terminate
         current_line++;
     }
-    else if( context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL or context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
+    else if( context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL or context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL
+             or context.tokens[context.index].id == TOKENINDEX_NUMBER_LITERAL or context.tokens[context.index].id == TOKENINDEX_INTEGER_LITERAL
+             or context.tokens[context.index].id == TOKENINDEX_UNSIGNED_LITERAL){
         // Literal
 
         if(environment.scope == &environment.global){
@@ -59,6 +61,15 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
             base_class.name = "Number";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_NUMBER_LITERAL){
+            base_class.name = "Number";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_INTEGER_LITERAL){
+            base_class.name = "Integer";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_UNSIGNED_LITERAL){
+            base_class.name = "UnsignedInteger";
         }
 
         token_force(context, TOKENINDEX_MEMBER, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
@@ -293,13 +304,11 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             unsigned int var_token = context.index;
 
             index_increase(context);
-
             if(context.tokens[context.index].id != TOKENINDEX_WORD){
                 die(UNEXPECTED_OPERATOR_INEXP);
             }
 
             variable_name = context.tokens[context.index].data;
-
             index_increase(context);
 
             if(context.tokens[context.index].id != TOKENINDEX_ASSIGN){
@@ -309,8 +318,11 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
 
-            context.tokens[var_token] = TOKEN_WORD(value_class.name);
+            if(value_class.name.substr(0,10) == "function^("){
+                die(VAR_CANT_INFER_FUNCTION_PTRS);
+            }
 
+            context.tokens[var_token] = TOKEN_RAW_WORD( resource_type(value_class.name) );
             environment.scope->variables.push_back( Variable{variable_name, value_class.name, false, false} );
 
             index_decrease(context);

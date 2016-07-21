@@ -59,42 +59,50 @@
 #define TOKENINDEX_LIBRARYFILE       32 // Generated
 #define TOKENINDEX_SETFILENAME       33 // Generated
 #define TOKENINDEX_SETLINENUMBER     34 // Generated
+#define TOKENINDEX_NUMBER_LITERAL    35
+#define TOKENINDEX_INTEGER_LITERAL   36
+#define TOKENINDEX_UNSIGNED_LITERAL  37
+#define TOKENINDEX_RAW_WORD          38 // Generated
 
-#define TOKEN_STRING_LITERAL(a)  Token{ 0, a}
-#define TOKEN_NUMERIC_LITERAL(a) Token{ 1, a}
-//#define TOKEN_METHOD_CALL(a)   Token{ 2, a} // Obsolete
-//#define TOKEN_FUNCTION_CALL(a) Token{ 3, a} // Obsolete
-#define TOKEN_ASSIGN             Token{ 4}
-#define TOKEN_ADD                Token{ 5}
-#define TOKEN_SUBTRACT           Token{ 6}
-#define TOKEN_MULTIPLY           Token{ 7}
-#define TOKEN_DIVIDE             Token{ 8}
-#define TOKEN_NEW(a)             Token{ 9, a}
-#define TOKEN_OPEN               Token{10}
-#define TOKEN_CLOSE              Token{11}
-#define TOKEN_INDENT             Token{12}
-#define TOKEN_DEDENT             Token{13}
-#define TOKEN_MACRO(a)           Token{14, a}
-#define TOKEN_KEYWORD(a)         Token{15, a}
-#define TOKEN_WORD(a)            Token{16, a}
-#define TOKEN_TERMINATE          Token{17}
-#define TOKEN_NEXT               Token{18}
-#define TOKEN_SQOPEN             Token{19}
-#define TOKEN_SQCLOSE            Token{20}
-#define TOKEN_CURLYOPEN          Token{21}
-#define TOKEN_CURLYCLOSE         Token{22}
-#define TOKEN_NOT                Token{23}
-#define TOKEN_ADDRESS            Token{24}
-#define TOKEN_MEMBER             Token{25}
-//#define TOKEN_ADDRESSMEMBER    Token{26} // Obsolete
-#define TOKEN_POINTER            Token{27}
-#define TOKEN_LESSTHAN           Token{28}
-#define TOKEN_GREATERTHAN        Token{29}
-#define TOKEN_POINTERMEMBER      Token{30}   // Generated
-#define TOKEN_HEADERFILE(a)      Token{31,a} // Generated
-#define TOKEN_LIBRARYFILE(a)     Token{32,a} // Generated
-#define TOKEN_SETFILENAME(a)     Token{33,a} // Generated
-#define TOKEN_SETLINENUMBER(a)   Token{34,a} // Generated
+#define TOKEN_STRING_LITERAL(a)   Token{ 0, a}
+#define TOKEN_NUMERIC_LITERAL(a)  Token{ 1, a}
+//#define TOKEN_METHOD_CALL(a)    Token{ 2, a} // Obsolete
+//#define TOKEN_FUNCTION_CALL(a)  Token{ 3, a} // Obsolete
+#define TOKEN_ASSIGN              Token{ 4}
+#define TOKEN_ADD                 Token{ 5}
+#define TOKEN_SUBTRACT            Token{ 6}
+#define TOKEN_MULTIPLY            Token{ 7}
+#define TOKEN_DIVIDE              Token{ 8}
+#define TOKEN_NEW(a)              Token{ 9, a}
+#define TOKEN_OPEN                Token{10}
+#define TOKEN_CLOSE               Token{11}
+#define TOKEN_INDENT              Token{12}
+#define TOKEN_DEDENT              Token{13}
+#define TOKEN_MACRO(a)            Token{14, a}
+#define TOKEN_KEYWORD(a)          Token{15, a}
+#define TOKEN_WORD(a)             Token{16, a}
+#define TOKEN_TERMINATE           Token{17}
+#define TOKEN_NEXT                Token{18}
+#define TOKEN_SQOPEN              Token{19}
+#define TOKEN_SQCLOSE             Token{20}
+#define TOKEN_CURLYOPEN           Token{21}
+#define TOKEN_CURLYCLOSE          Token{22}
+#define TOKEN_NOT                 Token{23}
+#define TOKEN_ADDRESS             Token{24}
+#define TOKEN_MEMBER              Token{25}
+//#define TOKEN_ADDRESSMEMBER     Token{26} // Obsolete
+#define TOKEN_POINTER             Token{27}
+#define TOKEN_LESSTHAN            Token{28}
+#define TOKEN_GREATERTHAN         Token{29}
+#define TOKEN_POINTERMEMBER       Token{30}   // Generated
+#define TOKEN_HEADERFILE(a)       Token{31,a} // Generated
+#define TOKEN_LIBRARYFILE(a)      Token{32,a} // Generated
+#define TOKEN_SETFILENAME(a)      Token{33,a} // Generated
+#define TOKEN_SETLINENUMBER(a)    Token{34,a} // Generated
+#define TOKEN_NUMBER_LITERAL(a)   Token{35,a}
+#define TOKEN_INTEGER_LITERAL(a)  Token{36,a}
+#define TOKEN_UNSIGNED_LITERAL(a) Token{37,a}
+#define TOKEN_RAW_WORD(a)         Token{38,a} // Generated
 
 struct Token {
     unsigned int id;

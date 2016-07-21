@@ -25,7 +25,7 @@
 #include "token.h"
 #include "management.h"
 
-#define DEV_ERRORS
+#define DEV_ERRORS 1
 
 #define ERROR_INDICATOR                    (filename_name(current_filename) + " (" + getLineString(context.tokens,context.index) + "): ")
 #define NOLINE_ERROR_INDICATOR             (filename_name(current_filename) + ": ")
@@ -70,8 +70,9 @@
 #define NEW_METHOD_RESERVED                (ERROR_INDICATOR + "The 'new' method name is reserved for constructors")
 #define GENERIC_MISMATCH(a)                (ERROR_INDICATOR + "An object of the class '" + a + "' doesn't have the correct number of generics")
 #define UNKNOWN_MACRO(a)                   (ERROR_INDICATOR + "Unknown macro '" + a + "'")
+#define VAR_CANT_INFER_FUNCTION_PTRS       (ERROR_INDICATOR + "The 'var' keyword can't infer function^ types")
 
-#define DEV_BLANK_TYPE                     (NOLINE_ERROR_INDICATOR + "Returning blank type at " + string(__LINE__))
+#define DEV_BLANK_TYPE                     (NOLINE_ERROR_INDICATOR + "Returning blank type at " + to_string(__LINE__))
 
 extern std::string current_filename;
 extern unsigned int current_line;

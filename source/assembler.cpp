@@ -50,6 +50,15 @@ void assemble_expression(TokenContext context, std::string& expression, Environm
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
             expression += "boomslang_Number(" + context.tokens[context.index].data + ")";
         }
+        else if(context.tokens[context.index].id == TOKENINDEX_NUMBER_LITERAL){
+            expression += "boomslang_Number(" + context.tokens[context.index].data + ")";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_INTEGER_LITERAL){
+            expression += "boomslang_Integer(" + context.tokens[context.index].data + ")";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_UNSIGNED_LITERAL){
+            expression += "boomslang_UnsignedInteger(" + context.tokens[context.index].data + ")";
+        }
         else if(context.tokens[context.index].id == TOKENINDEX_WORD){
             std::string name = context.tokens[context.index].data;
 
@@ -185,6 +194,18 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
             output += "boomslang_Number(" + context.tokens[context.index].data + ")";
             terminate_needed = true;
         }
+        else if(context.tokens[context.index].id == TOKENINDEX_NUMBER_LITERAL){
+            output += "boomslang_Number(" + context.tokens[context.index].data + ")";
+            terminate_needed = true;
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_INTEGER_LITERAL){
+            output += "boomslang_Integer(" + context.tokens[context.index].data + ")";
+            terminate_needed = true;
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_UNSIGNED_LITERAL){
+            output += "boomslang_UnsignedInteger(" + context.tokens[context.index].data + ")";
+            terminate_needed = true;
+        }
         else if(context.tokens[context.index].id == TOKENINDEX_WORD){
             std::string name = context.tokens[context.index].data;
 
@@ -196,11 +217,20 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
             }
 
             context.index++;
-
             if(context.tokens[context.index].id == TOKENINDEX_WORD){
                 output += " ";
             }
+            context.index--;
 
+            terminate_needed = true;
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_RAW_WORD){
+            output += context.tokens[context.index].data;
+
+            index_increase(context);
+            if(context.tokens[context.index].id == TOKENINDEX_WORD){
+                output += " ";
+            }
             context.index--;
 
             terminate_needed = true;

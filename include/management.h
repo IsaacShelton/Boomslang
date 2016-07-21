@@ -48,6 +48,7 @@ std::string delete_slash(std::string);
 std::string string_upper(std::string);
 
 std::string resource(std::string);
+std::string resource_type(std::string);
 bool is_identifier(std::string);
 bool is_indent(std::string);
 

@@ -201,7 +201,13 @@ std::string string_flatten(std::string str){
 
 //Gets a boomslang resource name
 std::string resource(std::string a){
-    return "boomslang_" + string_replace_all(string_replace_all(a,"^","*"),".",".boomslang_");
+    return "boomslang_" + string_replace_all(string_replace_all(string_replace_all(a,"^","*"),".",".boomslang_"),"<","<boomslang_");
+}
+
+//Gets a boomslang resource name of a type
+std::string resource_type(std::string a){
+    if(a == "any^") return "void*";
+    return "boomslang_" + string_replace_all(string_replace_all(string_replace_all(a,"^","*"),".",".boomslang_"),"<","<boomslang_");
 }
 
 //Deletes Backslash if there is one
