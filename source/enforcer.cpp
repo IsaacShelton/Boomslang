@@ -219,19 +219,32 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         }
         else if(context.tokens[context.index].data == "return"){    // Return Statement
             Class value_class;
-            std::string method_name = name_get_method(environment.scope->name);
+            std::string method_name;
 
             index_increase(context);
-            context_enforce_expression(context, environment, value_class);
 
-            environment.global.methods[environment.global.methods.size()-1].return_type = value_class.name;
+            if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                context_enforce_expression(context, environment, value_class);
 
-            for(unsigned int i = 0; i < environment.global.variables.size(); i++){
-                if(environment.global.variables[i].name == method_name and environment.global.variables[i].type.name.length() >= 6){
-                    if(environment.global.variables[i].type.name.substr(environment.global.variables[i].type.name.length()-6, 6) == "->void"){
-                        environment.global.variables[i].type.name = environment.global.variables[i].type.name.substr(0, environment.global.variables[i].type.name.length()-4);
-                        environment.global.variables[i].type.name += value_class.name;
-                        break;
+                Scope* method_scope = environment.scope;
+
+                while(method_scope->parent != NULL and !name_is_method(method_scope->name)){
+                    method_scope = method_scope->parent;
+                }
+
+                if(method_scope->parent == NULL){
+                    die(GLOBAL_STATEMENT);
+                }
+                method_name = name_get_method(method_scope->name);
+                method_scope->parent->methods[method_scope->parent->methods.size()-1].return_type = value_class.name;
+
+                for(unsigned int i = 0; i < environment.global.variables.size(); i++){
+                    if(environment.global.variables[i].name == method_name and environment.global.variables[i].type.name.length() >= 6){
+                        if(environment.global.variables[i].type.name.substr(environment.global.variables[i].type.name.length()-6, 6) == "->void"){
+                            environment.global.variables[i].type.name = environment.global.variables[i].type.name.substr(0, environment.global.variables[i].type.name.length()-4);
+                            environment.global.variables[i].type.name += value_class.name;
+                            break;
+                        }
                     }
                 }
             }

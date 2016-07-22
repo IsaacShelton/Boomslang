@@ -274,7 +274,7 @@ TokenList tokenize(std::string code){
             code = string_delete_until(code,"\n");
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until(code," ") == "return"){        // return
+        else if( string_get_until_or(code," \n") == "return"){   // return
             log_lexer(LEXER_LOG_PREFIX + "Found `return` keyword");
             tokens.push_back( TOKEN_KEYWORD("return") );
 

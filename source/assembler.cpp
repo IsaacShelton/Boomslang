@@ -117,6 +117,9 @@ void assemble_expression(TokenContext context, std::string& expression, Environm
             if(context.tokens[context.index].id != TOKENINDEX_ASSIGN){
                 context.index--;
             }
+            else {
+                expression += "=";
+            }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_GREATERTHAN){
             expression += ">";
@@ -125,6 +128,9 @@ void assemble_expression(TokenContext context, std::string& expression, Environm
 
             if(context.tokens[context.index].id != TOKENINDEX_ASSIGN){
                 context.index--;
+            }
+            else {
+                expression += "=";
             }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
@@ -376,6 +382,146 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
 
                         write  << resource(name_get_class(environment.scope->name)) + "::~" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + "){\n" + method_code + "}\n";
                         output += "~" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + ");\n";
+                    }
+                    else if(method_name == "="){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator=(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator=(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "+"){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator+(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator+(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator+(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator+(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "-"){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator-(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator-(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator-(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator-(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "*"){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator*(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator*(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator*(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator*(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "/"){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator/(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator/(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator/(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator/(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "+="){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator+=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator+=(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator+=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator+=(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "-="){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator-=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator-=(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator-=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator-=(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "*="){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator*=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator*=(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator*=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator*=(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "/="){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator/=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator/=(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator/=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator/=(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "=="){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator==(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator==(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator==(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator==(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == ">"){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator>(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator>(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator>(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator>(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "<"){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator<(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator<(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator<(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator<(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == ">="){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator>=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator>=(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator>=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator>=(" + method_arguments + ");\n";
+                        }
+                    }
+                    else if(method_name == "<="){
+                        if(return_value == "void"){
+                            write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator<=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += "void operator<=(" + method_arguments + ");\n";
+                        }
+                        else {
+                            write  << resource(return_value) + " " + resource(name_get_class(environment.scope->name)) + "::operator<=(" + method_arguments + "){\n" + method_code + "}\n";
+                            output += resource(return_value) + " " + "operator<=(" + method_arguments + ");\n";
+                        }
                     }
                     else if(return_value == "void"){
                         write  << "void " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";

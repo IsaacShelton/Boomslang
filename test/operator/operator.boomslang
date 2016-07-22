@@ -1,0 +1,48 @@
+
+class Vector3f
+	Number x
+	Number y
+	Number z
+	
+	def new(Number x, Number y, Number z)
+		self.x = x
+		self.y = y
+		self.z = z
+	
+	# Assignment Operator Overload Example
+	def =(Vector3f other)
+		x = other.x
+		y = other.y
+		z = other.z
+	
+	# Arithmetic Operator Overload Example
+	def +(Vector3f other)
+		return new Vector3f(self.x+other.x, self.y+other.y, self.z+other.z)
+	
+	# Comparision Operator Overload Example
+	def <=(Vector3f other)
+		if (x + y + z)/3 <= (other.x + other.y + other.z)/3
+			return true
+		else
+			return false
+	
+	def output()
+		("(" + x.toString() + ", " + y.toString() + ", " + z.toString() + ")").output()
+
+def main()
+	# Use Overloaded Assignment Operator
+	Vector3f vector1 = new Vector3f(1, 2, 3)
+	Vector3f vector2 = new Vector3f(9, 10, 16)
+	
+	# Use Overloaded Arithmetic Operator
+	vector1 = vector1 + new Vector3f(10, 11, 12)
+	
+	# Use Overloaded Comparision Operator
+	vector1.output()
+	
+	if vector1 <= vector2
+		"Is less or equal to".output()
+	else
+		"Is greater than".output()
+	
+	vector2.output()

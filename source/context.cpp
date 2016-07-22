@@ -857,7 +857,21 @@ void context_enforce_method_declaration_arguments(TokenContext context, Environm
     std::string class_name;
     std::string method_name = context.tokens[context.index].data;
 
-    if(!is_identifier(method_name)){
+    if(!is_identifier(method_name)
+    and method_name != "="
+    and method_name != "+"
+    and method_name != "-"
+    and method_name != "*"
+    and method_name != "/"
+    and method_name != "+="
+    and method_name != "-="
+    and method_name != "*="
+    and method_name != "/="
+    and method_name != "=="
+    and method_name != ">"
+    and method_name != "<"
+    and method_name != ">="
+    and method_name != "<="){
         die(INVALID_METHOD_NAME(context.tokens[context.index].data));
     }
 
