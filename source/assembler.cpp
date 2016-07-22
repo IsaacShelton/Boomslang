@@ -361,7 +361,23 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 }
 
                 if(of_class){
-                    if(return_value == "void"){
+                    if(method_name == "new"){
+                        if(return_value != "void"){
+                            die(METHOD_NEW_MUST_RETURN_VOID);
+                        }
+
+                        write  << resource(name_get_class(environment.scope->name)) + "::" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        output += resource(name_get_class(environment.scope->name)) + "(" + method_arguments + ");\n";
+                    }
+                    else if(method_name == "delete"){
+                        if(return_value != "void"){
+                            die(METHOD_DELETE_MUST_RETURN_VOID);
+                        }
+
+                        write  << resource(name_get_class(environment.scope->name)) + "::~" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + "){\n" + method_code + "}\n";
+                        output += "~" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + ");\n";
+                    }
+                    else if(return_value == "void"){
                         write  << "void " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
                         output += "void " + resource(method_name) + "(" + method_arguments + ");\n";
                     }

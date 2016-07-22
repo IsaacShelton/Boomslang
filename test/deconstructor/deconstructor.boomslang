@@ -1,0 +1,22 @@
+
+class Vector3f
+	Number^ x
+	Number^ y
+	Number^ z
+	
+	def new()
+		x = create Number(10)
+		y = create Number(8)
+		z = create Number(16)
+		
+		"Dynamic Data Created!".output()
+	
+	def delete()
+		delete x
+		delete y
+		delete z
+		
+		"Dynamic Data Deleted!".output()
+
+def main()
+	Vector3f vector

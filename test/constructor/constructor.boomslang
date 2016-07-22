@@ -1,6 +1,16 @@
 
-def main()
-	Number^ ten = create Number(10)
-	ten.output()
+class Vector3f
+	Number x
+	Number y
+	Number z
 	
-	delete ten
+	def new(Number x, Number y, Number z)
+		self.x = x
+		self.y = y
+		self.z = z
+
+def main()
+	Vector3f position = new Vector3f(10, 12, 9)
+	position.x.output()
+	position.y.output()
+	position.z.output()

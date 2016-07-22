@@ -71,6 +71,8 @@
 #define GENERIC_MISMATCH(a)                (ERROR_INDICATOR + "An object of the class '" + a + "' doesn't have the correct number of generics")
 #define UNKNOWN_MACRO(a)                   (ERROR_INDICATOR + "Unknown macro '" + a + "'")
 #define VAR_CANT_INFER_FUNCTION_PTRS       (ERROR_INDICATOR + "The 'var' keyword can't infer function^ types")
+#define METHOD_NEW_MUST_RETURN_VOID        (ERROR_INDICATOR + "Constructors can only return void")
+#define METHOD_DELETE_MUST_RETURN_VOID     (ERROR_INDICATOR + "Deconstructors can only return void")
 
 #define DEV_BLANK_TYPE                     (NOLINE_ERROR_INDICATOR + "Returning blank type at " + to_string(__LINE__))
 
