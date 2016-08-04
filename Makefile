@@ -15,11 +15,11 @@ INC =
 CFLAGS = -std=c++11 -Wall -fexceptions
 RESINC = 
 LIBDIR = 
-LIB = 
+LIB = C:\\Program\ Files\ (x86)\\CodeBlocks\\MinGW\\lib\\boost\\libboost_system-mgw47-mt-1_60.a C:\\Program\ Files\ (x86)\\CodeBlocks\\MinGW\\lib\\boost\\libboost_filesystem-mgw47-mt-1_60.a
 LDFLAGS = 
 
 INC_DEBUG = $(INC)
-CFLAGS_DEBUG = $(CFLAGS) -g
+CFLAGS_DEBUG = $(CFLAGS) -std=c++11 -g
 RESINC_DEBUG = $(RESINC)
 RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)
@@ -29,8 +29,8 @@ OBJDIR_DEBUG = obj\\Debug
 DEP_DEBUG = 
 OUT_DEBUG = bin\\Debug\\BoomslangCompiler.exe
 
-INC_RELEASE = $(INC)
-CFLAGS_RELEASE = $(CFLAGS) -O3
+INC_RELEASE = $(INC) -IC:\include
+CFLAGS_RELEASE = $(CFLAGS) -O3 -std=c++11
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj\\Release
 DEP_RELEASE = 
 OUT_RELEASE = bin\\Release\\BoomslangCompiler.exe
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)\\source\\token.o $(OBJDIR_DEBUG)\\source\\scope.o $(OBJDIR_DEBUG)\\source\\run.o $(OBJDIR_DEBUG)\\source\\options.o $(OBJDIR_DEBUG)\\source\\management.o $(OBJDIR_DEBUG)\\source\\main.o $(OBJDIR_DEBUG)\\source\\log.o $(OBJDIR_DEBUG)\\source\\locate.o $(OBJDIR_DEBUG)\\source\\lexer.o $(OBJDIR_DEBUG)\\source\\file.o $(OBJDIR_DEBUG)\\source\\errors.o $(OBJDIR_DEBUG)\\source\\enforcer.o $(OBJDIR_DEBUG)\\source\\die.o $(OBJDIR_DEBUG)\\source\\core.o $(OBJDIR_DEBUG)\\source\\context.o $(OBJDIR_DEBUG)\\source\\assembler.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)\\source\\token.o $(OBJDIR_DEBUG)\\source\\scope.o $(OBJDIR_DEBUG)\\source\\run.o $(OBJDIR_DEBUG)\\source\\options.o $(OBJDIR_DEBUG)\\source\\management.o $(OBJDIR_DEBUG)\\source\\main.o $(OBJDIR_DEBUG)\\source\\log.o $(OBJDIR_DEBUG)\\source\\locate.o $(OBJDIR_DEBUG)\\source\\lexer.o $(OBJDIR_DEBUG)\\source\\file.o $(OBJDIR_DEBUG)\\source\\errors.o $(OBJDIR_DEBUG)\\source\\enforcer.o $(OBJDIR_DEBUG)\\source\\dump.o $(OBJDIR_DEBUG)\\source\\die.o $(OBJDIR_DEBUG)\\source\\core.o $(OBJDIR_DEBUG)\\source\\context.o $(OBJDIR_DEBUG)\\source\\assembler.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)\\source\\token.o $(OBJDIR_RELEASE)\\source\\scope.o $(OBJDIR_RELEASE)\\source\\run.o $(OBJDIR_RELEASE)\\source\\options.o $(OBJDIR_RELEASE)\\source\\management.o $(OBJDIR_RELEASE)\\source\\main.o $(OBJDIR_RELEASE)\\source\\log.o $(OBJDIR_RELEASE)\\source\\locate.o $(OBJDIR_RELEASE)\\source\\lexer.o $(OBJDIR_RELEASE)\\source\\file.o $(OBJDIR_RELEASE)\\source\\errors.o $(OBJDIR_RELEASE)\\source\\enforcer.o $(OBJDIR_RELEASE)\\source\\die.o $(OBJDIR_RELEASE)\\source\\core.o $(OBJDIR_RELEASE)\\source\\context.o $(OBJDIR_RELEASE)\\source\\assembler.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)\\source\\token.o $(OBJDIR_RELEASE)\\source\\scope.o $(OBJDIR_RELEASE)\\source\\run.o $(OBJDIR_RELEASE)\\source\\options.o $(OBJDIR_RELEASE)\\source\\management.o $(OBJDIR_RELEASE)\\source\\main.o $(OBJDIR_RELEASE)\\source\\log.o $(OBJDIR_RELEASE)\\source\\locate.o $(OBJDIR_RELEASE)\\source\\lexer.o $(OBJDIR_RELEASE)\\source\\file.o $(OBJDIR_RELEASE)\\source\\errors.o $(OBJDIR_RELEASE)\\source\\enforcer.o $(OBJDIR_RELEASE)\\source\\dump.o $(OBJDIR_RELEASE)\\source\\die.o $(OBJDIR_RELEASE)\\source\\core.o $(OBJDIR_RELEASE)\\source\\context.o $(OBJDIR_RELEASE)\\source\\assembler.o
 
 all: debug release
 
@@ -94,6 +94,9 @@ $(OBJDIR_DEBUG)\\source\\errors.o: source\\errors.cpp
 
 $(OBJDIR_DEBUG)\\source\\enforcer.o: source\\enforcer.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c source\\enforcer.cpp -o $(OBJDIR_DEBUG)\\source\\enforcer.o
+
+$(OBJDIR_DEBUG)\\source\\dump.o: source\\dump.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c source\\dump.cpp -o $(OBJDIR_DEBUG)\\source\\dump.o
 
 $(OBJDIR_DEBUG)\\source\\die.o: source\\die.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c source\\die.cpp -o $(OBJDIR_DEBUG)\\source\\die.o
@@ -158,6 +161,9 @@ $(OBJDIR_RELEASE)\\source\\errors.o: source\\errors.cpp
 
 $(OBJDIR_RELEASE)\\source\\enforcer.o: source\\enforcer.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c source\\enforcer.cpp -o $(OBJDIR_RELEASE)\\source\\enforcer.o
+
+$(OBJDIR_RELEASE)\\source\\dump.o: source\\dump.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c source\\dump.cpp -o $(OBJDIR_RELEASE)\\source\\dump.o
 
 $(OBJDIR_RELEASE)\\source\\die.o: source\\die.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c source\\die.cpp -o $(OBJDIR_RELEASE)\\source\\die.o
