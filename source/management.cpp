@@ -280,8 +280,8 @@ std::string filename_path(std::string a){
 
 //Gets the new filename from filename and new extension
 std::string filename_change_ext(std::string filename, std::string ext_without_dot){
-    std::string file_no_ext = string_get_until(filename,".");
-    return file_no_ext + "." + ext_without_dot;
+    std::string ext = string_get_until_last(filename,".");
+    return filename.substr(0, filename.length()-ext.length()) + ext_without_dot;
 }
 
 std::ifstream::pos_type file_size(std::string size_filename){

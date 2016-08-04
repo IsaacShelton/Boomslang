@@ -29,9 +29,91 @@ Class::Class(){}
 Class::Class(std::string class_name){
     name = class_name;
 }
-Class::Class(std::string class_name, std::vector<std::string> class_generics){
+Class::Class(std::string class_name, std::vector<Class> class_generics){
     name = class_name;
     generics = class_generics;
+}
+Class::Class(std::string class_name, std::vector<Class> class_generics, bool class_mutable){
+    name = class_name;
+    generics = class_generics;
+    is_mutable = class_mutable;
+}
+void Class::operator=(const Class& other){
+    this->name = other.name;
+    this->generics = other.generics;
+}
+bool Class::operator==(const Class& other){
+    if(this->name != other.name) return false;
+    if(this->generics.size() != other.generics.size()) return false;
+
+    for(size_t i = 0; i < generics.size(); i++){
+        if(!( this->generics[i] == other.generics[i] )) return false;
+    }
+
+    return true;
+}
+std::string Class::native(){
+    std::string type;
+
+    if(generics.size() > 0){
+        type = resource(name) + "<";
+        for(size_t i = 0; i < generics.size(); i++){
+            type += generics[i].native();
+            if(i + 1 < generics.size()) type += ",";
+        }
+        type += ">";
+    }
+    else {
+        type = resource(name);
+    }
+
+    return type;
+}
+std::string Class::toString(){
+    std::string type;
+
+    if(generics.size() > 0){
+        type = name + "<";
+        for(size_t i = 0; i < generics.size(); i++){
+            type += generics[i].toString();
+            if(i + 1 < generics.size()) type += ",";
+        }
+        type += ">";
+    }
+    else {
+        type = name;
+    }
+
+    return type;
+}
+
+Variable::Variable(){
+    name = "";
+    type = Class("");
+    is_final = false;
+    is_uniform = false;
+    is_private = false;
+}
+Variable::Variable(std::string var_name, Class var_class){
+    name = var_name;
+    type = var_class;
+    is_final = false;
+    is_uniform = false;
+    is_private = false;
+}
+Variable::Variable(std::string var_name, Class var_class, bool var_final, bool var_uniform){
+    name = var_name;
+    type = var_class;
+    is_final = var_final;
+    is_uniform = var_uniform;
+    is_private = false;
+}
+Variable::Variable(std::string var_name, Class var_class, bool var_final, bool var_uniform, bool var_private){
+    name = var_name;
+    type = var_class;
+    is_final = var_final;
+    is_uniform = var_uniform;
+    is_private = var_private;
 }
 
 // Scopes
@@ -138,16 +220,16 @@ bool generic_arguments_equal(TokenContext context, std::vector<MethodArgument> a
         for(unsigned int g = 0; g < actual_class.generics.size(); g++){
 
             for(unsigned int c = 0; c <  b[i].type.generics.size(); c++){
-                if(a[i].type.name == actual_class.generics[g] and generic_class.generics[g] == b[i].type.generics[i]){
+                if(a[i].type == actual_class.generics[g] and generic_class.generics[g] == b[i].type.generics[i]){
                     b[i].type.generics[i] = actual_class.generics[g];
                 }
             }
 
-            if(a[i].type.name == actual_class.generics[g] and generic_class.generics[g] == b[i].type.name){
-                b[i].type.name = actual_class.generics[g];
+            if(a[i].type == actual_class.generics[g] and generic_class.generics[g] == b[i].type){
+                b[i].type = actual_class.generics[g];
                 break;
             }
-            b[i].type.name = context_root_class(b[i].type.name);
+            b[i].type = context_root_class(b[i].type);
         }
     }
 
@@ -165,7 +247,7 @@ bool environment_method_exists(TokenContext context, Scope* scope, Method method
     for(size_t i = 0; i < scope->methods.size(); i++){
         if( (scope->methods[i].name == method.name or method.name==IGNORE)
         and (scope->methods[i].parent == method.parent or method.parent==NULL)
-        and (context_class_compare(context, Class{scope->methods[i].return_type}, Class{method.return_type}) or method.return_type==IGNORE)
+        and (context_class_compare(context, Class(scope->methods[i].return_type), Class(method.return_type)) or method.return_type == IGNORE_CLASS)
         and (arguments_equal(context, scope->methods[i].arguments, method.arguments))){
             return true;
         }
@@ -177,7 +259,7 @@ unsigned int environment_method_index(TokenContext context, Scope* scope, Method
     for(size_t i = 0; i < scope->methods.size(); i++){
         if( (scope->methods[i].name == method.name or method.name==IGNORE)
         and (scope->methods[i].parent == method.parent or method.parent==NULL)
-        and (context_class_compare(context, Class{scope->methods[i].return_type}, Class{method.return_type}) or method.return_type==IGNORE)
+        and (context_class_compare(context, Class(scope->methods[i].return_type), Class(method.return_type)) or method.return_type == IGNORE_CLASS)
         and (arguments_equal(context, scope->methods[i].arguments, method.arguments))){
             return i;
         }
@@ -193,7 +275,7 @@ Method environment_method_get(TokenContext context, Scope* scope, Method method)
     for(size_t i = 0; i < scope->methods.size(); i++){
         if( (scope->methods[i].name == method.name or method.name==IGNORE)
         and (scope->methods[i].parent == method.parent or method.parent==NULL)
-        and (context_class_compare(context, Class{scope->methods[i].return_type}, Class{method.return_type}) or method.return_type==IGNORE)
+        and (context_class_compare(context, Class(scope->methods[i].return_type), Class(method.return_type)) or method.return_type == IGNORE_CLASS)
         and (arguments_equal(context, scope->methods[i].arguments, method.arguments))){
             return scope->methods[i];
         }
@@ -203,13 +285,13 @@ Method environment_method_get(TokenContext context, Scope* scope, Method method)
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Method{"", NULL, IGNORE_ARGS, ""};
+    return Method{"", NULL, IGNORE_ARGS, IGNORE_CLASS};
 }
 bool environment_generic_method_exists(TokenContext context, Scope* scope, Method method, Class actual_class, Class generic_class){
     for(size_t i = 0; i < scope->methods.size(); i++){
         if( (scope->methods[i].name == method.name or method.name==IGNORE)
         and (scope->methods[i].parent == method.parent or method.parent==NULL)
-        and (context_class_compare(context, Class{scope->methods[i].return_type}, Class{method.return_type}) or method.return_type==IGNORE)
+        and (context_class_compare(context, Class(scope->methods[i].return_type), Class(method.return_type)) or method.return_type == IGNORE_CLASS)
         and (generic_arguments_equal(context, scope->methods[i].arguments, method.arguments, actual_class, generic_class))){
             return true;
         }
@@ -221,7 +303,7 @@ Method environment_generic_method_get(TokenContext context, Scope* scope, Method
     for(size_t i = 0; i < scope->methods.size(); i++){
         if( (scope->methods[i].name == method.name or method.name==IGNORE)
         and (scope->methods[i].parent == method.parent or method.parent==NULL)
-        and (context_class_compare(context, Class{scope->methods[i].return_type}, Class{method.return_type}) or method.return_type==IGNORE)
+        and (context_class_compare(context, Class(scope->methods[i].return_type), Class(method.return_type)) or method.return_type == IGNORE_CLASS)
         and (generic_arguments_equal(context, scope->methods[i].arguments, method.arguments, actual_class, generic_class))){
             Method return_method = scope->methods[i];
 
@@ -239,7 +321,7 @@ Method environment_generic_method_get(TokenContext context, Scope* scope, Method
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Method{"", NULL, IGNORE_ARGS, ""};
+    return Method{"", NULL, IGNORE_ARGS, IGNORE_CLASS};
 }
 
 // Classes
@@ -331,7 +413,7 @@ Variable environment_class_variable_get(Environment& environment, Class base, Va
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Variable{IGNORE, IGNORE_CLASS, false, false};
+    return Variable(IGNORE, IGNORE_CLASS, false, false);
 }
 
 // Variables
@@ -378,7 +460,7 @@ Variable environment_variable_get(Scope* scope, Variable variable){
         fail(DEV_BLANK_TYPE);
         #endif // DEV_ERRORS
 
-        return Variable{"", Class(), false, false};
+        return Variable("", Class(), false, false);
     }
 
     if(environment_variable_exists(scope->parent, variable)){
@@ -389,5 +471,5 @@ Variable environment_variable_get(Scope* scope, Variable variable){
     fail(DEV_BLANK_TYPE);
     #endif // DEV_ERRORS
 
-    return Variable{"", Class(), false, false};
+    return Variable("", Class(), false, false);
 }

@@ -1,0 +1,39 @@
+
+class BattleShip
+	Number x
+	Number y
+	
+	private
+	List<String> weapons
+	Number fuel = 0.47
+	
+	public
+	Number direction = 270
+	Number speed = 10
+	
+	# Allow modification within class
+	def setFuel(Number amount)
+		fuel = amount
+	
+	# Allow returning within class
+	def getFuel()
+		return fuel
+
+def main()
+	BattleShip blue_jay
+	
+	# No Compile-time Error
+	# This is perfectly fine because 'speed' is public
+	blue_jay.speed.output()
+	
+	# Compile-time Error because 'fuel' is private
+	# You can fix this error by making 'fuel' public or by using getters and/or setters
+	blue_jay.fuel.output()
+	
+	# No Compile-time Error
+	# This is perfectly fine because we're using methods to interact with the object
+	blue_jay.getFuel().output()
+	
+	# No Compile-time Error
+	# This is perfectly fine because 'x' is public by default
+	blue_jay.x.output()

@@ -28,6 +28,7 @@
 #define IGNORE      "..."
 #define IGNORE_ARGS {MethodArgument{Class{IGNORE}, 1}}
 #define IGNORE_CLASS Class{IGNORE}
+#define NO_ARGUMENTS std::vector<MethodArgument>()
 
 #define METHOD_PREFIX   std::string("METHOD ")
 #define CLASS_PREFIX std::string("CLASS ")
@@ -41,18 +42,30 @@ struct Environment;
 
 struct Class {
     std::string name = "";
-    std::vector<std::string> generics;
+    std::vector<Class> generics;
+    bool is_mutable = true;
 
     Class();
     Class(std::string);
-    Class(std::string, std::vector<std::string>);
+    Class(std::string, std::vector<Class>);
+    Class(std::string, std::vector<Class>, bool);
+    void operator=(const Class&);
+    bool operator==(const Class&);
+    std::string native();
+    std::string toString();
 };
 
 struct Variable {
     std::string name;
     Class type;
     bool is_final;
-    bool is_global;
+    bool is_uniform;
+    bool is_private;
+
+    Variable();
+    Variable(std::string, Class);
+    Variable(std::string, Class, bool, bool);
+    Variable(std::string, Class, bool, bool, bool);
 };
 
 struct MethodArgument {
@@ -64,7 +77,7 @@ struct Method {
     std::string name;
     Scope* parent;
     std::vector<MethodArgument> arguments;
-    std::string return_type;
+    Class return_type;
 };
 
 struct Scope {

@@ -35,7 +35,7 @@
 #define INVALID_METHOD_NAME(a)             (ERROR_INDICATOR + "Invalid method name '" + a + "'")
 #define INVALID_CLASS_NAME(a)              (ERROR_INDICATOR + "Invalid class name '" + a + "'")
 #define GLOBAL_STATEMENT                   (ERROR_INDICATOR + "Unexpected statement in global scope")
-#define UNEXPECTED_TERMINATE               (ERROR_INDICATOR + "Unexpected statement termination")
+#define UNEXPECTED_TERMINATE               (ERROR_INDICATOR + "Unexpected statement termination ")
 #define UNEXPECTED_OPERATOR                (ERROR_INDICATOR + "Unexpected operator '" + token_operator(context.tokens[context.index]) + "'")
 #define UNEXPECTED_OPERATOR_INEXP          (ERROR_INDICATOR + "Unexpected operator '" + token_operator(context.tokens[context.index]) + "' in expression")
 #define UNEXPECTED_WORD                    (ERROR_INDICATOR + "Unexpected identifier '" + context.tokens[context.index].data + "'")
@@ -73,6 +73,9 @@
 #define VAR_CANT_INFER_FUNCTION_PTRS       (ERROR_INDICATOR + "The 'var' keyword can't infer function^ types")
 #define METHOD_NEW_MUST_RETURN_VOID        (NOLINE_ERROR_INDICATOR + "Constructors can only return void")
 #define METHOD_DELETE_MUST_RETURN_VOID     (NOLINE_ERROR_INDICATOR + "Deconstructors can only return void")
+#define VARIABLE_IS_PRIVATE(a)             (ERROR_INDICATOR + "The member '" + a + "' is private")
+#define PUBLIC_MUST_BE_IN_CLASS            (ERROR_INDICATOR + "The 'public' keyword can only be used while defining a class")
+#define PRIVATE_MUST_BE_IN_CLASS           (ERROR_INDICATOR + "The 'private' keyword can only be used while defining a class")
 
 #define DEV_BLANK_TYPE                     (NOLINE_ERROR_INDICATOR + "Returning blank type at " + to_string(__LINE__))
 

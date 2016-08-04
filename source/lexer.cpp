@@ -408,6 +408,20 @@ TokenList tokenize(std::string code){
             code = string_delete_amount(code,4);
             code = string_kill_whitespace(code);
         }
+        else if( string_get_until_or(code," )\n") == "public"){  // public
+            log_lexer(LEXER_LOG_PREFIX + "Found `public` keyword");
+            tokens.push_back( TOKEN_KEYWORD("public") );
+
+            code = string_delete_amount(code,6);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," )\n") == "private"){ // private
+            log_lexer(LEXER_LOG_PREFIX + "Found `private` keyword");
+            tokens.push_back( TOKEN_KEYWORD("private") );
+
+            code = string_delete_amount(code,7);
+            code = string_kill_whitespace(code);
+        }
         else if(string_get_until_or(code," ") == "cast"){        // cast
             log_lexer(LEXER_LOG_PREFIX + "Found `cast` keyword");
             tokens.push_back( TOKEN_KEYWORD("cast") );

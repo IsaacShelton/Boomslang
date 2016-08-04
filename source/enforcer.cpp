@@ -37,6 +37,7 @@
 void enforce_token(Configuration* config, TokenContext context, Environment& environment){
     static unsigned int next_block = 0;
     static unsigned int next_lib = 0;
+    static bool private_member = false;
 
     log_enforcer("Enforcing Token '" + token_name(context.tokens[context.index]) + "' with a value of '" + context.tokens[context.index].data + "'");
 
@@ -124,14 +125,20 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
     else if(context.tokens[context.index].id == TOKENINDEX_DEDENT){
         // Dedentation
 
+        // Go up a scope if not in global
         if(environment.scope->parent != NULL){
             environment.scope = environment.scope->parent;
+        }
+
+        // Are we now in the global scope?
+        if(environment.scope->parent == NULL){
+            private_member = false;
         }
     }
     else if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
         // Keyword
 
-        if(context.tokens[context.index].data == "new"){            // New Statement
+        if(context.tokens[context.index].data == "new"){             // New Statement
             die(UNEXPECTED_KEYWORD("new"));
         }
         else if(context.tokens[context.index].data == "create"){    // Create Statement
@@ -170,7 +177,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             current_line++;
 
             // Add method reference to parent scope
-            environment.scope->parent->methods.push_back( Method{method_name, environment.scope->parent, method_arguments, "void"} );
+            environment.scope->parent->methods.push_back( Method{method_name, environment.scope->parent, method_arguments, Class("void")} );
 
             std::string func_type = "function^(";
             for(unsigned int i = 0; i < method_arguments.size(); i++){
@@ -182,11 +189,11 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             }
             func_type += ")->void";
 
-            environment.global.variables.push_back( Variable{method_name, func_type} );
+            environment.global.variables.push_back( Variable(method_name, func_type) );
 
             // Add self variable to methods of a type
             if(name_is_class(environment.scope->parent->name)){
-                environment.scope->variables.push_back( Variable{"self", name_get_class(environment.scope->parent->name), false, false} );
+                environment.scope->variables.push_back( Variable("self", name_get_class(environment.scope->parent->name), false, false) );
             }
 
             index_increase(context);
@@ -206,7 +213,8 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             environment.scope->children.push_back(new Scope{CLASS_PREFIX + class_name, environment.scope});
             environment.scope = environment.scope->children[environment.scope->children.size()-1];
 
-            environment.global.classes.push_back( Class{class_name} );
+            environment.global.classes.push_back( Class(class_name) );
+            private_member = false;
 
             index_increase(context);
             if(context.tokens[context.index].id != TOKENINDEX_INDENT){
@@ -336,7 +344,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             }
 
             context.tokens[var_token] = TOKEN_RAW_WORD( resource_type(value_class.name) );
-            environment.scope->variables.push_back( Variable{variable_name, value_class.name, false, false} );
+            environment.scope->variables.push_back( Variable(variable_name, value_class.name, false, false) );
 
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
@@ -353,7 +361,6 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             custom_config.package = true;
 
             statement = context.tokens.begin() + context.index;
-
             index_increase(context);
 
             if(context.tokens[context.index].id != TOKENINDEX_WORD and context.tokens[context.index].id != TOKENINDEX_STRING_LITERAL){
@@ -552,7 +559,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             if(construct == "class"){
                 std::string class_name = string_get_until_or(string_kill_whitespace(structure), " \n");
 
-                add_class(environment, Class{class_name});
+                add_class(environment, Class(class_name));
             }
             else if(construct == "function"){
                 std::string function_name;
@@ -636,7 +643,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 structure = string_delete_amount(structure, function_name.length());
                 structure = string_kill_whitespace(structure);
 
-                if(!context_class_exists(context, environment, Class{class_name})){
+                if(!context_class_exists(context, environment, Class(class_name))){
                     die(UNDECLARED_CLASS(class_name));
                 }
 
@@ -691,7 +698,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 structure = string_kill_whitespace(structure);
 
                 add_function(environment, Method{function_name, &environment.global, function_arguments, function_return_type});
-                add_method(environment, Class{class_name}, Method{function_name, environment_get_child(&environment.global, CLASS_PREFIX + class_name), function_arguments, function_return_type});
+                add_method(environment, Class(class_name), Method{function_name, environment_get_child(&environment.global, CLASS_PREFIX + class_name), function_arguments, function_return_type});
             }
             else if(construct == "constant"){
                 std::string type = string_get_until(structure, " ");
@@ -702,11 +709,11 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 structure = string_delete_amount(structure, name.length());
                 structure = string_kill_whitespace(structure);
 
-                if(!context_class_exists(context, environment, Class{type})){
+                if(!context_class_exists(context, environment, Class(type))){
                     fail(UNDECLARED_CLASS(type));
                 }
 
-                environment.global.variables.push_back(Variable{name, type, true, false});
+                environment.global.variables.push_back( Variable(name, type, true, false) );
             }
             else if(construct == "field"){
                 std::string class_name = string_get_until(structure, " ");
@@ -721,20 +728,20 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 structure = string_delete_amount(structure, name.length());
                 structure = string_kill_whitespace(structure);
 
-                if(!context_class_exists(context, environment, Class{class_name})){
+                if(!context_class_exists(context, environment, Class(class_name))){
                     fail(UNDECLARED_CLASS(class_name));
                 }
-                else if(!context_class_exists(context, environment, Class{type})){
+                else if(!context_class_exists(context, environment, Class(type))){
                     fail(UNDECLARED_CLASS(type));
                 }
 
-                add_field(environment, Class{class_name}, Variable{name, Class{type}, false, false});
+                add_field(environment, Class(class_name), Variable(name, Class(type), false, false));
             }
 
             current_line++;
         }
         else if(context.tokens[context.index].data == "any^"){      // any^ Statement
-            Class type = Class{"any^"};
+            Class type = Class("any^");
 
             index_increase(context);
             if(context.tokens[context.index].id != TOKENINDEX_WORD){
@@ -742,7 +749,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             }
 
             std::string variable_name = context.tokens[context.index].data;
-            environment.scope->variables.push_back( Variable{variable_name, type.name, false, false} );
+            environment.scope->variables.push_back( Variable(variable_name, type.name, false, false) );
             index_increase(context);
 
             // Are we gonna assign it to something
@@ -756,7 +763,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             current_line++;
         }
         else if(context.tokens[context.index].data == "function^"){ // function^ Statement
-            Class type = Class{"function^"};
+            Class type = Class("function^");
 
             std::string function_return_type = "";
             std::vector<std::string> function_args;
@@ -786,7 +793,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                     arg = context.tokens[context.index].data;
                 }
 
-                if(!context_class_exists(context, environment, Class{arg})){
+                if(!context_class_exists(context, environment, Class(arg))){
                     die(UNDECLARED_CLASS(arg));
                 }
 
@@ -813,7 +820,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                     }
 
                     if(context.tokens[context.index].id == TOKENINDEX_WORD){
-                        if(!context_class_exists(context, environment, Class{context.tokens[context.index].data})){
+                        if(!context_class_exists(context, environment, Class(context.tokens[context.index].data))){
                             die(UNDECLARED_CLASS(context.tokens[context.index].data));
                         }
 
@@ -853,7 +860,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             }
 
             std::string variable_name = context.tokens[context.index].data;
-            environment.scope->variables.push_back( Variable{variable_name, type.name, false, false} );
+            environment.scope->variables.push_back( Variable(variable_name, type.name, false, false) );
             index_increase(context);
 
             // Are we gonna assign it to something
@@ -872,7 +879,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             if(context.tokens[context.index].id != TOKENINDEX_WORD){
                 die(UNEXPECTED_OPERATOR_INEXP);
             }
-            Class conversion_type = Class{context.tokens[context.index].data};
+            Class conversion_type = Class(context.tokens[context.index].data);
             Class expression_type;
 
             index_increase(context);
@@ -923,6 +930,26 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             index_decrease(context);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
+        }
+        else if(context.tokens[context.index].data == "public"){    // Public Statement
+            private_member = false;
+
+            if( !name_is_class(environment.scope->name) ){
+                die(PUBLIC_MUST_BE_IN_CLASS);
+            }
+
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline after 'public' keyword", ERROR_INDICATOR + "Expected newline after 'public' keyword");
+            current_line++;
+        }
+        else if(context.tokens[context.index].data == "private"){   // Private Statement
+            private_member = true;
+
+            if( !name_is_class(environment.scope->name) ){
+                die(PRIVATE_MUST_BE_IN_CLASS);
+            }
+
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline after 'private' keyword", ERROR_INDICATOR + "Expected newline after 'private' keyword");
             current_line++;
         }
         else {
@@ -985,9 +1012,9 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             token_force(context, TOKENINDEX_TERMINATE,  ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
             current_line++;
         }
-        else if(environment_class_exists(&environment.global, Class{class_name}) or (class_name == "final")){ // Variable Declaration
+        else if(environment_class_exists(&environment.global, Class(class_name)) or (class_name == "final")){ // Variable Declaration
             bool is_final = false;
-            Class type = Class{class_name};
+            Class type = Class(class_name);
 
             if(class_name == "final"){
                 index_decrease(context);
@@ -1014,7 +1041,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             }
 
             std::string variable_name = context.tokens[context.index].data;
-            environment.scope->variables.push_back( Variable{variable_name, type, is_final, false} );
+            environment.scope->variables.push_back( Variable(variable_name, type, is_final, false, private_member) );
             index_increase(context);
 
             // Are we gonna assign it to something
@@ -1074,18 +1101,38 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             index_increase(context);
 
             // Ensure variable is declared
-            if( !environment_variable_exists(environment.scope, Variable{variable_name, IGNORE_CLASS, false, false}) ){
+            if( !environment_variable_exists(environment.scope, Variable(variable_name, IGNORE_CLASS, false, false)) ){
                 fail(UNDECLARED_VARIABLE(variable_name));
             }
 
             // Get the class name depending on where the variable was found
-            if(environment_variable_exists(environment.scope, Variable{variable_name, IGNORE_CLASS, false, false})){
-                base_class = environment_variable_get(environment.scope, Variable{variable_name, IGNORE_CLASS, false, false}).type;
+            Variable variable;
+            if(environment_variable_exists(environment.scope, Variable(variable_name, IGNORE_CLASS, false, false))){
+                variable = environment_variable_get(environment.scope, Variable(variable_name, IGNORE_CLASS, false, false));
             }
-            else if(environment_variable_exists(&environment.global, Variable{variable_name, IGNORE_CLASS, false, false})){
-                base_class = environment_variable_get(&environment.global, Variable{variable_name, IGNORE_CLASS, false, false}).type;
+            else if(environment_variable_exists(&environment.global, Variable(variable_name, IGNORE_CLASS, false, false))){
+                variable = environment_variable_get(&environment.global, Variable(variable_name, IGNORE_CLASS, false, false));
             }
 
+            Scope* root_scope = environment.scope;
+            if(root_scope->parent != NULL){
+                while(root_scope->parent->parent != NULL){
+                    root_scope = root_scope->parent;
+                }
+            }
+
+            if( name_is_class(root_scope->name) ){
+                if( !environment_variable_exists(root_scope, Variable(variable_name, IGNORE_CLASS, false, false)) ){
+                    if(variable.is_private){
+                        die(VARIABLE_IS_PRIVATE(variable_name));
+                    }
+                }
+            }
+            else if(variable.is_private){
+                die(VARIABLE_IS_PRIVATE(variable_name));
+            }
+
+            base_class = variable.type;
             Class root_class = context_root_class(base_class);
 
             // Handle following fields and methods
@@ -1108,8 +1155,14 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                         variable_name = context.tokens[context.index].data;
 
                         // Is it a field of the class
-                        if( environment_class_variable_exists(environment, root_class, Variable{variable_name, IGNORE_CLASS, false, false}) ){
-                            base_class = environment_class_variable_get(environment, root_class, Variable{variable_name, IGNORE_CLASS, false, false}).type;
+                        if( environment_class_variable_exists(environment, root_class, Variable(variable_name, IGNORE_CLASS, false, false)) ){
+                            variable = environment_class_variable_get(environment, root_class, Variable(variable_name, IGNORE_CLASS, false, false));
+
+                            if(variable.is_private){
+                                die(VARIABLE_IS_PRIVATE(variable_name));
+                            }
+
+                            base_class = variable.type;
                             root_class = context_root_class(base_class);
                             index_increase(context);
                         }
@@ -1186,16 +1239,16 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             // Handle following fields and methods
             if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
                 // Ensure variable is declared
-                if( !environment_variable_exists(environment.scope, Variable{variable_name, IGNORE_CLASS, false, false}) ){
+                if( !environment_variable_exists(environment.scope, Variable(variable_name, IGNORE_CLASS, false, false)) ){
                     fail(UNDECLARED_VARIABLE(context.tokens[context.index].data));
                 }
 
                 // Get the class name depending on where the variable was found
-                if(environment_variable_exists(environment.scope, Variable{variable_name, IGNORE_CLASS, false, false})){
-                    base_class = environment_variable_get(environment.scope, Variable{variable_name, IGNORE_CLASS, false, false}).type;
+                if(environment_variable_exists(environment.scope, Variable(variable_name, IGNORE_CLASS, false, false))){
+                    base_class = environment_variable_get(environment.scope, Variable(variable_name, IGNORE_CLASS, false, false)).type;
                 }
-                else if(environment_variable_exists(&environment.global, Variable{variable_name, IGNORE_CLASS, false, false})){
-                    base_class = environment_variable_get(&environment.global, Variable{variable_name, IGNORE_CLASS, false, false}).type;
+                else if(environment_variable_exists(&environment.global, Variable(variable_name, IGNORE_CLASS, false, false))){
+                    base_class = environment_variable_get(&environment.global, Variable(variable_name, IGNORE_CLASS, false, false)).type;
                 }
 
                 while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
@@ -1204,8 +1257,8 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                         index_increase(context);
 
                         // Is it a field of the class
-                        if( environment_class_variable_exists(environment,base_class,Variable{variable_name, IGNORE_CLASS, false, false}) ){
-                            base_class = environment_class_variable_get(environment,base_class,Variable{variable_name, IGNORE_CLASS, false, false}).type;
+                        if( environment_class_variable_exists(environment,base_class, Variable(variable_name, IGNORE_CLASS, false, false)) ){
+                            base_class = environment_class_variable_get(environment, base_class, Variable(variable_name, IGNORE_CLASS, false, false)).type;
                         }
                         else { // Method of the class
                             die(CANT_DEREFERENCE_NON_POINTER_VALUE);
@@ -1314,7 +1367,7 @@ Environment enforce(Configuration* config, TokenList& tokens){
     }
 
     // Make sure a main method was declared
-    if( !environment_method_exists(TokenContext{tokens, index}, environment.scope, Method{"main", &environment.global, std::vector<MethodArgument>(), IGNORE}) and !config->package ){
+    if( !environment_method_exists(TokenContext{tokens, index}, environment.scope, Method{"main", &environment.global, NO_ARGUMENTS, IGNORE_CLASS}) and !config->package ){
         die(NO_MAIN);
     }
 

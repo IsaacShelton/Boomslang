@@ -1,9 +1,19 @@
 
 class Animal
-	String name
+	Number speed
+	Integer legs
+	
+	unknown def new()
+	unknown def delete()
 
-class Dog < Animal
-	String breed
+class Dog Animal
+	String name
+	
+	def new()
+		speed = 0.7
+		legs = 4
 
 def main()
-	Dog ruff
+	Animal^ animal = create Dog
+	animal.speed.output()
+	delete animal
