@@ -43,6 +43,7 @@ struct Environment;
 struct Class {
     std::string name = "";
     std::vector<Class> generics;
+    std::vector<Class> parents;
     bool is_mutable = true;
 
     Class();

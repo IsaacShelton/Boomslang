@@ -285,7 +285,7 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
 
                 // Make sure the method is implemented
                 if(!environment_method_exists(context, environment.scope, Method{method_name, environment.scope, IGNORE_ARGS, IGNORE_CLASS})){
-                    die("Declared Method '" + method_name + "' has no Implementation");
+                    die("Declared Method '" + method_name + "' has no Implementation ");
                 }
 
                 // Get method return value
@@ -548,6 +548,7 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
             else if(context.tokens[context.index].data == "class"){
                 std::string class_name;
                 std::string class_code;
+                std::vector<std::string> parents_native;
 
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
@@ -555,15 +556,31 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 context.index++;
                 class_name = context.tokens[context.index].data;
 
+                context.index++;
+                while(context.tokens[context.index].id == TOKENINDEX_WORD){
+                    parents_native.push_back( resource(context.tokens[context.index].data) );
+                    context.index++;
+                }
+                context.index--;
+
                 if(!environment_class_exists(environment.scope, Class{class_name})){
                     die("Declared Class has no Implementation");
                 }
 
                 environment.scope = environment_get_child(environment.scope, CLASS_PREFIX + class_name);
 
-                context.index+=2;
+                context.index += 2;
 
-                header << "class " + resource(class_name) + "{\npublic:\n";
+                header << "class " + resource(class_name);
+                if(parents_native.size() > 0){
+                    header << ": ";
+                }
+                for(size_t i = 0; i < parents_native.size(); i++){
+                    header << "public " + parents_native[i];
+                    if(i + 1 < parents_native.size()) header << ",";
+                    header << " ";
+                }
+                header << "{\npublic:\n";
 
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
                     context.index++;

@@ -189,11 +189,8 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             }
             func_type += ")->void";
 
-            environment.global.variables.push_back( Variable(method_name, func_type) );
-
-            // Add self variable to methods of a type
-            if(name_is_class(environment.scope->parent->name)){
-                environment.scope->variables.push_back( Variable("self", name_get_class(environment.scope->parent->name), false, false) );
+            if( !name_is_class(environment.scope->parent->name) and environment.scope->parent->parent == NULL ){
+                environment.global.variables.push_back( Variable(method_name, func_type) );
             }
 
             index_increase(context);
@@ -204,17 +201,46 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         }
         else if(context.tokens[context.index].data == "class"){     // Class Declaration
             std::string class_name;
+            std::vector<Class> parents;
 
             token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected class name in class declaration", ERROR_INDICATOR + "Expected class name in class declaration");
             class_name = context.tokens[context.index].data;
-            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
-            current_line++;
 
             environment.scope->children.push_back(new Scope{CLASS_PREFIX + class_name, environment.scope});
             environment.scope = environment.scope->children[environment.scope->children.size()-1];
 
-            environment.global.classes.push_back( Class(class_name) );
+            index_increase(context);
+            while(context.tokens[context.index].id == TOKENINDEX_WORD){
+                parents.push_back( context.tokens[context.index].data );
+                index_increase(context);
+            }
+            context.index--;
+
+            for(size_t i = 0; i < parents.size(); i++){
+                Scope* parent_class_scope = environment_get_child(&environment.global, CLASS_PREFIX + parents[i].name);
+
+                if( parent_class_scope == NULL ){
+                    die( UNDECLARED_CLASS(parents[i].name) );
+                }
+
+                for(size_t v = 0; v < parent_class_scope->variables.size(); v++){
+                    if( !parent_class_scope->variables[v].is_private ){
+                        environment.scope->variables.push_back( parent_class_scope->variables[v] );
+                    }
+                }
+            }
+
+            // Add self variable to methods of a type
+            environment.scope->variables.push_back( Variable("self", Class(class_name), true, false, true) );
+
+            Class child(class_name);
+            child.parents = parents;
             private_member = false;
+
+            environment.global.classes.push_back( child );
+
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
 
             index_increase(context);
             if(context.tokens[context.index].id != TOKENINDEX_INDENT){

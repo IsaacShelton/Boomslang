@@ -1,19 +1,19 @@
 
 class Animal
-	Number speed
 	Integer legs
-	
-	unknown def new()
-	unknown def delete()
 
 class Dog Animal
 	String name
+	String breed
 	
-	def new()
-		speed = 0.7
+	def new(String name, String breed)
+		self.name = name
+		self.breed = breed
 		legs = 4
+	
+	def output()
+		("The dog '" + name + "' is a " + breed).output()
 
 def main()
-	Animal^ animal = create Dog
-	animal.speed.output()
-	delete animal
+	Dog ruff = new Dog("Ruff", "Mutt")
+	ruff.output()
