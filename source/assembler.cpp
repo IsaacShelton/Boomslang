@@ -549,6 +549,7 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 std::string class_name;
                 std::string class_code;
                 std::vector<std::string> parents_native;
+                std::vector<std::string> generics_native;
 
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
@@ -556,7 +557,22 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 context.index++;
                 class_name = context.tokens[context.index].data;
 
+                // Get Generic Classes
                 context.index++;
+                if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
+                    context.index++;
+
+                    while(context.tokens[context.index].id != TOKENINDEX_GREATERTHAN){
+                        generics_native.push_back( resource(context.tokens[context.index].data) );
+                        context.index++;
+
+                        if(context.tokens[context.index].id == TOKENINDEX_NEXT) context.index++;
+                    }
+
+                    context.index++;
+                }
+
+                // Get Parent Classes
                 while(context.tokens[context.index].id == TOKENINDEX_WORD){
                     parents_native.push_back( resource(context.tokens[context.index].data) );
                     context.index++;
@@ -571,15 +587,27 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
 
                 context.index += 2;
 
+                // Write generics
+                if(generics_native.size() > 0){
+                    header << "template<";
+                    for(size_t i = 0; i < generics_native.size(); i++){
+                        header << "typename " + generics_native[i];
+                        if(i + 1 < generics_native.size()) header << ",";
+                    }
+                    header << "> ";
+                }
+                // Write Class Name
                 header << "class " + resource(class_name);
                 if(parents_native.size() > 0){
                     header << ": ";
                 }
+                // Write Parents
                 for(size_t i = 0; i < parents_native.size(); i++){
                     header << "public " + parents_native[i];
                     if(i + 1 < parents_native.size()) header << ",";
                     header << " ";
                 }
+                // Write Opening Brace
                 header << "{\npublic:\n";
 
                 if(context.tokens[context.index].id == TOKENINDEX_INDENT){
@@ -589,6 +617,13 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                         context.index++;
                     }
                     environment.scope = environment.scope->parent;
+                }
+                else {
+                    context.index--;
+
+                    if(environment.scope->parent != NULL){
+                        environment.scope = environment.scope->parent;
+                    }
                 }
 
                 header << class_code + "\n};\n";

@@ -202,6 +202,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         else if(context.tokens[context.index].data == "class"){     // Class Declaration
             std::string class_name;
             std::vector<Class> parents;
+            std::vector<Class> generics;
 
             token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected class name in class declaration", ERROR_INDICATOR + "Expected class name in class declaration");
             class_name = context.tokens[context.index].data;
@@ -209,7 +210,28 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             environment.scope->children.push_back(new Scope{CLASS_PREFIX + class_name, environment.scope});
             environment.scope = environment.scope->children[environment.scope->children.size()-1];
 
+            // Get Generic Classes
             index_increase(context);
+            if(context.tokens[context.index].id == TOKENINDEX_LESSTHAN){
+                index_increase(context);
+
+                while(context.tokens[context.index].id != TOKENINDEX_GREATERTHAN){
+
+                    if(context.tokens[context.index].id != TOKENINDEX_WORD){
+                        die(UNEXPECTED_OPERATOR);
+                    }
+                    generics.push_back( Class(context.tokens[context.index].data) );
+                    index_increase(context);
+
+                    if(context.tokens[context.index].id == TOKENINDEX_NEXT){
+                        index_increase(context);
+                    }
+                }
+
+                index_increase(context);
+            }
+
+            // Get Parent Classes
             while(context.tokens[context.index].id == TOKENINDEX_WORD){
                 parents.push_back( context.tokens[context.index].data );
                 index_increase(context);
@@ -235,6 +257,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             Class child(class_name);
             child.parents = parents;
+            child.generics = generics;
             private_member = false;
 
             environment.global.classes.push_back( child );
@@ -1006,6 +1029,29 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         // Identifier
 
         std::string class_name = context.tokens[context.index].data;
+        Class actual_class;
+        bool actual_class_generic_exists = false;
+
+        if(environment.scope->parent != NULL){
+            Scope* surface_scope = environment.scope;
+            Class base_class;
+
+            while(surface_scope->parent->parent != NULL){
+                surface_scope = surface_scope->parent;
+            }
+
+            if( name_is_class(surface_scope->name) ){
+                base_class = Class( name_get_class(surface_scope->name) );
+                actual_class = context_class_get(environment, base_class);
+
+                for(size_t i = 0; i < actual_class.generics.size(); i++){
+                    if(class_name == actual_class.generics[i].name){
+                        actual_class_generic_exists = true;
+                        break;
+                    }
+                }
+            }
+        }
 
         if( !advance_index(context.index, context.tokens.size()) ){
             die(ERROR_INDICATOR + UNEXPECTED_TERMINATE);
@@ -1038,7 +1084,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             token_force(context, TOKENINDEX_TERMINATE,  ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
             current_line++;
         }
-        else if(environment_class_exists(&environment.global, Class(class_name)) or (class_name == "final")){ // Variable Declaration
+        else if(environment_class_exists(&environment.global, Class(class_name)) or (class_name == "final") or actual_class_generic_exists){ // Variable Declaration
             bool is_final = false;
             Class type = Class(class_name);
 

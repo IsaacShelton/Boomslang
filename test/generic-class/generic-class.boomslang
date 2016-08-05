@@ -1,0 +1,6 @@
+
+class Box<Type>
+	Type data
+
+def main()
+	Box<Integer> integer
