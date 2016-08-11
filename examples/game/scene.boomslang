@@ -1,0 +1,75 @@
+
+# Render Display
+def render(GlfwWindow^ window, GameData^ gamedata)
+	var i = 0i
+	
+	# Draw all the flowers
+	while i < gamedata.flowers.length()
+		gamedata.flowers.get(i).draw()
+		i += 1
+	
+	# Draw the player
+	gamedata.player.draw()
+
+# Player Movement
+def move_player(GlfwWindow^ window, GameData^ gamedata)
+	# Checks for keyboard input and moves the player
+	
+	# How fast should the character move?
+	final Number movespeed = 4
+	
+	if glfwGetKey(window, GLFW_KEY_RIGHT) = GLFW_PRESS
+		# Increase player x by movespeed
+		gamedata.player.x += movespeed
+		
+		# Update player image to face right
+		gamedata.player.image = &gamedata.resources.player_right
+	
+	if glfwGetKey(window, GLFW_KEY_LEFT) = GLFW_PRESS
+		# Decrease player x by movespeed
+		gamedata.player.x -= movespeed
+		
+		# Update player image to face left
+		gamedata.player.image = &gamedata.resources.player_left
+	
+	if glfwGetKey(window, GLFW_KEY_DOWN) = GLFW_PRESS
+		# Increase player y by movespeed
+		gamedata.player.y += movespeed
+	
+	if glfwGetKey(window, GLFW_KEY_UP) = GLFW_PRESS
+		# Decrease player y by movespeed
+		gamedata.player.y -= movespeed
+
+# Player Wall Collision
+def clamp_player_position(GameData^ gamedata, Integer width, Integer height)
+	# Makes sure the player can't move out of view
+	
+	if gamedata.player.x < 0
+		# Player x can't be less than zero
+		gamedata.player.x = 0
+	
+	if gamedata.player.x > width.toNumber() - 64
+		# Player x can't be greater than width - 64
+		gamedata.player.x = width.toNumber() - 64
+	
+	if gamedata.player.y < 0
+		# Player y can't be less than zero
+		gamedata.player.y = 0
+	
+	if gamedata.player.y > height.toNumber() - 64
+		# Player y can't be greater than height - 64
+		gamedata.player.y = height.toNumber() - 64
+
+# Run Game Logic
+def update(GlfwWindow^ window, GameData^ gamedata)
+	Integer width
+	Integer height
+	
+	# Get Window Size
+	glfwGetFramebufferSize(window, &width, &height)
+	
+	# Move Player
+	move_player(window, gamedata)
+	
+	# Clamp Player
+	clamp_player_position(gamedata, width, height)

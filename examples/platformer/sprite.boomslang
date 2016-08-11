@@ -1,0 +1,63 @@
+
+class Sprite
+	Image^ image
+	Number x
+	Number y
+	
+	def new()
+	def new(Image^ image, Number x, Number y)
+		self.image = image
+		self.x = x
+		self.y = y
+	
+	def draw()
+		image.draw(x, y)
+
+class Player
+	Image^ image
+	Number x
+	Number y
+	Number gravity
+	Number vspeed
+	
+	def new()
+	def new(Image^ image, Number x, Number y)
+		self.image = image
+		self.x = x
+		self.y = y
+	
+	def fall(Number amount)
+		vspeed += gravity * amount
+	
+	def update()
+		y += vspeed
+	
+	def draw()
+		image.draw(x, y)
+
+class Platform
+	Image^ image
+	Number x
+	Number y
+	
+	def new()
+	def new(Image^ image, Number x, Number y)
+		self.image = image
+		self.x = x
+		self.y = y
+	
+	def colliding(Player player)
+		if player.x < x + 256 and player.x + 64 > x and player.y < y + 32 and 64 + player.y > y
+			return true
+		else
+			return false
+	
+	def colliding_above(Player player)
+		if player.x < x + 256 and player.x + 64 > x and player.y+1 < y + 32 and 64 + player.y+1 > y
+			return true
+		else
+			return false
+	
+	def draw()
+		image.draw(x, y)
+

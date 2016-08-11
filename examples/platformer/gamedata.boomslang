@@ -1,0 +1,42 @@
+
+class Resources
+	Image player_right
+	Image player_left
+	Image platform
+	
+	def load()
+		player_right.load("player_right.png")
+		player_left.load("player_left.png")
+		platform.load("platform.png")
+
+class GameData
+	Resources resources
+	Player player
+	List<Platform> platforms
+	
+	def load()
+		player.image = &resources.player_right
+		player.x = 128
+		player.y = 32
+		
+		platforms.append( new Platform(&resources.platform, 64, 96) )
+		platforms.append( new Platform(&resources.platform, 256, 256) )
+		platforms.append( new Platform(&resources.platform, 512, 640) )
+		platforms.append( new Platform(&resources.platform, 640, 128) )
+		platforms.append( new Platform(&resources.platform, 512, 320) )
+		platforms.append( new Platform(&resources.platform, 64, 640) )
+		platforms.append( new Platform(&resources.platform, 1280, 640) )
+		platforms.append( new Platform(&resources.platform, 800, 480) )
+
+def player_colliding(GameData^ gamedata)
+	# Checks if colliding with a platform
+	var i = 0i
+	var colliding = false
+	
+	while i < gamedata.platforms.length()
+		if gamedata.platforms.get(i).colliding(gamedata.player)
+			colliding = true
+			break
+		i += 1
+	
+	return colliding

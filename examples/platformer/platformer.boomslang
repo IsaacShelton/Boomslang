@@ -2,6 +2,7 @@
 import glfw
 import opengl
 import boomslang/image
+import "sprite.boomslang"
 import "gamedata.boomslang"
 import "scene.boomslang"
 
@@ -9,7 +10,7 @@ def main()
 	unless glfwInit()
 		die()
 	
-	GlfwWindow^ window = glfwCreateWindow(640, 480, "Keyboard Input with Image Loading", void, void)
+	GlfwWindow^ window = glfwCreateWindow(640, 480, "Simple Platformer Game", void, void)
 	GameData gamedata
 	
 	if window = void

@@ -1,0 +1,53 @@
+
+import glfw
+import opengl
+import "gamedata.boomslang"
+import "scene.boomslang"
+
+def main()
+	unless glfwInit()
+		die()
+	
+	var monitor = glfwGetPrimaryMonitor()
+	var videomode = glfwGetVideoMode(monitor)
+	var window = glfwCreateWindow(videomode.width.toNumber(), videomode.height.toNumber(), "A game made in Boomslang", monitor, void)
+	
+	if window = void
+		"Failed to create window".output()
+		die()
+	
+	# Initialize
+	randomize()
+	glfwMakeContextCurrent(window)
+	glfwSwapInterval(1)
+	glClearColor(0.0, 0.8, 0.0, 1.0)
+	
+	GameData gamedata
+	gamedata.resources.load()
+	gamedata.load()
+	generate_flowers(&gamedata, videomode.width, videomode.height)
+	
+	until glfwWindowShouldClose(window)
+		Number width
+		Number height
+		
+		# Get Window Width and Height
+		glfwGetFramebufferSize(window, &width, &height)
+		
+		# Clear Screen
+		glClear(GL_COLOR_BUFFER_BIT)
+		
+		# Set View
+		glViewport(0, 0, width, height)
+		glMatrixMode(GL_PROJECTION)
+		glLoadIdentity()
+		glOrtho(0, width, height, 0, 1, -1)
+		
+		update(window, &gamedata)
+		render(window, &gamedata)
+		
+		glfwPollEvents()
+		glfwSwapBuffers(window)
+	
+	glfwDestroyWindow(window)
+	glfwTerminate()
