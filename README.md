@@ -169,5 +169,42 @@ def main()
     pointer.output()
 ```
 
+###Inheritance
+```python
+
+class Animal
+    Integer legs
+    Integer weight
+
+class Dog Animal
+    String name
+    
+    def new(String name)
+        self.name = name
+        self.legs = 4
+        self.weight = 150
+```
+
+###Generic Classes
+```python
+
+class Box<Type>
+    Type item
+
+def main()
+    Box<String> mailbox
+    mailbox.item = "Hello World, from Someone"
+    mailbox.item.output()
+```
+
+###Numeric Literal Suffixes
+```python
+
+def main()
+    Number speed = 74.6f
+    Integer gears = 14i
+    UnsignedInteger wheels = 4u
+```
+
 ##Contacting Us
 develop.dockysoft@gmail.com
