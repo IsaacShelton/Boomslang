@@ -169,7 +169,7 @@ def main()
     pointer.output()
 ```
 
-###Inheritance
+###Class Inheritance
 ```python
 
 class Animal
@@ -204,6 +204,22 @@ def main()
     Number speed = 74.6f
     Integer gears = 14i
     UnsignedInteger wheels = 4u
+```
+
+###Random Numbers
+```python
+
+import boomslang/random
+
+def main()
+    # Set random seed based on time
+    randomize()
+    
+    # Get a floating point number (0.0 through 9.0)
+    Number amount = random_under(10)
+    
+    # See the result
+    amount.output()
 ```
 
 ##Contacting Us
