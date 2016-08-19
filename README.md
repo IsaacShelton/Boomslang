@@ -169,5 +169,58 @@ def main()
     pointer.output()
 ```
 
+###Class Inheritance
+```python
+
+class Animal
+    Integer legs
+    Integer weight
+
+class Dog Animal
+    String name
+    
+    def new(String name)
+        self.name = name
+        self.legs = 4
+        self.weight = 150
+```
+
+###Generic Classes
+```python
+
+class Box<Type>
+    Type item
+
+def main()
+    Box<String> mailbox
+    mailbox.item = "Hello World, from Someone"
+    mailbox.item.output()
+```
+
+###Numeric Literal Suffixes
+```python
+
+def main()
+    Number speed = 74.6f
+    Integer gears = 14i
+    UnsignedInteger wheels = 4u
+```
+
+###Random Numbers
+```python
+
+import boomslang/random
+
+def main()
+    # Set random seed based on time
+    randomize()
+    
+    # Get a floating point number (0.0 through 9.0)
+    Number amount = random_under(10)
+    
+    # See the result
+    amount.output()
+```
+
 ##Contacting Us
 develop.dockysoft@gmail.com
