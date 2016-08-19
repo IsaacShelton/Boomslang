@@ -1,0 +1,24 @@
+
+import boomslang/filesystem
+
+def main()
+	BinaryInputFile file
+	
+	# Open File
+	file.open("test.txt")
+	
+	unless file.ok()
+		"Failed to open 'test.txt'".output()
+		die()
+	
+	# Use method defined with 'register' keyword that returns a generic class
+	Array<Byte> bytes = file.readBytes(5)
+	
+	# Print the first 5 bytes in the file
+	bytes.get(0).output()
+	bytes.get(1).output()
+	bytes.get(2).output()
+	bytes.get(3).output()
+	bytes.get(4).output()
+	
+	file.close()

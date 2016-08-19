@@ -52,6 +52,7 @@ struct Class {
     Class(std::string, std::vector<Class>, bool);
     void operator=(const Class&);
     bool operator==(const Class&);
+    void load(std::string);
     std::string native();
     std::string toString();
 };

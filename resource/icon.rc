@@ -1,6 +1,6 @@
 
-#ifndef DIE_H_INCLUDED
-#define DIE_H_INCLUDED
+#ifndef _resource_rc
+#define _resource_rc
 
 /*
     (c) 2016 Isaac Shelton
@@ -21,14 +21,6 @@
     along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string>
-#include <iostream>
-#include <stdlib.h>
-#include "scope.h"
+MAINICON ICON "Boomslang.ico"
 
-#define die(a) {std::cerr << a << std::endl; exit(1);}
-#define fail(a) {std::cerr << a << std::endl; error_count++;}
-
-extern unsigned int error_count;
-
-#endif // DIE_H_INCLUDED
+#endif

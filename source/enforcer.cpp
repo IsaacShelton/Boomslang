@@ -613,7 +613,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             else if(construct == "function"){
                 std::string function_name;
                 std::vector<MethodArgument> function_arguments;
-                std::string function_return_type;
+                Class function_return_type;
                 Class arg_type;
                 unsigned int balance = 0;
 
@@ -669,8 +669,8 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 }
                 structure = string_delete_amount(structure, 2);
                 structure = string_kill_whitespace(structure);
-                function_return_type = string_get_until_or(structure, " \n");
-                structure = string_delete_amount(structure, function_return_type.length());
+                function_return_type.load( string_get_until_or(structure, " \n") );
+                structure = string_delete_until_or(structure, " \n");
                 structure = string_kill_whitespace(structure);
 
                 add_function(environment, Method{function_name, &environment.global, function_arguments, function_return_type});
@@ -679,7 +679,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 std::string class_name;
                 std::string function_name;
                 std::vector<MethodArgument> function_arguments;
-                std::string function_return_type;
+                Class function_return_type;
                 Class arg_type;
                 unsigned int balance = 0;
 
@@ -742,8 +742,8 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 }
                 structure = string_delete_amount(structure, 2);
                 structure = string_kill_whitespace(structure);
-                function_return_type = string_get_until_or(structure, " \n");
-                structure = string_delete_amount(structure, function_return_type.length());
+                function_return_type.load( string_get_until_or(structure, " \n") );
+                structure = string_delete_until_or(structure, " \n");
                 structure = string_kill_whitespace(structure);
 
                 add_function(environment, Method{function_name, &environment.global, function_arguments, function_return_type});

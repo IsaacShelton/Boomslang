@@ -52,6 +52,32 @@ bool Class::operator==(const Class& other){
 
     return true;
 }
+void Class::load(std::string rawtype){
+    name = string_get_until(rawtype, "<");
+    rawtype = string_delete_amount(rawtype, name.length());
+    rawtype = string_kill_whitespace(rawtype);
+
+    if(rawtype.length() != 0){
+        if(rawtype.substr(0,1) == "<"){
+            int balance = 0;
+            rawtype = string_delete_amount(rawtype, 1);
+
+            while(rawtype.substr(0,1) != ">" or balance != 0){
+                Class generic_type;
+                std::string generic_rawtype;
+
+                generic_rawtype = string_get_until_or(rawtype, " ,>");
+                rawtype = string_delete_amount( rawtype, generic_rawtype.length() );
+                generic_type.load(generic_rawtype);
+                generics.push_back( generic_type );
+
+                if(rawtype.substr(0,1) == ",") {
+                    rawtype = string_delete_amount(rawtype, 1);
+                }
+            }
+        }
+    }
+}
 std::string Class::native(){
     std::string type;
 
