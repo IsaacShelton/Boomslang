@@ -1,0 +1,5 @@
+
+import boomslang/user
+
+def main()
+	getUsername().output()

@@ -1,0 +1,24 @@
+
+import boomslang/filesystem
+
+def main()
+	BinaryOutputFile file
+	
+	# Open the file
+	file.open("test.bin")
+	
+	# Ensure the file is open
+	unless file.ok()
+		"Failed to open file".output()
+		die()
+	
+	# Write some data
+	file.writeNumber(12.3)
+	file.writeInteger(1234i)
+	file.writeByte( 157.toByte() )
+	
+	"Data was stored in 'test.bin'".output()
+	"See the 'file-input-binary' example that shows how to read data from the file we created".output()
+	
+	# Close the file
+	file.close()

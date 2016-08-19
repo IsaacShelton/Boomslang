@@ -1,0 +1,23 @@
+
+import boomslang/filesystem
+
+def main()
+	InputFile file
+	
+	# Open the file
+	file.open("test.txt")
+	
+	# Ensure the file is open
+	unless file.ok()
+		"Failed to open test.txt".output()
+		die()
+	
+	# Print each line of the file
+	until file.eof()
+		file.readLine().print()
+		
+		unless file.eof()
+			"\n".print()
+	
+	# Close the file
+	file.close()

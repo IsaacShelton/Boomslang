@@ -1,0 +1,21 @@
+
+import boomslang/filesystem
+
+def main()
+	OutputFile file
+	
+	# Open the file
+	file.open("test.txt")
+	
+	# Ensure the file is open
+	unless file.ok()
+		"Failed to open test.txt".output()
+		die()
+	
+	# Write some text to the file
+	file.writeLine("Hello World")
+	file.writeLine("My Life for Aiur!")
+	file.writeLine("This file was created using the OutputFile class")
+	
+	# Close the file
+	file.close()

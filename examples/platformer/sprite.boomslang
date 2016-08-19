@@ -52,8 +52,8 @@ class Platform
 		else
 			return false
 	
-	def colliding_above(Player player)
-		if player.x < x + 256 and player.x + 64 > x and player.y+1 < y + 32 and 64 + player.y+1 > y
+	def colliding(Player player, Number yoffset)
+		if player.x < x + 256 and player.x + 64 > x and player.y + yoffset < y + 32 and 64 + player.y + yoffset > y
 			return true
 		else
 			return false

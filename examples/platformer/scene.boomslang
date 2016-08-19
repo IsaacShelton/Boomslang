@@ -8,7 +8,7 @@ def gravity(GlfwWindow^ window, GameData^ gamedata)
 	while i < gamedata.platforms.length()
 		
 		# If we are on the platform
-		if gamedata.platforms.get(i).colliding_above(gamedata.player)
+		if gamedata.platforms.get(i).colliding(gamedata.player, 1)
 			colliding = true
 			
 			# Adjust player y based on colliding platform
@@ -71,18 +71,18 @@ def update(GlfwWindow^ window, GameData^ gamedata)
 	if glfwGetKey(window, GLFW_KEY_RIGHT) = GLFW_PRESS
 		# Right
 		gamedata.player.x += movespeed
-		gamedata.player.image = &gamedata.resources.player_right
+		gamedata.player.image = &gamedata.resources.playerRight
 		
-		if player_colliding(gamedata)
+		if playerColliding(gamedata)
 			# Revert Changes
 			gamedata.player.x -= movespeed
 	
 	if glfwGetKey(window, GLFW_KEY_LEFT) = GLFW_PRESS
 		# Left
 		gamedata.player.x -= movespeed
-		gamedata.player.image = &gamedata.resources.player_left
+		gamedata.player.image = &gamedata.resources.playerLeft
 		
-		if player_colliding(gamedata)
+		if playerColliding(gamedata)
 			# Revert Changes
 			gamedata.player.x += movespeed
 	
