@@ -1310,6 +1310,10 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
 
             // Are we gonna assign it to something
             if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                if(variable.is_final){
+                    die(VARIABLE_IS_FINAL(variable_name));
+                }
+
                 index_increase(context);
                 context_enforce_expression(context, environment, base_class);
                 root_class = context_root_class(base_class);

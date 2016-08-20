@@ -80,6 +80,11 @@ void load_core(Environment& environment){
     add_method(environment, Class{"String"}, Method{"output", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"String"}, Method{"print", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"String"}, Method{"input", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"String"}, Method{"wait", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"String"}, Method{"fail", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"String"}, Method{"printError", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"String"}, Method{"log", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"String"}, Method{"printLog", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"String"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), Class("Number")});
     add_method(environment, Class{"String"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), Class("Number")});
     add_method(environment, Class{"String"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), Class("Number")});
