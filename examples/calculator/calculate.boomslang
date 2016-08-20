@@ -15,9 +15,11 @@ def get_result(Number value_1, String operator, Number value_2)
 	else if operator = "*"
 		return value_1 * value_2
 	
-	else if operator = "/" and value_2 != 0
-		return value_1 / value_2
-	
+	else if operator = "/"
+		unless value_2 = 0
+			return value_1 / value_2
+		else
+			return 0
 	else
 		return 0
 
@@ -37,7 +39,7 @@ def main()
 	
 	# Ensure Operator is Valid
 	unless is_valid_operator(operator)
-		("Invalid operator '" + operator + "', accepted operators include '+', '-', '*', and '/'").output()
+		("Invalid operator '" + operator + "', accepted operators include '+', '-', '*', and '/'").fail()
 		die()
 	
 	# Get Value 2

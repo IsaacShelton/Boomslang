@@ -898,6 +898,36 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
 
                 output += conditional_code + "}\n";
             }
+            else if(context.tokens[context.index].data == "forever"){
+                std::string expression;
+                std::string conditional_code;
+                unsigned int before_indentation = indentation; // The indentation before processing tokens
+                unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+                context.index++;
+
+                output += "while(true){\n";
+
+                if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                    die("Expected terminate after 'forever' statement");
+                }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                    context.index++;
+                    while(before_indentation != token_indent){
+                        assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        context.index++;
+                    }
+                    context.index--;
+                }
+                else {
+                    index_decrease(context);
+                }
+
+                output += conditional_code + "}\n";
+            }
             else if(context.tokens[context.index].data == "for"){
                 std::string declaration;
                 std::string expression;

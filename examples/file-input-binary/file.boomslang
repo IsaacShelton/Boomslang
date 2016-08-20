@@ -9,7 +9,7 @@ def main()
 	
 	# Ensure the file is open
 	unless file.ok()
-		"Failed to open test.bin".output()
+		"Failed to open test.bin".fail()
 		die()
 	
 	# Read some data from test.bin

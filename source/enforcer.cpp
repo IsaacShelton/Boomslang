@@ -368,6 +368,10 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             context_enforce_expression(context, environment, value_class);
             current_line++;
         }
+        else if(context.tokens[context.index].data == "forever"){   // Forever Statement
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+            current_line++;
+        }
         else if(context.tokens[context.index].data == "for"){       // For Statement
             std::string var_name;
             Class var_type;
