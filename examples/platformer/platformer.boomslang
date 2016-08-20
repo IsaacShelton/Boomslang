@@ -26,8 +26,8 @@ def main()
 	gamedata.load()
 	
 	until glfwWindowShouldClose(window)
-		Number width
-		Number height
+		Integer width
+		Integer height
 		
 		# Get Window Width and Height
 		glfwGetFramebufferSize(window, &width, &height)
@@ -36,10 +36,10 @@ def main()
 		glClear(GL_COLOR_BUFFER_BIT)
 		
 		# Set View
-		glViewport(0, 0, width, height)
+		glViewport(0i, 0i, width, height)
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
-		glOrtho(0, width, height, 0, 1, -1)
+		glOrtho(0, width.toNumber(), height.toNumber(), 0, 1, -1)
 		
 		update(window, &gamedata)
 		render(window, &gamedata)

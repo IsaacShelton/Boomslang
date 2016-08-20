@@ -368,6 +368,64 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             context_enforce_expression(context, environment, value_class);
             current_line++;
         }
+        else if(context.tokens[context.index].data == "for"){       // For Statement
+            std::string var_name;
+            Class var_type;
+            Class expression_type;
+            Class increament_type;
+
+            // Get variable type
+            index_increase(context);
+            if(context.tokens[context.index].id == TOKENINDEX_KEYWORD and context.tokens[context.index].data == "var"){
+                index_increase(context);
+            }
+            else {
+                context_enforce_type(context, environment, var_type);
+            }
+
+            // Get variable name
+            if(context.tokens[context.index].id != TOKENINDEX_WORD){
+                die(UNEXPECTED_OPERATOR);
+            }
+            var_name = context.tokens[context.index].data;
+            index_increase(context);
+
+            // Assign a value to the new variable?
+            if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                index_increase(context);
+                context_enforce_expression(context, environment, var_type);
+            }
+
+            // Register the variable
+            environment.scope->children.push_back(new Scope{"block_" + to_string(next_block), environment.scope});
+            environment.scope = environment.scope->children[environment.scope->children.size()-1];
+            next_block++;
+            environment.scope->variables.push_back( Variable(var_name, var_type, false, false, false) );
+
+            // Move on to the expression
+            if(context.tokens[context.index].id != TOKENINDEX_NEXT){
+                die(UNEXPECTED_OPERATOR);
+            }
+
+            // Enforce the expression
+            index_increase(context);
+            context_enforce_expression(context, environment, expression_type);
+
+            // Move on to the increamentation
+            if(context.tokens[context.index].id != TOKENINDEX_NEXT){
+                die(UNEXPECTED_OPERATOR);
+            }
+            index_increase(context);
+            context_enforce_expression(context, environment, increament_type);
+            current_line++;
+
+            // Check for start of block
+            index_increase(context);
+            if(context.tokens[context.index].id != TOKENINDEX_INDENT){
+                index_decrease(context);
+                environment.scope = environment.scope->parent;
+            }
+        }
         else if(context.tokens[context.index].data == "var"){       // Var Statement
             std::string variable_name;
             Class value_class;

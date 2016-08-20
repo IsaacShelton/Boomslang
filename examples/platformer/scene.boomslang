@@ -91,4 +91,7 @@ def update(GlfwWindow^ window, GameData^ gamedata)
 	# Make sure player is in world
 	if gamedata.player.y > height
 		gamedata.player.x = 128
-		gamedata.player.y = 32
+		gamedata.player.y = 0
+		gamedata.player.vspeed = 0
+		gamedata.player.gravity = 0
+	

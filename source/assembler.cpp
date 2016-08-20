@@ -156,15 +156,47 @@ void assemble_expression(TokenContext context, std::string& expression, Environm
         }
         else if(context.tokens[context.index].id == TOKENINDEX_ADD){
             expression += "+";
+
+            context.index++;
+            if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                expression += "=";
+            }
+            else {
+                context.index--;
+            }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_SUBTRACT){
             expression += "-";
+
+            context.index++;
+            if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                expression += "=";
+            }
+            else {
+                context.index--;
+            }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_MULTIPLY){
             expression += "*";
+
+            context.index++;
+            if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                expression += "=";
+            }
+            else {
+                context.index--;
+            }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_DIVIDE){
             expression += "/";
+
+            context.index++;
+            if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                expression += "=";
+            }
+            else {
+                context.index--;
+            }
         }
         else {
             die(UNEXPECTED_OPERATOR_INEXP + " while assembling");
@@ -848,6 +880,64 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
 
                 if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
                     die("Expected terminate after 'until' statement");
+                }
+
+                index_increase(context);
+
+                if(context.tokens[context.index].id == TOKENINDEX_INDENT){
+                    context.index++;
+                    while(before_indentation != token_indent){
+                        assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                        context.index++;
+                    }
+                    context.index--;
+                }
+                else {
+                    index_decrease(context);
+                }
+
+                output += conditional_code + "}\n";
+            }
+            else if(context.tokens[context.index].data == "for"){
+                std::string declaration;
+                std::string expression;
+                std::string increament;
+                std::string conditional_code;
+                unsigned int before_indentation = indentation; // The indentation before processing tokens
+                unsigned int token_indent = indentation + 1;   // The indentation during processing
+
+                Class type;
+                context.index++;
+
+                if(context.tokens[context.index].id == TOKENINDEX_KEYWORD and context.tokens[context.index].data == "var"){
+                    index_increase(context);
+                    declaration = "auto ";
+                }
+                else {
+                    context_enforce_type(context, environment, type);
+                    declaration = type.native() + " ";
+                }
+
+                declaration += resource(context.tokens[context.index].data);
+                context.index++;
+
+                if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                    declaration += " = ";
+                    context.index++;
+                    assemble_expression(context, declaration, environment);
+                    context.index++;
+                }
+
+                context.index++;
+                assemble_expression(context, expression, environment);
+                context.index += 2;
+                assemble_expression(context, increament, environment);
+                context.index++;
+
+                output += "for (" + declaration + ";" + expression + ";" + increament + "){\n";
+
+                if(context.tokens[context.index].id != TOKENINDEX_TERMINATE){
+                    die("Expected terminate after 'for' statement");
                 }
 
                 index_increase(context);

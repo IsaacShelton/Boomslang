@@ -365,7 +365,7 @@ TokenList tokenize(std::string code){
             code = string_delete_amount(code,5);
             code = string_kill_whitespace(code);
         }
-        else if( string_get_until_or(code," (") == "for"){       // for
+        else if( string_get_until_or(code," ") == "for"){        // for
             log_lexer(LEXER_LOG_PREFIX + "Found `for` keyword");
             tokens.push_back( TOKEN_KEYWORD("for") );
 

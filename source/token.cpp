@@ -30,7 +30,7 @@
 using namespace std;
 
 // Token identification
-string token_name(Token token){
+std::string token_name(Token token){
     string token_name;
 
     switch(token.id){
@@ -77,7 +77,7 @@ string token_name(Token token){
 
     return token_name;
 }
-string token_operator(Token token){
+std::string token_operator(Token token){
     string token_name;
 
     switch(token.id){
@@ -130,17 +130,19 @@ void token_print(Token token){
     cout << "Token => " + token_name(token) + " :   '" + token.data + "'" << endl;
 }
 void lexer_log_tokens(TokenList tokens){
-    ofstream lexer_logfile(LOGHOME + LOG_LEXER, ios::app);
+    if(LOGGING_LEXER){
+        std::ofstream lexer_logfile(LOGHOME + LOG_LEXER, ios::app);
 
-    if(!lexer_logfile) die("Failed to open lexer log file");
+        if(!lexer_logfile) die("Failed to open lexer log file");
 
-    lexer_logfile << "Resulting Tokens (" << tokens.size()-1 << ")" << endl;
+        lexer_logfile << "Resulting Tokens (" << tokens.size()-1 << ")" << std::endl;
 
-    for(unsigned int i = 0; i < tokens.size(); i++){
-        lexer_logfile << i << " '" + token_name(tokens[i]) + "'" << endl;
+        for(unsigned int i = 0; i < tokens.size(); i++){
+            lexer_logfile << i << " '" + token_name(tokens[i]) + "'" << std::endl;
+        }
+
+        lexer_logfile.close();
     }
-
-    lexer_logfile.close();
 }
 
 // Safe Index Navigation
