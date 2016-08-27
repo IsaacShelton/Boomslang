@@ -19,33 +19,32 @@
 */
 
 #include <iostream>
+#include <stdlib.h>
 #include "../include/die.h"
 #include "../include/locate.h"
-
-#ifdef __WIN32__
-#include <windows.h>
-#endif // __WIN32__
-
-#ifdef __linux__
-#include <unistd.h>
-#endif // __linux__
 
 std::string USERNAME;
 
 void login(){
-    #if defined(__WIN32__)
-    char* username;
+	#ifdef __WIN32__
+	char* username;
     username = getenv("USERNAME");
-    
-    if(username==NULL){
+
+	if(username==NULL){
         die("Failed to get username");
     } else {
         USERNAME = username;
     }
-    #elif defined(__linux__)
-    char username[255];
-    getlogin(&username[0], 255);
-    USERNAME = username;
-    #endif
-}
+	#endif // __WIN32__
 
+	#ifdef __linux__
+	char* username;
+    username = getenv("USER");
+
+	if(username==NULL){
+        die("Failed to get username");
+    } else {
+        USERNAME = username;
+    }
+	#endif // __linux__
+}
