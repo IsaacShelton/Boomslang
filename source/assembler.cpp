@@ -1432,7 +1432,41 @@ void build(Configuration* config){
     if(config->run){
         system(("\"" + config->output_filename + "\"").c_str());
     }
-    #endif
+    #endif // __WIN32__
+
+	#if defined(__linux__)
+	
+	if (!config->optimize){
+        linker_flags += "-O3 ";
+    }
+
+    if(file_exists( (HOME + CPP_OBJECT) )){
+        if(remove( (HOME + CPP_OBJECT).c_str() )!=0){
+            die("Failed to delete object file");
+        }
+    }
+
+	{ //Run g++
+        log_assembler("Compiling Source");
+        bool bad = execute_silent("g++","-c \"" + HOME + CPP_SOURCE + "\" " + compile_flags + " -o \"" + HOME + CPP_OBJECT + "\" 2>\"" + LOGHOME + "native.log\"");
+
+        if(bad){
+            log_assembler("Failed to Compile");
+            die("Native Compiler Error");
+        }
+    }
+
+	{ //Link with g++
+		log_assembler("Linking Objects");
+		bool bad = execute_silent("g++","\"" + HOME + CPP_OBJECT + "\" " + linker_flags + "\"" + COREHOME + "libboomslangcore.a\" -o \"" +  config->output_filename + "\" 2>\"" + LOGHOME + "linker.log\"");
+
+		if(bad){
+		    log_assembler("Failed the Link");
+		    die("Native Compiler Error");
+		}
+	}
+
+	#endif // __linux__
 
     if(!config->run){
         std::cout << "Successfully Built '" + filename_name(config->output_filename) + "'" << std::endl;
