@@ -26,20 +26,26 @@
 #include <windows.h>
 #endif // __WIN32__
 
+#ifdef __linux__
+#include <unistd.h>
+#endif // __linux__
+
 std::string USERNAME;
 
 void login(){
-    char* username;
     #if defined(__WIN32__)
+    char* username;
     username = getenv("USERNAME");
-    #elif defined(__linux__)
-    username = getlogin();
-    #endif
-
+    
     if(username==NULL){
         die("Failed to get username");
     } else {
         USERNAME = username;
     }
+    #elif defined(__linux__)
+    char username[255];
+    getlogin(&username[0], 255);
+    USERNAME = username;
+    #endif
 }
 
