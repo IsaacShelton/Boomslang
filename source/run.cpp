@@ -25,6 +25,10 @@
 #include <windows.h>
 #endif // __WIN32__
 
+#ifdef __linux__
+#include <stdlib.h>
+#endif // __linux__
+
 using namespace std;
 
 int execute_silent(string exe, string params){
@@ -75,7 +79,11 @@ int execute_silent(string exe, string params){
 
 	CloseHandle(ProcessInfo.hThread);
 	CloseHandle(ProcessInfo.hProcess);
+	
+	return rc;
     #endif // __WIN32__
-
-    return rc;
+    
+    #ifdef __linux__
+    	return system( (exe + " " + params).c_str() );
+    #endif // __linux__
 }
