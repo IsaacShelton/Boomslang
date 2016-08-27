@@ -23,6 +23,8 @@
 
 #include <string>
 
+extern std::string USERNAME;
+
 #define CPP_SOURCE    std::string("source.cpp")
 #define CPP_HEADER    std::string("source.h")
 #define CPP_OBJECT    std::string("source.o")
@@ -38,16 +40,14 @@
 #define LOGHOME       std::string("C:\\Boomslang\\logs\\")
 #define RESOURCEHOME  std::string("C:\\Boomslang\\resources\\")
 #define MINGWHOME     std::string("C:\\Boomslang\\resources\\MinGW\\")
-#elif defined(__WIN32__)
-#define HOME          std::string("/home/isaac/Boomslang/source/")
-#define PACKAGEHOME   std::string("/home/isaac/Boomslang/packages/")
-#define COREHOME      std::string("/home/isaac/Boomslang/core/")
-#define LOGHOME       std::string("/home/isaac/Boomslang/logs/")
-#define RESOURCEHOME  std::string("/home/isaac/Boomslang/resources/")
-#define MINGWHOME     std::string("/home/isaac/Boomslang/resources/MinGW/")
+#elif defined(__linux__)
+#define HOME          std::string("/home/") + USERNAME + std::string("/Boomslang/source/")
+#define PACKAGEHOME   std::string("/home/") + USERNAME + std::string("/Boomslang/packages/")
+#define COREHOME      std::string("/home/") + USERNAME + std::string("/Boomslang/core/")
+#define LOGHOME       std::string("/home/") + USERNAME + std::string("/Boomslang/logs/")
+#define RESOURCEHOME  std::string("/home/") + USERNAME + std::string("/Boomslang/resources/")
+#define MINGWHOME     std::string("/home/") + USERNAME + std::string("/Boomslang/resources/MinGW/")
 #endif
-
-extern std::string USERNAME;
 
 void login();
 
