@@ -1,0 +1,44 @@
+
+native link "libfilesystem/bin/Release/libfilesystem.a"
+native include "libfilesystem/filesystem.h"
+
+register class  InputFile
+register method InputFile new(String) -> void
+register method InputFile open(String) -> void
+register method InputFile close() -> void
+register method InputFile eof() -> Boolean
+register method InputFile ok() -> Boolean
+register method InputFile readLine() -> String
+
+register class  OutputFile
+register method OutputFile new(String) -> void
+register method OutputFile open(String) -> void
+register method OutputFile close() -> void
+register method OutputFile ok() -> Boolean
+register method OutputFile write(String) -> void
+register method OutputFile writeLine(String) -> void
+
+register class  BinaryInputFile
+register method BinaryInputFile new(String) -> void
+register method BinaryInputFile open(String) -> void
+register method BinaryInputFile close() -> void
+register method BinaryInputFile eof() -> Boolean
+register method BinaryInputFile ok() -> Boolean
+register method BinaryInputFile readByte() -> Byte
+register method BinaryInputFile readInteger() -> Integer
+register method BinaryInputFile readUnsignedInteger() -> UnsignedInteger
+register method BinaryInputFile readNumber() -> Number
+register method BinaryInputFile readBoolean() -> Boolean
+register method BinaryInputFile readBytes(Number) -> Array<Byte>
+register method BinaryInputFile readBytes(Integer) -> Array<Byte>
+
+register class  BinaryOutputFile
+register method BinaryOutputFile new(String) -> void
+register method BinaryOutputFile open(String) -> void
+register method BinaryOutputFile close() -> void
+register method BinaryOutputFile ok() -> Boolean
+register method BinaryOutputFile writeByte(Byte) -> void
+register method BinaryOutputFile writeInteger(Integer) -> void
+register method BinaryOutputFile writeUnsignedInteger(UnsignedInteger) -> void
+register method BinaryOutputFile writeNumber(Number) -> void
+register method BinaryOutputFile writeBoolean(Boolean) -> void

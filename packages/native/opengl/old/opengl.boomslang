@@ -1,0 +1,86 @@
+
+native link "libopengl32.a"
+native include "GLFW/glfw3.h"
+native include "opengl.branch.h"
+
+# OpenGl Constants
+register constant UnsignedInteger GL_QUADS
+register constant UnsignedInteger GL_MODELVIEW
+register constant UnsignedInteger GL_PROJECTION
+register constant UnsignedInteger GL_TEXTURE
+register constant UnsignedInteger GL_COLOR
+
+register constant UnsignedInteger GL_ALPHA_TEST
+register constant UnsignedInteger GL_AUTO_NORMAL
+register constant UnsignedInteger GL_BLEND
+register constant UnsignedInteger GL_COLOR_LOGIC_OP
+register constant UnsignedInteger GL_COLOR_MATERIAL
+register constant UnsignedInteger GL_COLOR_SUM
+register constant UnsignedInteger GL_COLOR_TABLE
+register constant UnsignedInteger GL_CONVOLUTION_1D
+register constant UnsignedInteger GL_CONVOLUTION_2D
+register constant UnsignedInteger GL_CULL_FACE
+register constant UnsignedInteger GL_DEPTH_TEST
+register constant UnsignedInteger GL_DITHER
+register constant UnsignedInteger GL_FOG
+register constant UnsignedInteger GL_HISTOGRAM
+register constant UnsignedInteger GL_INDEX_LOGIC_OP
+register constant UnsignedInteger GL_LIGHTING
+register constant UnsignedInteger GL_LINE_SMOOTH
+register constant UnsignedInteger GL_LINE_STIPPLE
+register constant UnsignedInteger GL_MINMAX
+register constant UnsignedInteger GL_MULTISAMPLE
+register constant UnsignedInteger GL_NORMALIZE
+register constant UnsignedInteger GL_POINT_SMOOTH
+register constant UnsignedInteger GL_POINT_SPRITE
+register constant UnsignedInteger GL_POLYGON_OFFSET_FILL
+register constant UnsignedInteger GL_POLYGON_OFFSET_LINE
+register constant UnsignedInteger GL_POLYGON_OFFSET_POINT
+register constant UnsignedInteger GL_POLYGON_SMOOTH
+register constant UnsignedInteger GL_POLYGON_STIPPLE
+register constant UnsignedInteger GL_POST_COLOR_MATRIX_COLOR_TABLE
+register constant UnsignedInteger GL_POST_CONVOLUTION_COLOR_TABLE
+register constant UnsignedInteger GL_RESCALE_NORMAL
+register constant UnsignedInteger GL_SAMPLE_ALPHA_TO_COVERAGE
+register constant UnsignedInteger GL_SAMPLE_ALPHA_TO_ONE
+register constant UnsignedInteger GL_SAMPLE_COVERAGE
+register constant UnsignedInteger GL_SEPARABLE_2D
+register constant UnsignedInteger GL_SCISSOR_TEST
+register constant UnsignedInteger GL_STENCIL_TEST
+register constant UnsignedInteger GL_TEXTURE_1D
+register constant UnsignedInteger GL_TEXTURE_2D
+register constant UnsignedInteger GL_TEXTURE_3D
+register constant UnsignedInteger GL_TEXTURE_CUBE_MAP
+register constant UnsignedInteger GL_TEXTURE_GEN_Q
+register constant UnsignedInteger GL_TEXTURE_GEN_R
+register constant UnsignedInteger GL_TEXTURE_GEN_S
+register constant UnsignedInteger GL_TEXTURE_GEN_T
+register constant UnsignedInteger GL_VERTEX_PROGRAM_POINT_SIZE
+register constant UnsignedInteger GL_VERTEX_PROGRAM_TWO_SIDE
+
+register constant UnsignedInteger GL_COLOR_BUFFER_BIT
+
+register constant UnsignedInteger GL_INVALID_ENUM
+register constant UnsignedInteger GL_INVALID_OPERATION
+
+# OpenGl Functions
+register function glClearColor(Number, Number, Number, Number) -> void
+register function glClear(UnsignedInteger) -> void
+register function glBegin(UnsignedInteger) -> void
+register function glEnd() -> void
+register function glVertex2f(Number, Number) -> void
+register function glColor3f(Number, Number, Number) -> void
+register function glViewport(Number, Number, Number, Number) -> void
+register function glMatrixMode(UnsignedInteger) -> void
+register function glLoadIdentity() -> void
+register function glOrtho(Number, Number, Number, Number, Number, Number) -> void
+register function glPushMatrix() -> void
+register function glPopMatrix() -> void
+register function glScale(Number, Number, Number) -> void
+register function glScaled(Number, Number, Number) -> void
+register function glScalef(Number, Number, Number) -> void
+register function glRotate(Number,  Number,  Number,  Number) -> void
+register function glRotated(Number,  Number,  Number,  Number) -> void
+register function glRotatef(Number,  Number,  Number,  Number) -> void
+register function glEnable(UnsignedInteger) -> void
+register function glDisable(UnsignedInteger) -> void

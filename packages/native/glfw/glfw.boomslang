@@ -1,0 +1,134 @@
+
+native link "libglfw3.a"
+native link "libglu32.a"
+native link "libgdi32.a"
+native link "libopengl32.a"
+native include "GLFW/glfw3.h"
+native include "glfw.branch.h"
+
+import opengl
+import "keys.boomslang" 
+
+# Glfw Constants
+register constant Integer GLFW_NOT_INITIALIZED
+register constant Integer GLFW_NO_CURRENT_CONTEXT
+register constant Integer GLFW_INVALID_ENUM
+register constant Integer GLFW_INVALID_VALUE
+register constant Integer GLFW_OUT_OF_MEMORY
+register constant Integer GLFW_API_UNAVAILABLE
+register constant Integer GLFW_VERSION_UNAVAILABLE
+register constant Integer GLFW_PLATFORM_ERROR
+register constant Integer GLFW_FORMAT_UNAVAILABLE
+register constant Integer GLFW_NO_WINDOW_CONTEXT
+
+register constant Integer GLFW_RELEASE
+register constant Integer GLFW_PRESS
+register constant Integer GLFW_REPEAT
+
+register constant Integer GLFW_ARROW_CURSOR
+register constant Integer GLFW_IBEAM_CURSOR
+register constant Integer GLFW_CROSSHAIR_CURSOR
+register constant Integer GLFW_HAND_CURSOR
+register constant Integer GLFW_HRESIZE_CURSOR
+register constant Integer GLFW_VRESIZE_CURSOR
+
+# Glfw Classes
+register class    GlfwWindow
+register class    GlfwMonitor
+register class    GlfwVideoMode
+register class    GlfwGammaRamp
+register class    GlfwGlProc
+register class    GlfwImage
+register class    GlfwCursor
+
+# Glfw Fields
+register field    GlfwVideoMode Integer width
+register field    GlfwVideoMode Integer height
+register field    GlfwVideoMode Integer redBits
+register field    GlfwVideoMode Integer greenBits
+register field    GlfwVideoMode Integer blueBits
+register field    GlfwVideoMode Integer refreshRate
+
+# Glfw Functions
+register function glfwCreateWindow(Number, Number, String, GlfwMonitor^, GlfwWindow^) -> GlfwWindow^
+register function glfwInit() -> void
+register function glfwTerminate() -> void
+register function glfwDestroyWindow(GlfwWindow^) -> void
+register function glfwWindowShouldClose(GlfwWindow^) -> Boolean
+register function glfwPollEvents() -> void
+register function glfwSwapBuffers(GlfwWindow^) -> void
+register function glfwMakeContextCurrent(GlfwWindow^) -> void
+register function glfwSwapInterval(Number) -> void
+register function glfwGetCurrentContext() -> GlfwWindow^
+register function glfwGetPrimaryMonitor() -> GlfwMonitor^
+register function glfwGetCurrentContext() -> GlfwWindow^
+register function glfwExtensionSupported(String) -> Number
+register function glfwGetProcAddress(String) -> GlfwGlProc
+register function glfwGetMonitors(Integer^) -> GlfwMonitor^^
+register function glfwGetMonitorPos(GlfwMonitor^, Integer^, Integer^) -> void
+register function glfwGetMonitorPhysicalSize(GlfwMonitor^, Integer^, Integer^) -> void
+register function glfwGetMonitorName(GlfwMonitor^) -> String
+register function glfwSetGamma(GlfwMonitor^, Number) -> void
+register function glfwGetGammaRamp(GlfwMonitor^) -> GlfwGammaRamp^
+register function glfwSetGammaRamp(GlfwMonitor^, GlfwGammaRamp^) -> void
+register function glfwDefaultWindowHints() -> void
+register function glfwWindowHint(Integer, Integer) -> void
+register function glfwSetWindowShouldClose(GlfwWindow^, Integer) -> void
+register function glfwSetWindowTitle(GlfwWindow^, String) -> void
+register function glfwSetWindowIcon(GlfwWindow^, Integer, GlfwImage^) -> void
+register function glfwGetWindowPos(GlfwWindow^, Integer^, Integer^) -> void
+register function glfwSetWindowPos(GlfwWindow^, Integer, Integer) -> void
+register function glfwGetWindowSize(GlfwWindow^, Integer^, Integer^) -> void
+register function glfwSetWindowSizeLimits(GlfwWindow^, Integer, Integer, Integer, Integer) -> void
+register function glfwSetWindowAspectRatio(GlfwWindow^, Integer, Integer) -> void
+register function glfwSetWindowSize(GlfwWindow^, Integer, Integer) -> void
+register function glfwSetWindowSize(GlfwWindow^, Number, Number) -> void
+register function glfwGetFramebufferSize(GlfwWindow^, Integer^, Integer^) -> void
+register function glfwGetFramebufferSize(GlfwWindow^, Number^, Number^) -> void
+register function glfwGetWindowFrameSize(GlfwWindow^, Integer^, Integer^, Integer^, Integer^) -> void
+register function glfwIconifyWindow(GlfwWindow^) -> void
+register function glfwRestoreWindow(GlfwWindow^) -> void
+register function glfwMaximizeWindow(GlfwWindow^) -> void
+register function glfwShowWindow(GlfwWindow^) -> void
+register function glfwHideWindow(GlfwWindow^) -> void
+register function glfwFocusWindow(GlfwWindow^) -> void
+register function glfwGetWindowMonitor(GlfwWindow^) -> GlfwMonitor^
+register function glfwSetWindowMonitor(GlfwWindow^, GlfwMonitor^, Integer, Integer, Integer, Integer, Integer) -> void
+register function glfwGetWindowAttrib(GlfwWindow^, Integer) -> Integer
+register function glfwSetWindowUserPointer(GlfwWindow^, any^) -> any^
+register function glfwGetWindowUserPointer(GlfwWindow^) -> any^
+register function glfwSetWindowPosCallback(GlfwWindow^ , any^) -> any^
+register function glfwSetWindowSizeCallback(GlfwWindow^ , any^) -> any^
+register function glfwSetWindowCloseCallback(GlfwWindow^ , any^) -> any^
+register function glfwSetWindowRefreshCallback(GlfwWindow^ , any^) -> any^
+register function glfwSetWindowFocusCallback(GlfwWindow^ , any^) -> any^
+register function glfwSetWindowIconifyCallback(GlfwWindow^ , any^) -> any^
+register function glfwSetFramebufferSizeCallback(GlfwWindow^ , any^) -> any^
+register function glfwWaitEvents() -> void
+register function glfwWaitEventsTimeout(Number) -> void
+register function glfwPostEmptyEvent() -> void
+register function glfwGetVideoMode(GlfwMonitor^) -> GlfwVideoMode
+register function glfwSetKeyCallback(GlfwWindow^, function^(GlfwWindow^, Integer, Integer, Integer, Integer)->void) -> void
+register function glfwGetInputMode(GlfwWindow^, Integer) -> UnsignedInteger
+register function glfwSetInputMode(GlfwWindow^, Integer, Integer) -> void
+register function glfwGetKeyName(Integer, Integer) -> String
+register function glfwGetMouseButton(GlfwWindow^, Integer) -> Integer
+register function glfwGetKey(GlfwWindow^, Integer) -> Integer
+register function glfwGetCursorPos(GlfwWindow^, Number^, Number^) -> void
+register function glfwSetCursorPos(GlfwWindow^, Number, Number) -> void
+register function glfwCreateCursor(GlfwImage^, Integer, Integer) -> GlfwCursor^
+register function glfwCreateStandardCursor(Integer) -> GlfwCursor^
+register function glfwDestroyCursor(GlfwCursor^) -> void
+register function glfwSetCursor(GlfwWindow^, GlfwCursor^) -> void
+register function glfwSetCharCallback(GlfwWindow^, function^(GlfwWindow^, UnsignedInteger)->void) -> void
+register function glfwSetCharModsCallback(GlfwWindow^, function^(GlfwWindow^, UnsignedInteger, Integer)->void) -> void
+register function glfwSetMouseButtonCallback(GlfwWindow^, function^(GlfwWindow^, Integer, Integer, Integer)->void) -> void
+register function glfwSetCursorPosCallback(GlfwWindow^, function^(GlfwWindow^, Number, Number)->void) -> void
+register function glfwSetCursorEnterCallback(GlfwWindow^, function^(GlfwWindow^, Integer)->void) -> void
+register function glfwSetScrollCallback(GlfwWindow^, function^(GlfwWindow^, Number, Number)->void) -> void
+register function glfwSetTime(Number) -> void
+register function glfwGetTime() -> Number
+register function glfwGetClipboardString(GlfwWindow^) -> String
+register function glfwJoystickPresent(Integer) -> UnsignedInteger
+register function glfwGetJoystickName(Integer) -> String
+

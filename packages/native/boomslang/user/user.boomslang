@@ -1,0 +1,5 @@
+
+native link "libuser/bin/Release/libuser.a"
+native include "libuser/user.h"
+
+register function getUsername() -> String

@@ -1,0 +1,9 @@
+
+native link "librandom/bin/Release/librandom.a"
+native include "librandom/random.h"
+
+register function randomize() -> void
+register function random_set_seed(UnsignedInteger) -> void
+register function random_seed() -> UnsignedInteger
+register function random_under(Integer) -> Number
+register function random_between(Integer, Integer) -> Number

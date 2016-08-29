@@ -1,0 +1,38 @@
+
+native include "boomslang_math.h"
+
+register constant Number PI
+register constant Number INFINITY
+register constant Number NAN
+
+register function cos(Number) -> Number
+register function sin(Number) -> Number
+register function tan(Number) -> Number
+register function acos(Number) -> Number
+register function asin(Number) -> Number
+register function atan(Number) -> Number
+register function atan2(Number, Number) -> Number
+register function cosh(Number) -> Number
+register function sinh(Number) -> Number
+register function tanh(Number) -> Number
+register function acosh(Number) -> Number
+register function asinh(Number) -> Number
+register function atanh(Number) -> Number
+register function exp(Number) -> Number
+register function pow(Number) -> Number
+register function sqrt(Number) -> Number
+register function cbrt(Number) -> Number
+register function hypot(Number, Number) -> Number
+register function ceil(Number) -> Number
+register function floor(Number) -> Number
+register function fmod(Number, Number) -> Number
+register function mod(Number, Number) -> Number
+register function trunc(Number) -> Number
+register function round(Number) -> Number
+register function fdim(Number, Number) -> Number
+register function fmax(Number, Number) -> Number
+register function max(Number, Number) -> Number
+register function fmin(Number, Number) -> Number
+register function min(Number, Number) -> Number
+register function fabs(Number) -> Number
+register function abs(Number) -> Number
