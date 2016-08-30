@@ -21,9 +21,8 @@ g++ -c source/core.cpp -o obj/Release/core.o -std=c++11
 g++ -c source/context.cpp -o obj/Release/context.o -std=c++11
 g++ -c source/assembler.cpp -o obj/Release/assembler.o -std=c++11
 
-pushd
 cd obj/Release
 g++ token.o scope.o run.o options.o management.o main.o log.o locate.o lexer.o \
 	file.o errors.o enforcer.o dump.o die.o core.o context.o assembler.o -lboost_system-mgw47-mt-1_60 \
 	-lboost_filesystem-mgw47-mt-1_60 -o ../../bin/Release/BoomslangCompiler
-popd
+cd ..
