@@ -33,7 +33,7 @@ bool context_variable_exists(Environment& e, Variable variable){
     return (environment_variable_exists(e.scope, variable) or environment_variable_exists(&e.global, variable));
 }
 bool context_class_exists(TokenContext context, Environment& e, Class base){
-    if(base.name == "any^") return true;
+    if(base.name.substr(0, 4) == "any^") return true;
     if(base.name.substr(0, 10) == "function^(") return true;
 
     context_class_dereference_ifcan(context, base);

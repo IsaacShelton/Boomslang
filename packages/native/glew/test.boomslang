@@ -1,0 +1,38 @@
+
+import glew
+import glfw
+import opengl
+
+def main()
+	unless glfwInit()
+		die()
+	
+	GlfwWindow^ window = glfwCreateWindow(640, 480, "Is OpenGL 3.0 Supported?", void, void)
+	
+	if window == void
+		"Failed to create window".fail()
+		die()
+	
+	glfwMakeContextCurrent(window)
+	glfwSwapInterval(1)
+	glClearColor(1, 0, 0, 1)
+	
+	if glewInit() != GLEW_OK
+		die()
+	
+	if GLEW_VERSION_3_0
+		glfwSetWindowTitle(window, "Is OpenGL 3.0 Supported?  -  OpenGL 3.0 is supported and ready for use")
+		glClearColor(0.525, 0.969, 0.525, 1)
+	else
+		glfwSetWindowTitle(window, "Is OpenGL 3.0 Supported?  -  OpenGL 3.0 isn't supported")
+		glClearColor(0.729, 0.118, 0.118, 1)
+	
+	until glfwWindowShouldClose(window)
+		glClear(GL_COLOR_BUFFER_BIT)
+		
+		glfwSwapBuffers(window)
+		glfwPollEvents()
+	
+	glfwDestroyWindow(window)
+	glfwTerminate()
+	
