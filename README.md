@@ -201,7 +201,8 @@ def main()
 ```python
 
 def main()
-    Double speed = 74.6f
+    Float pi = 3.14f
+    Double speed = 74.6d
     Integer gears = 14i
     UnsignedInteger wheels = 4u
 ```
