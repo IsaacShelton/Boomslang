@@ -1,4 +1,4 @@
-# Part of the IsaacShelton/sum Package
+# Part of the IsaacShelton/math Package
 
-def sum(Number a, Number b)
+def sum(Double a, Double b)
     return a + b

@@ -1,7 +1,7 @@
 
 def gravity(GlfwWindow^ window, GameData^ gamedata)
 	# Player Gravity
-	Integer i = 0i
+	int i = 0
 	Boolean colliding = false
 	
 	# Check each platform
@@ -38,7 +38,7 @@ def gravity(GlfwWindow^ window, GameData^ gamedata)
 	gamedata.player.update()
 	
 	# Make sure player isn't inside a platform
-	i = 0i
+	i = 0
 	while i < gamedata.platforms.length()
 		if gamedata.platforms.get(i).colliding(gamedata.player)
 			
@@ -52,7 +52,7 @@ def gravity(GlfwWindow^ window, GameData^ gamedata)
 		i += 1
 
 def render(GlfwWindow^ window, GameData^ gamedata)
-	var i = 0i
+	int i = 0
 	while i < gamedata.platforms.length()
 		# Draw Platforms
 		gamedata.platforms.get(i).draw()
@@ -61,9 +61,9 @@ def render(GlfwWindow^ window, GameData^ gamedata)
 	gamedata.player.draw()
 
 def update(GlfwWindow^ window, GameData^ gamedata)
-	final Number movespeed = 6
-	Number width
-	Number height
+	final Double movespeed = 6
+	Double width
+	Double height
 	
 	# Get Window Size
 	glfwGetFramebufferSize(window, &width, &height)

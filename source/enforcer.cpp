@@ -46,8 +46,8 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
         current_line++;
     }
     else if( context.tokens[context.index].id == TOKENINDEX_STRING_LITERAL or context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL
-             or context.tokens[context.index].id == TOKENINDEX_NUMBER_LITERAL or context.tokens[context.index].id == TOKENINDEX_INTEGER_LITERAL
-             or context.tokens[context.index].id == TOKENINDEX_UNSIGNED_LITERAL){
+             or context.tokens[context.index].id == TOKENINDEX_DOUBLE_LITERAL or context.tokens[context.index].id == TOKENINDEX_FLOAT_LITERAL
+             or context.tokens[context.index].id == TOKENINDEX_INTEGER_LITERAL or context.tokens[context.index].id == TOKENINDEX_UNSIGNED_LITERAL){
         // Literal
 
         if(environment.scope == &environment.global){
@@ -61,10 +61,13 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             context_enforce_string(context, environment, context.tokens[context.index].data);
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
-            base_class.name = "Number";
+            base_class.name = "Double";
         }
-        else if(context.tokens[context.index].id == TOKENINDEX_NUMBER_LITERAL){
-            base_class.name = "Number";
+        else if(context.tokens[context.index].id == TOKENINDEX_DOUBLE_LITERAL){
+            base_class.name = "Double";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_FLOAT_LITERAL){
+            base_class.name = "Float";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_INTEGER_LITERAL){
             base_class.name = "Integer";
@@ -626,8 +629,8 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                     die(FILE_DOESNT_EXIST(full_path(filename)));
                 }
 
-                context.tokens.erase(statement, statement + 3);
-                context.index -= 3;
+                context.tokens.erase(statement, statement + 4);
+                context.index -= 4;
 
                 bool exists = false;
                 for(unsigned int i = 0; i < config->included.size(); i++){
@@ -644,8 +647,8 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             }
             else if(action == "link" and file_exists(filename_path(current_filename) + delete_slash(filename))){
                 filename = full_path(filename_path(current_filename) + delete_slash(filename));
-                context.tokens.erase(statement, statement + 3);
-                context.index -= 3;
+                context.tokens.erase(statement, statement + 4);
+                context.index -= 4;
 
                 context.tokens.insert(statement, TOKEN_LIBRARYFILE(binary_contents(filename)));
             }
@@ -849,6 +852,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 add_field(environment, Class(class_name), Variable(name, Class(type), false, false));
             }
 
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
             current_line++;
         }
         else if(context.tokens[context.index].data == "any^"){      // any^ Statement

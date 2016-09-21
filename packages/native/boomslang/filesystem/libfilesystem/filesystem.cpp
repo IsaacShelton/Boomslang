@@ -81,15 +81,19 @@ boomslang_UnsignedInteger boomslang_BinaryInputFile::boomslang_readUnsignedInteg
     uint32_t uinteger; file.read( (char*) &uinteger, sizeof(uint32_t) );
     return boomslang_UnsignedInteger(uinteger);
 }
-boomslang_Number boomslang_BinaryInputFile::boomslang_readNumber(){
+boomslang_Double boomslang_BinaryInputFile::boomslang_readDouble(){
     double number; file.read( (char*) &number, sizeof(double) );
-    return boomslang_Number(number);
+    return boomslang_Double(number);
+}
+boomslang_Float boomslang_BinaryInputFile::boomslang_readFloat(){
+    double number; file.read( (char*) &number, sizeof(double) );
+    return boomslang_Float(number);
 }
 boomslang_Boolean boomslang_BinaryInputFile::boomslang_readBoolean(){
     bool boolean; file.read( (char*) &boolean, sizeof(bool) );
     return boomslang_Boolean(boolean);
 }
-boomslang_Array<boomslang_Byte> boomslang_BinaryInputFile::boomslang_readBytes(boomslang_Number len){
+boomslang_Array<boomslang_Byte> boomslang_BinaryInputFile::boomslang_readBytes(boomslang_Double len){
     boomslang_Array<boomslang_Byte> bytes(len);
     char* cstr_bytes = new char[ (int) len.data ];
 
@@ -141,7 +145,10 @@ void boomslang_BinaryOutputFile::boomslang_writeInteger(boomslang_Integer intege
 void boomslang_BinaryOutputFile::boomslang_writeUnsignedInteger(boomslang_UnsignedInteger unsigned_integer){
     file.write( (char*) &unsigned_integer.data, sizeof(uint32_t) );
 }
-void boomslang_BinaryOutputFile::boomslang_writeNumber(boomslang_Number number){
+void boomslang_BinaryOutputFile::boomslang_writeDouble(boomslang_Double number){
+    file.write( (char*) &number.data, sizeof(double) );
+}
+void boomslang_BinaryOutputFile::boomslang_writeFloat(boomslang_Float number){
     file.write( (char*) &number.data, sizeof(double) );
 }
 void boomslang_BinaryOutputFile::boomslang_writeBoolean(boomslang_Boolean boolean){

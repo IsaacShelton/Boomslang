@@ -1,0 +1,8 @@
+
+register function a_function() -> void
+
+def a_function()
+	# Do more stuff
+	# ...
+	
+	@error "Error Line Number Should be 8"

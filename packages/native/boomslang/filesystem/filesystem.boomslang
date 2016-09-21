@@ -27,9 +27,10 @@ register method BinaryInputFile ok() -> Boolean
 register method BinaryInputFile readByte() -> Byte
 register method BinaryInputFile readInteger() -> Integer
 register method BinaryInputFile readUnsignedInteger() -> UnsignedInteger
-register method BinaryInputFile readNumber() -> Number
+register method BinaryInputFile readDouble() -> Double
+register method BinaryInputFile readFloat() -> Float
 register method BinaryInputFile readBoolean() -> Boolean
-register method BinaryInputFile readBytes(Number) -> Array<Byte>
+register method BinaryInputFile readBytes(Double) -> Array<Byte>
 register method BinaryInputFile readBytes(Integer) -> Array<Byte>
 
 register class  BinaryOutputFile
@@ -40,5 +41,6 @@ register method BinaryOutputFile ok() -> Boolean
 register method BinaryOutputFile writeByte(Byte) -> void
 register method BinaryOutputFile writeInteger(Integer) -> void
 register method BinaryOutputFile writeUnsignedInteger(UnsignedInteger) -> void
-register method BinaryOutputFile writeNumber(Number) -> void
+register method BinaryOutputFile writeDouble(Double) -> void
+register method BinaryOutputFile writeFloat(Float) -> void
 register method BinaryOutputFile writeBoolean(Boolean) -> void

@@ -73,6 +73,7 @@ std::string token_name(Token token){
         case 36 : token_name = "integer literal"; break;
         case 37 : token_name = "unsigned integer literal"; break;
         case 38 : token_name = "raw word"; break;
+        case 39 : token_name = "float literal"; break;
     }
 
     return token_name;
@@ -120,6 +121,7 @@ std::string token_operator(Token token){
         case 36 : token_name = "integer"; break;
         case 37 : token_name = "unsigned integer"; break;
         case 38 : token_name = "raw word"; break;
+        case 39 : token_name = "float"; break;
     }
 
     return token_name;
@@ -147,13 +149,13 @@ void lexer_log_tokens(TokenList tokens){
 
 // Safe Index Navigation
 bool advance_index(unsigned int& index, unsigned int length){
-    if(index + 1 >= length){return false;}
+    if(index + 1 >= length) return false;
     index++;
 
     return true;
 }
 bool retreat_index(unsigned int& index){
-    if(index - 1 < 0){return false;}
+    if(index - 1 < 0) return false;
     index--;
 
     return true;
@@ -161,18 +163,14 @@ bool retreat_index(unsigned int& index){
 
 // Shorthand Index Navigation with errors
 void index_increase(TokenContext context){
-    if(!advance_index(context.index ,context.tokens.size())) die(UNEXPECTED_TERMINATE);
+    if( !advance_index(context.index ,context.tokens.size()) ) die(UNEXPECTED_TERMINATE);
 }
 void index_decrease(TokenContext context){
-    if(!retreat_index(context.index)) die(UNEXPECTED_TERMINATE);
+    if( !retreat_index(context.index) ) die(UNEXPECTED_TERMINATE);
 }
 
 // Token Forcing
 void token_force(TokenContext context, unsigned int token_id, std::string cant_advance, std::string fail){
-    if( !advance_index(context.index, context.tokens.size()) ){
-        die(cant_advance);
-    }
-    if(context.tokens[context.index].id != token_id){
-        die(fail);
-    }
+    if( !advance_index(context.index, context.tokens.size()) ) die(cant_advance);
+    if(context.tokens[context.index].id != token_id) die(fail);
 }

@@ -50,7 +50,7 @@ register field    GlfwVideoMode Integer blueBits
 register field    GlfwVideoMode Integer refreshRate
 
 # Glfw Functions
-register function glfwCreateWindow(Number, Number, String, GlfwMonitor^, GlfwWindow^) -> GlfwWindow^
+register function glfwCreateWindow(Double, Double, String, GlfwMonitor^, GlfwWindow^) -> GlfwWindow^
 register function glfwInit() -> void
 register function glfwTerminate() -> void
 register function glfwDestroyWindow(GlfwWindow^) -> void
@@ -58,17 +58,17 @@ register function glfwWindowShouldClose(GlfwWindow^) -> Boolean
 register function glfwPollEvents() -> void
 register function glfwSwapBuffers(GlfwWindow^) -> void
 register function glfwMakeContextCurrent(GlfwWindow^) -> void
-register function glfwSwapInterval(Number) -> void
+register function glfwSwapInterval(Double) -> void
 register function glfwGetCurrentContext() -> GlfwWindow^
 register function glfwGetPrimaryMonitor() -> GlfwMonitor^
 register function glfwGetCurrentContext() -> GlfwWindow^
-register function glfwExtensionSupported(String) -> Number
+register function glfwExtensionSupported(String) -> Double
 register function glfwGetProcAddress(String) -> GlfwGlProc
 register function glfwGetMonitors(Integer^) -> GlfwMonitor^^
 register function glfwGetMonitorPos(GlfwMonitor^, Integer^, Integer^) -> void
 register function glfwGetMonitorPhysicalSize(GlfwMonitor^, Integer^, Integer^) -> void
 register function glfwGetMonitorName(GlfwMonitor^) -> String
-register function glfwSetGamma(GlfwMonitor^, Number) -> void
+register function glfwSetGamma(GlfwMonitor^, Double) -> void
 register function glfwGetGammaRamp(GlfwMonitor^) -> GlfwGammaRamp^
 register function glfwSetGammaRamp(GlfwMonitor^, GlfwGammaRamp^) -> void
 register function glfwDefaultWindowHints() -> void
@@ -82,9 +82,9 @@ register function glfwGetWindowSize(GlfwWindow^, Integer^, Integer^) -> void
 register function glfwSetWindowSizeLimits(GlfwWindow^, Integer, Integer, Integer, Integer) -> void
 register function glfwSetWindowAspectRatio(GlfwWindow^, Integer, Integer) -> void
 register function glfwSetWindowSize(GlfwWindow^, Integer, Integer) -> void
-register function glfwSetWindowSize(GlfwWindow^, Number, Number) -> void
+register function glfwSetWindowSize(GlfwWindow^, Double, Double) -> void
 register function glfwGetFramebufferSize(GlfwWindow^, Integer^, Integer^) -> void
-register function glfwGetFramebufferSize(GlfwWindow^, Number^, Number^) -> void
+register function glfwGetFramebufferSize(GlfwWindow^, Double^, Double^) -> void
 register function glfwGetWindowFrameSize(GlfwWindow^, Integer^, Integer^, Integer^, Integer^) -> void
 register function glfwIconifyWindow(GlfwWindow^) -> void
 register function glfwRestoreWindow(GlfwWindow^) -> void
@@ -105,7 +105,7 @@ register function glfwSetWindowFocusCallback(GlfwWindow^ , any^) -> any^
 register function glfwSetWindowIconifyCallback(GlfwWindow^ , any^) -> any^
 register function glfwSetFramebufferSizeCallback(GlfwWindow^ , any^) -> any^
 register function glfwWaitEvents() -> void
-register function glfwWaitEventsTimeout(Number) -> void
+register function glfwWaitEventsTimeout(Double) -> void
 register function glfwPostEmptyEvent() -> void
 register function glfwGetVideoMode(GlfwMonitor^) -> GlfwVideoMode
 register function glfwSetKeyCallback(GlfwWindow^, function^(GlfwWindow^, Integer, Integer, Integer, Integer)->void) -> void
@@ -114,8 +114,8 @@ register function glfwSetInputMode(GlfwWindow^, Integer, Integer) -> void
 register function glfwGetKeyName(Integer, Integer) -> String
 register function glfwGetMouseButton(GlfwWindow^, Integer) -> Integer
 register function glfwGetKey(GlfwWindow^, Integer) -> Integer
-register function glfwGetCursorPos(GlfwWindow^, Number^, Number^) -> void
-register function glfwSetCursorPos(GlfwWindow^, Number, Number) -> void
+register function glfwGetCursorPos(GlfwWindow^, Double^, Double^) -> void
+register function glfwSetCursorPos(GlfwWindow^, Double, Double) -> void
 register function glfwCreateCursor(GlfwImage^, Integer, Integer) -> GlfwCursor^
 register function glfwCreateStandardCursor(Integer) -> GlfwCursor^
 register function glfwDestroyCursor(GlfwCursor^) -> void
@@ -123,11 +123,11 @@ register function glfwSetCursor(GlfwWindow^, GlfwCursor^) -> void
 register function glfwSetCharCallback(GlfwWindow^, function^(GlfwWindow^, UnsignedInteger)->void) -> void
 register function glfwSetCharModsCallback(GlfwWindow^, function^(GlfwWindow^, UnsignedInteger, Integer)->void) -> void
 register function glfwSetMouseButtonCallback(GlfwWindow^, function^(GlfwWindow^, Integer, Integer, Integer)->void) -> void
-register function glfwSetCursorPosCallback(GlfwWindow^, function^(GlfwWindow^, Number, Number)->void) -> void
+register function glfwSetCursorPosCallback(GlfwWindow^, function^(GlfwWindow^, Double, Double)->void) -> void
 register function glfwSetCursorEnterCallback(GlfwWindow^, function^(GlfwWindow^, Integer)->void) -> void
-register function glfwSetScrollCallback(GlfwWindow^, function^(GlfwWindow^, Number, Number)->void) -> void
-register function glfwSetTime(Number) -> void
-register function glfwGetTime() -> Number
+register function glfwSetScrollCallback(GlfwWindow^, function^(GlfwWindow^, Double, Double)->void) -> void
+register function glfwSetTime(Double) -> void
+register function glfwGetTime() -> Double
 register function glfwGetClipboardString(GlfwWindow^) -> String
 register function glfwJoystickPresent(Integer) -> UnsignedInteger
 register function glfwGetJoystickName(Integer) -> String

@@ -1,0 +1,14 @@
+
+import glew
+import glfw
+import opengl
+
+register function just_a_function() -> void
+import "important.boomslang"
+
+def main()
+	# Do Something
+	# ...
+	
+	@error "Error Line Number Should be 13"
+	

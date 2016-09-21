@@ -1,7 +1,7 @@
 
 def main()
 	String message = "Hello "
-	Number x
+	Double x
 	
 	message += "John"
 	x += 10

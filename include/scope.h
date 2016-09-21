@@ -117,6 +117,7 @@ unsigned int environment_method_index(Scope*, Method);
 Method environment_method_get(TokenContext context, Scope*, Method);
 bool environment_generic_method_exists(TokenContext context, Scope*, Method, Class, Class);
 Method environment_generic_method_get(TokenContext context, Scope*, Method, Class, Class);
+std::string environment_similar_methods(TokenContext context, Scope*, Method);
 
 // Classes
 bool environment_class_exists(Scope*, Class);

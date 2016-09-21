@@ -10,15 +10,15 @@ def main()
     
     GlfwMonitor^ monitor = glfwGetPrimaryMonitor()
     GlfwVideoMode videomode = glfwGetVideoMode(monitor)
-    GlfwWindow^ window = glfwCreateWindow(videomode.width.toNumber(), videomode.height.toNumber(), "Bouncing Square", monitor, void)
+    GlfwWindow^ window = glfwCreateWindow(videomode.width.toDouble(), videomode.height.toDouble(), "Bouncing Square", monitor, void)
     
-    final Number xspeed = 4
-    Number xposition = 0
-    Number xdirection = 1
+    final Double xspeed = 4
+    Double xposition = 0
+    Double xdirection = 1
     
-    final Number yspeed = 4
-    Number yposition = 0
-    Number ydirection = 1
+    final Double yspeed = 4
+    Double yposition = 0
+    Double ydirection = 1
     
     if window = void
         "Failed to init window".output()
@@ -35,7 +35,7 @@ def main()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
 		glViewport(0i, 0i, videomode.width, videomode.height)
-        glOrtho(0, videomode.width.toNumber(), videomode.height.toNumber(), 0, 1, -1)
+        glOrtho(0, videomode.width.toDouble(), videomode.height.toDouble(), 0, 1, -1)
         
         glColor3f(1, 0, 0)
         glBegin(GL_QUADS)
@@ -45,12 +45,12 @@ def main()
           glVertex2f(100 + xposition, 0 + yposition)
         glEnd()
         
-        if xposition >= videomode.width.toNumber() - 100
+        if xposition >= videomode.width.toDouble() - 100
             xdirection = -1
         else if xposition <= 0
             xdirection = 1
         
-        if yposition >= videomode.height.toNumber() - 100
+        if yposition >= videomode.height.toDouble() - 100
             ydirection = -1
         else if yposition <= 0
             ydirection = 1

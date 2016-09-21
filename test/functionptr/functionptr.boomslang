@@ -1,4 +1,6 @@
 
+# NOTE: This is outdated and function pointers are still experimental and unsupported at the moment
+
 def greet(String message)
 	message.output()
 

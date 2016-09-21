@@ -1,16 +1,16 @@
 
 class Vector3f
-	Number x
-	Number y
-	Number z
+	Float x
+	Float y
+	Float z
 	
-	def new(Number x, Number y, Number z)
+	def new(Float x, Float y, Float z)
 		self.x = x
 		self.y = y
 		self.z = z
 
 def main()
-	Vector3f position = new Vector3f(10, 12, 9)
+	Vector3f position = new Vector3f(10f, 12f, 9f)
 	position.x.output()
 	position.y.output()
 	position.z.output()

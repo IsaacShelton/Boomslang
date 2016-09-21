@@ -5,11 +5,11 @@ import boomslang/random
 
 class Sprite
 	Image^ image
-	Number x
-	Number y
+	Double x
+	Double y
 	
 	def new()
-	def new(Image^ image, Number x, Number y)
+	def new(Image^ image, Double x, Double y)
 		self.image = image
 		self.x = x
 		self.y = y
@@ -18,13 +18,13 @@ class Sprite
 		image.draw(x, y)
 
 class Resources
-	Image player_right
-	Image player_left
+	Image playerRight
+	Image playerLeft
 	Image flower
 	
 	def load()
-		player_right.load("player_right.png")
-		player_left.load("player_left.png")
+		playerRight.load("player_right.png")
+		playerLeft.load("player_left.png")
 		flower.load("flower.png")
 
 class GameData
@@ -33,9 +33,9 @@ class GameData
 	List<Sprite> flowers
 	
 	def load()
-		player = new Sprite(&resources.player_right, 128, 32)
+		player = new Sprite(&resources.playerRight, 128, 32)
 
-def generate_flowers(GameData^ gamedata, Integer width, Integer height)
+def generateFlowers(GameData^ gamedata, Integer width, Integer height)
 	Sprite flower
 	var flowers = floor( random_under(150i) ).toInteger()
 	var i = 0i

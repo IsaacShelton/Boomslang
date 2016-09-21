@@ -1,6 +1,6 @@
 
 def main()
-	Number countdown = 10
+	Integer countdown = 10
 	
 	while countdown > 0
 		countdown.output()

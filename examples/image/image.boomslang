@@ -23,8 +23,8 @@ def main()
 	character.load("character.png")
 	
 	until glfwWindowShouldClose(window)
-		Number width
-		Number height
+		Double width
+		Double height
 		
 		# Get Window Width and Height
 		glfwGetFramebufferSize(window, &width, &height)
@@ -33,7 +33,7 @@ def main()
 		glClear(GL_COLOR_BUFFER_BIT)
 		
 		# Set View
-		glViewport(0, 0, width, height)
+		glViewport(0i, 0i, width.toInteger(), height.toInteger())
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
 		glOrtho(0, width, height, 0, 1, -1)

@@ -59,10 +59,11 @@
 #define TOKENINDEX_LIBRARYFILE       32 // Generated
 #define TOKENINDEX_SETFILENAME       33 // Generated
 #define TOKENINDEX_SETLINENUMBER     34 // Generated
-#define TOKENINDEX_NUMBER_LITERAL    35
+#define TOKENINDEX_DOUBLE_LITERAL    35
 #define TOKENINDEX_INTEGER_LITERAL   36
 #define TOKENINDEX_UNSIGNED_LITERAL  37
 #define TOKENINDEX_RAW_WORD          38 // Generated
+#define TOKENINDEX_FLOAT_LITERAL     39
 
 #define TOKEN_STRING_LITERAL(a)   Token{ 0, a}
 #define TOKEN_NUMERIC_LITERAL(a)  Token{ 1, a}
@@ -103,6 +104,7 @@
 #define TOKEN_INTEGER_LITERAL(a)  Token{36,a}
 #define TOKEN_UNSIGNED_LITERAL(a) Token{37,a}
 #define TOKEN_RAW_WORD(a)         Token{38,a} // Generated
+#define TOKEN_FLOAT_LITERAL(a)         Token{39,a}
 
 struct Token {
     unsigned int id;

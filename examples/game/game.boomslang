@@ -10,7 +10,7 @@ def main()
 	
 	var monitor = glfwGetPrimaryMonitor()
 	var videomode = glfwGetVideoMode(monitor)
-	var window = glfwCreateWindow(videomode.width.toNumber(), videomode.height.toNumber(), "A game made in Boomslang", monitor, void)
+	var window = glfwCreateWindow(videomode.width.toDouble(), videomode.height.toDouble(), "A game made in Boomslang", monitor, void)
 	
 	if window = void
 		"Failed to create window".output()
@@ -25,11 +25,11 @@ def main()
 	GameData gamedata
 	gamedata.resources.load()
 	gamedata.load()
-	generate_flowers(&gamedata, videomode.width, videomode.height)
+	generateFlowers(&gamedata, videomode.width, videomode.height)
 	
 	until glfwWindowShouldClose(window)
-		Number width
-		Number height
+		Double width
+		Double height
 		
 		# Get Window Width and Height
 		glfwGetFramebufferSize(window, &width, &height)

@@ -1,5 +1,8 @@
 
-@error "This is a custom error message"
+@define "platform" "Windows 10 Release 23.14.0431"
 
 def main()
-	# ...
+	(@value "platform").output()
+
+
+@error "I can create custom error messages"

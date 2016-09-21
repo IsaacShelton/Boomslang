@@ -1,7 +1,7 @@
 
 class Robot
 	String name
-	Number speed
+	Double speed
 	
 	def greet()
 		("Hello, my name is " + name).output()

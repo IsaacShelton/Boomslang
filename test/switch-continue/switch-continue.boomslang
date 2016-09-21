@@ -1,6 +1,6 @@
 
 def main()
-	Number count
+	Integer count
 	
 	while count < 10
 		count = count + 1

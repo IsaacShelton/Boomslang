@@ -27,9 +27,9 @@ boomslang_UnsignedInteger boomslang_random_seed(){
     return boomslang_UnsignedInteger(seed);
 }
 
-boomslang_Number boomslang_random_under(boomslang_Integer number){
-    return boomslang_Number( rand() / (RAND_MAX / number.data + 1) );
+boomslang_Double boomslang_random_under(boomslang_Integer number){
+    return boomslang_Double( rand() / (RAND_MAX / number.data + 1) );
 }
-boomslang_Number boomslang_random_between(boomslang_Integer minimum, boomslang_Integer maximum){
-    return boomslang_Number( minimum.data + rand() / (RAND_MAX / (maximum.data - minimum.data) + 1) );
+boomslang_Double boomslang_random_between(boomslang_Integer minimum, boomslang_Integer maximum){
+    return boomslang_Double( minimum.data + rand() / (RAND_MAX / (maximum.data - minimum.data) + 1) );
 }

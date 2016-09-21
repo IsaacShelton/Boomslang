@@ -47,7 +47,7 @@
 #define UNEXPECTED_KEYWORD(a)              (ERROR_INDICATOR + "Unexpected keyword " + a)
 #define CLASS_DECLARED_AFTER(a, b)         (ERROR_INDICATOR + "The Class '" + a + "' was declared after '" + b + "', it can't be used before that")
 #define VARIABLE_IS_FINAL(a)               (ERROR_INDICATOR + "The Variable '" + a + "' is final, it can't be modified")
-#define UNDECLARED_METHOD_OTHERS(a)        (ERROR_INDICATOR + "Undeclared method '" + a + "' - similar methods exist with different arguments")
+#define UNDECLARED_METHOD_OTHERS(a)        (ERROR_INDICATOR + "Undeclared method '" + a + "' similar methods exist:")
 #define INCOMPATIBLE_CLASSES(a,b)          (ERROR_INDICATOR + "Incompatible classes '" + a + "' and '" + b + "'")
 #define CANT_CALL_METHODS_OF_VOID          (ERROR_INDICATOR + "Can't call methods of void, it has no type")
 #define CANT_PASS_VOID_AS_ARGUMENT         (ERROR_INDICATOR + "Can't pass void as method argument, it has no type")

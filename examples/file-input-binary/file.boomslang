@@ -13,7 +13,7 @@ def main()
 		die()
 	
 	# Read some data from test.bin
-	Number number = file.readNumber()
+	Double number = file.readDouble()
 	Integer integer = file.readInteger()
 	Byte byte = file.readByte()
 	

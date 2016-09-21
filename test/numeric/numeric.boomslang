@@ -1,7 +1,7 @@
 
 def main()
     # Numeric Literals are flexible
-    Number a = -42.234
+    Double a = -42.234
     Integer b = -21.942
     UnsignedInteger c = 32.634
     

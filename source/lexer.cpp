@@ -108,6 +108,11 @@ TokenList tokenize(std::string code){
             if(code.substr(0,1) == "f"){
                 code = string_delete_amount(code, 1);
                 log_lexer(LEXER_LOG_PREFIX + "Found number literal, adding number literal token");
+                tokens.push_back( TOKEN_FLOAT_LITERAL(number) );
+            }
+            else if(code.substr(0,1) == "d"){
+                code = string_delete_amount(code, 1);
+                log_lexer(LEXER_LOG_PREFIX + "Found number literal, adding number literal token");
                 tokens.push_back( TOKEN_NUMBER_LITERAL(number) );
             }
             else if(code.substr(0,1) == "i"){

@@ -12,25 +12,25 @@ def render(GlfwWindow^ window, GameData^ gamedata)
 	gamedata.player.draw()
 
 # Player Movement
-def move_player(GlfwWindow^ window, GameData^ gamedata)
+def movePlayer(GlfwWindow^ window, GameData^ gamedata)
 	# Checks for keyboard input and moves the player
 	
 	# How fast should the character move?
-	final Number movespeed = 4
+	final Double movespeed = 4
 	
 	if glfwGetKey(window, GLFW_KEY_RIGHT) = GLFW_PRESS
 		# Increase player x by movespeed
 		gamedata.player.x += movespeed
 		
 		# Update player image to face right
-		gamedata.player.image = &gamedata.resources.player_right
+		gamedata.player.image = &gamedata.resources.playerRight
 	
 	if glfwGetKey(window, GLFW_KEY_LEFT) = GLFW_PRESS
 		# Decrease player x by movespeed
 		gamedata.player.x -= movespeed
 		
 		# Update player image to face left
-		gamedata.player.image = &gamedata.resources.player_left
+		gamedata.player.image = &gamedata.resources.playerLeft
 	
 	if glfwGetKey(window, GLFW_KEY_DOWN) = GLFW_PRESS
 		# Increase player y by movespeed
@@ -41,24 +41,24 @@ def move_player(GlfwWindow^ window, GameData^ gamedata)
 		gamedata.player.y -= movespeed
 
 # Player Wall Collision
-def clamp_player_position(GameData^ gamedata, Integer width, Integer height)
+def clampPlayerPosition(GameData^ gamedata, Integer width, Integer height)
 	# Makes sure the player can't move out of view
 	
 	if gamedata.player.x < 0
 		# Player x can't be less than zero
 		gamedata.player.x = 0
 	
-	if gamedata.player.x > width.toNumber() - 64
+	if gamedata.player.x > width.toDouble() - 64
 		# Player x can't be greater than width - 64
-		gamedata.player.x = width.toNumber() - 64
+		gamedata.player.x = width.toDouble() - 64
 	
 	if gamedata.player.y < 0
 		# Player y can't be less than zero
 		gamedata.player.y = 0
 	
-	if gamedata.player.y > height.toNumber() - 64
+	if gamedata.player.y > height.toDouble() - 64
 		# Player y can't be greater than height - 64
-		gamedata.player.y = height.toNumber() - 64
+		gamedata.player.y = height.toDouble() - 64
 
 # Run Game Logic
 def update(GlfwWindow^ window, GameData^ gamedata)
@@ -69,7 +69,7 @@ def update(GlfwWindow^ window, GameData^ gamedata)
 	glfwGetFramebufferSize(window, &width, &height)
 	
 	# Move Player
-	move_player(window, gamedata)
+	movePlayer(window, gamedata)
 	
 	# Clamp Player
-	clamp_player_position(gamedata, width, height)
+	clampPlayerPosition(gamedata, width, height)

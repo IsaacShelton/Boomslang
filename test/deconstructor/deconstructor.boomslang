@@ -1,13 +1,13 @@
 
 class Vector3f
-	Number^ x
-	Number^ y
-	Number^ z
+	Float^ x
+	Float^ y
+	Float^ z
 	
 	def new()
-		x = create Number(10)
-		y = create Number(8)
-		z = create Number(16)
+		x = create Float(10f)
+		y = create Float(8f)
+		z = create Float(16f)
 		
 		"Dynamic Data Created!".output()
 	

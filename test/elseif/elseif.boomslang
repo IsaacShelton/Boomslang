@@ -1,6 +1,6 @@
 
 def main()
-	Number x = 10
+	Double x = 10
 	
 	if x = 0
 		"x is zero".output()

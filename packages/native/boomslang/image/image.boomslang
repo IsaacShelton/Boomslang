@@ -4,5 +4,5 @@ native include "libimage/image.h"
 
 register class  Image
 register method Image load(String) -> void
-register method Image draw(Number, Number) -> void
+register method Image draw(Double, Double) -> void
 register field  Image UnsignedInteger texture

@@ -82,7 +82,7 @@ void boomslang_Image::boomslang_load(boomslang_String filename, boomslang_Boolea
 
     stbi_image_free(image);
 }
-void boomslang_Image::boomslang_draw(boomslang_Number x, boomslang_Number y){
+void boomslang_Image::boomslang_draw(boomslang_Double x, boomslang_Double y){
     int width;
     int height;
 

@@ -1,11 +1,11 @@
 
-def is_valid_operator(String operator)
+def isValidOperator(String operator)
 	unless operator = "+" or operator = "-" or operator = "*" or operator = "/"
 		return false
 	else
 		return true
 
-def get_result(Number value_1, String operator, Number value_2)
+def getResult(Double value_1, String operator, Double value_2)
 	if operator = "+"
 		return value_1 + value_2
 	
@@ -24,9 +24,9 @@ def get_result(Number value_1, String operator, Number value_2)
 		return 0
 
 def main()
-	Number value_1
-	Number value_2
-	Number result
+	Double value_1
+	Double value_2
+	Double result
 	String operator
 	
 	# Get Value 1
@@ -38,7 +38,7 @@ def main()
 	operator.input()
 	
 	# Ensure Operator is Valid
-	unless is_valid_operator(operator)
+	unless isValidOperator(operator)
 		("Invalid operator '" + operator + "', accepted operators include '+', '-', '*', and '/'").fail()
 		die()
 	
@@ -47,5 +47,5 @@ def main()
 	value_2.input()
 	
 	# Show Result
-	result = get_result(value_1, operator, value_2)
+	result = getResults(value_1, operator, value_2)
 	("The result is: " + result.toString()).output()

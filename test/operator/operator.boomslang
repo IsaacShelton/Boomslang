@@ -1,10 +1,10 @@
 
 class Vector3f
-	Number x
-	Number y
-	Number z
+	Float x
+	Float y
+	Float z
 	
-	def new(Number x, Number y, Number z)
+	def new(Float x, Float y, Float z)
 		self.x = x
 		self.y = y
 		self.z = z
@@ -21,7 +21,7 @@ class Vector3f
 	
 	# Comparision Operator Overload Example
 	def <=(Vector3f other)
-		if (x + y + z)/3 <= (other.x + other.y + other.z)/3
+		if (x + y + z)/3f <= (other.x + other.y + other.z)/3f
 			return true
 		else
 			return false
@@ -31,11 +31,11 @@ class Vector3f
 
 def main()
 	# Use Overloaded Assignment Operator
-	Vector3f vector1 = new Vector3f(1, 2, 3)
-	Vector3f vector2 = new Vector3f(9, 10, 16)
+	Vector3f vector1 = new Vector3f(1f, 2f, 3f)
+	Vector3f vector2 = new Vector3f(9f, 10f, 16f)
 	
 	# Use Overloaded Arithmetic Operator
-	vector1 = vector1 + new Vector3f(10, 11, 12)
+	vector1 = vector1 + new Vector3f(10f, 11f, 12f)
 	
 	# Use Overloaded Comparision Operator
 	vector1.output()

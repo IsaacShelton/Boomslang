@@ -1,4 +1,4 @@
-# Part of the IsaacShelton/sum Package
+# Part of the IsaacShelton/math Package
 
-def diff(Number a, Number b)
+def diff(Double a, Double b)
     return a - b

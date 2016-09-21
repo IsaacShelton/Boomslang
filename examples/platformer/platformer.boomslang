@@ -39,7 +39,7 @@ def main()
 		glViewport(0i, 0i, width, height)
 		glMatrixMode(GL_PROJECTION)
 		glLoadIdentity()
-		glOrtho(0, width.toNumber(), height.toNumber(), 0, 1, -1)
+		glOrtho(0, width.toDouble(), height.toDouble(), 0, 1, -1)
 		
 		update(window, &gamedata)
 		render(window, &gamedata)

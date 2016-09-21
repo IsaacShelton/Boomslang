@@ -1,11 +1,11 @@
 
 class Sprite
 	Image^ image
-	Number x
-	Number y
+	Double x
+	Double y
 	
 	def new()
-	def new(Image^ image, Number x, Number y)
+	def new(Image^ image, Double x, Double y)
 		self.image = image
 		self.x = x
 		self.y = y
@@ -15,18 +15,18 @@ class Sprite
 
 class Player
 	Image^ image
-	Number x
-	Number y
-	Number gravity
-	Number vspeed
+	Double x
+	Double y
+	Double gravity
+	Double vspeed
 	
 	def new()
-	def new(Image^ image, Number x, Number y)
+	def new(Image^ image, Double x, Double y)
 		self.image = image
 		self.x = x
 		self.y = y
 	
-	def fall(Number amount)
+	def fall(Double amount)
 		vspeed += gravity * amount
 	
 	def update()
@@ -37,11 +37,11 @@ class Player
 
 class Platform
 	Image^ image
-	Number x
-	Number y
+	Double x
+	Double y
 	
 	def new()
-	def new(Image^ image, Number x, Number y)
+	def new(Image^ image, Double x, Double y)
 		self.image = image
 		self.x = x
 		self.y = y
@@ -52,7 +52,7 @@ class Platform
 		else
 			return false
 	
-	def colliding(Player player, Number yoffset)
+	def colliding(Player player, Double yoffset)
 		if player.x < x + 256 and player.x + 64 > x and player.y + yoffset < y + 32 and 64 + player.y + yoffset > y
 			return true
 		else

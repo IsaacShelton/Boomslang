@@ -126,7 +126,7 @@ typedef struct {
 #define boomslang_glfwDestroyCursor(a)                glfwDestroyCursor(a)
 #define boomslang_glfwSetCursor(a,b)                  glfwSetCursor(a,b)
 #define boomslang_glfwSetTime(a)                      glfwSetTime(a)
-#define boomslang_glfwGetTime()                       boomslang_Number(glfwGetTime())
+#define boomslang_glfwGetTime()                       boomslang_Double(glfwGetTime())
 #define boomslang_glfwGetClipboardString()            boomslang_String(glfwGetClipboardString())
 #define boomslang_glfwJoystickPresent(a)              boomslang_Integer(glfwJoystickPresent(a))
 #define boomslang_glfwGetJoystickName(a)              boomslang_String(glfwGetJoystickName(a))
@@ -142,9 +142,9 @@ typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_Integ
 typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_UnsignedInteger);} __bwrap__GLFWcharbinding;
 typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_UnsignedInteger, boomslang_Integer);} __bwrap__GLFWcharmodsbinding;
 typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_Integer, boomslang_Integer, boomslang_Integer);} __bwrap__GLFWmousebtnbinding;
-typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_Number, boomslang_Number);} __bwrap__GLFWcurposbinding;
+typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_Double, boomslang_Double);} __bwrap__GLFWcurposbinding;
 typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_Integer);} __bwrap__GLFWcurenterbinding;
-typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_Number, boomslang_Number);} __bwrap__GLFWscrollbinding;
+typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_Double, boomslang_Double);} __bwrap__GLFWscrollbinding;
 typedef struct {GLFWwindow* window;void (*callback)(GLFWwindow*, boomslang_Integer);} __bwrap__GLFWdropbinding;
 std::vector<__bwrap__GLFWkeybinding> __bwrap__GLFWkeycallbacks; std::vector<__bwrap__GLFWcharbinding> __bwrap__GLFWcharcallbacks;
 std::vector<__bwrap__GLFWcharmodsbinding> __bwrap__GLFWcharmodscallbacks; std::vector<__bwrap__GLFWmousebtnbinding> __bwrap__GLFWmousebtncallbacks;
@@ -219,11 +219,11 @@ inline void boomslang_glfwSetMouseButtonCallback(GLFWwindow* window, void (*func
     }
     __bwrap__GLFWmousebtncallbacks.push_back( __bwrap__GLFWmousebtnbinding{window, func} );
 }
-inline void boomslang_glfwSetCursorPosCallback(GLFWwindow* window, void (*func)(GLFWwindow*, boomslang_Number, boomslang_Number)){
+inline void boomslang_glfwSetCursorPosCallback(GLFWwindow* window, void (*func)(GLFWwindow*, boomslang_Double, boomslang_Double)){
     glfwSetCursorPosCallback(window, [](GLFWwindow* w, double a, double b)->void {
         for(std::size_t i = 0; i < __bwrap__GLFWcurposcallbacks.size(); i++){
             if(__bwrap__GLFWcurposcallbacks[i].window == w){
-                __bwrap__GLFWcurposcallbacks[i].callback(w, boomslang_Number(a), boomslang_Number(b));
+                __bwrap__GLFWcurposcallbacks[i].callback(w, boomslang_Double(a), boomslang_Double(b));
                 break;
             }
         }
@@ -253,11 +253,11 @@ inline void boomslang_glfwSetCursorEnterCallback(GLFWwindow* window, void (*func
     }
     __bwrap__GLFWcurentercallbacks.push_back( __bwrap__GLFWcurenterbinding{window, func} );
 }
-inline void boomslang_glfwSetScrollCallback(GLFWwindow* window, void (*func)(GLFWwindow*, boomslang_Number, boomslang_Number)){
+inline void boomslang_glfwSetScrollCallback(GLFWwindow* window, void (*func)(GLFWwindow*, boomslang_Double, boomslang_Double)){
     glfwSetScrollCallback(window, [](GLFWwindow* w, double a, double b)->void {
         for(std::size_t i = 0; i < __bwrap__GLFWscrollcallbacks.size(); i++){
             if(__bwrap__GLFWscrollcallbacks[i].window == w){
-                __bwrap__GLFWscrollcallbacks[i].callback(w, boomslang_Number(a), boomslang_Number(b));
+                __bwrap__GLFWscrollcallbacks[i].callback(w, boomslang_Double(a), boomslang_Double(b));
                 break;
             }
         }
@@ -278,7 +278,7 @@ inline void boomslang_glfwGetFramebufferSize(GLFWwindow* window, boomslang_Integ
     *a = w;
     *b = h;
 }
-inline void boomslang_glfwGetFramebufferSize(GLFWwindow* window, boomslang_Number* a, boomslang_Number* b){
+inline void boomslang_glfwGetFramebufferSize(GLFWwindow* window, boomslang_Double* a, boomslang_Double* b){
     int w, h;
 
     glfwGetFramebufferSize(window, &w, &h);

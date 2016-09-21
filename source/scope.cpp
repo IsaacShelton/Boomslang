@@ -212,9 +212,7 @@ bool arguments_equal(TokenContext context, std::vector<MethodArgument> a, std::v
     }
 
     for(unsigned int i = 0; i < a.size(); i++){
-        if( a[i].type.name != b[i].type.name
-        and !(a[i].type.name == "any^" and context_class_can_dereference(context, b[i].type))
-        and !(b[i].type.name == "any^" and context_class_can_dereference(context, a[i].type)) ){
+        if( !context_class_compare(context, a[i].type, b[i].type) ){
             return false;
         }
     }
@@ -348,6 +346,24 @@ Method environment_generic_method_get(TokenContext context, Scope* scope, Method
     #endif // DEV_ERRORS
 
     return Method{"", NULL, IGNORE_ARGS, IGNORE_CLASS};
+}
+std::string environment_similar_methods(TokenContext context, Scope* scope, Method method){
+    std::string methods;
+
+    for(size_t i = 0; i < scope->methods.size(); i++){
+        if( (scope->methods[i].name == method.name or method.name==IGNORE) and (scope->methods[i].parent == method.parent or method.parent==NULL) ){
+            std::string method_arg_string;
+
+            for(size_t j = 0; j < scope->methods[i].arguments.size(); j++){
+                method_arg_string += scope->methods[i].arguments[j].type.toString();
+                if(j + 1 < scope->methods[i].arguments.size()) method_arg_string += ", ";
+            }
+
+            methods += "\n      " + scope->methods[i].name + "(" + method_arg_string + ") -> " + scope->methods[i].return_type.name;
+        }
+    }
+
+    return methods;
 }
 
 // Classes

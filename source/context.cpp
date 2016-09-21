@@ -542,7 +542,8 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
-            Class base_class = Class("Number");
+            Class base_class = Class("Double");
+            context.tokens[context.index].id = TOKENINDEX_DOUBLE_LITERAL;
 
             index_increase(context);
 
@@ -574,12 +575,57 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             else if(!context_class_compare(context, type, base_class)
             and type.name!="Integer"
             and type.name!="UnsignedInteger"
-            and type.name!="Byte"){
+            and type.name!="Byte"
+            and type.name!="uint"
+            and type.name!="int"
+            and type.name!="float"
+            and type.name!="double"
+            and type.name!="short"
+            and type.name!="ushort"
+            and type.name!="long"
+            and type.name!="ulong"
+            and type.name!="bool"
+            and type.name!="char"
+            and type.name!="uchar"){
                 fail( INCOMPATIBLE_CLASSES(type.toString(), base_class.toString()) );
             }
         }
-        else if(context.tokens[context.index].id == TOKENINDEX_NUMBER_LITERAL){
-            Class base_class = Class("Number");
+        else if(context.tokens[context.index].id == TOKENINDEX_DOUBLE_LITERAL){
+            Class base_class = Class("Double");
+
+            index_increase(context);
+
+            while(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                if( context_class_exists(context, e, base_class) ){
+                    index_increase(context);
+
+                    if( environment_class_variable_exists(e, base_class, Variable(context.tokens[context.index].data, IGNORE_CLASS, false, false)) ){
+                        base_class = environment_class_variable_get(e, base_class, Variable(context.tokens[context.index].data, IGNORE_CLASS, false, false)).type;
+                        index_increase(context);
+                    }
+                    else {
+                        index_decrease(context);
+                        token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method call after literal", ERROR_INDICATOR + "Expected method call after literal");
+                        context_enforce_arguments(context, e, base_class);
+                        index_increase(context);
+                    }
+                }
+                else {
+                    die(UNDECLARED_CLASS(base_class.name));
+                }
+            }
+
+            index_decrease(context);
+
+            if(type.name == ""){
+                type = base_class;
+            }
+            else if(!context_class_compare(context, type, base_class)){
+                fail( INCOMPATIBLE_CLASSES(type.toString(), base_class.toString()) );
+            }
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_FLOAT_LITERAL){
+            Class base_class = Class("Float");
 
             index_increase(context);
 
@@ -755,6 +801,7 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
         if( !environment_generic_method_exists(context, root_class_scope, Method{method_name, NULL, arguments, IGNORE_CLASS}, actual_class, base_class) ){
             if( environment_generic_method_exists(context, root_class_scope, Method{method_name, NULL, IGNORE_ARGS, IGNORE_CLASS}, actual_class, base_class) ){
                 std::string call_string = root_class.name + "."  + method_name + "(";
+                std::string others = environment_similar_methods(context, root_class_scope, Method{method_name, NULL, IGNORE_ARGS, IGNORE_CLASS});
 
                 for(unsigned int i = 0; i < arguments.size(); i++){
                     call_string += arguments[i].type.name;
@@ -765,7 +812,8 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
                 }
 
                 call_string += ")";
-                die(UNDECLARED_METHOD_OTHERS(call_string));
+
+                die(UNDECLARED_METHOD_OTHERS(call_string) + others);
             }
             else {
                 die(UNDECLARED_METHOD(root_class.name + "." + method_name));
@@ -794,7 +842,9 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
         if( !environment_method_exists(context, e.scope, Method{method_name, &e.global, arguments, IGNORE_CLASS})
         and !environment_method_exists(context, &e.global, Method{method_name, &e.global, arguments, IGNORE_CLASS})
         /*and !environment_variable_exists(e.scope, Variable(method_name, IGNORE))*/ ){
-            if(environment_method_exists(context, e.scope, Method{method_name, &e.global, IGNORE_ARGS, IGNORE_CLASS}) or environment_method_exists(context, &e.global, Method{method_name, &e.global, IGNORE_ARGS, IGNORE_CLASS})){
+            if(environment_method_exists(context, e.scope, Method{method_name, &e.global, IGNORE_ARGS, IGNORE_CLASS}) ){
+                std::string others = environment_similar_methods(context, e.scope, Method{method_name, &e.global, IGNORE_ARGS, IGNORE_CLASS});
+
                 if(base_class.name != ""){
                     std::string call_string = base_class.name + "."  + method_name + "(";
 
@@ -807,7 +857,7 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
                     }
 
                     call_string += ")";
-                    die(UNDECLARED_METHOD_OTHERS(call_string));
+                    die(UNDECLARED_METHOD_OTHERS(call_string) + others);
                 }
                 else {
                     std::string call_string = method_name + "(";
@@ -821,7 +871,39 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
                     }
 
                     call_string += ")";
-                    die(UNDECLARED_METHOD_OTHERS(call_string));
+                    die(UNDECLARED_METHOD_OTHERS(call_string) + others);
+                }
+            }
+            else if( environment_method_exists(context, &e.global, Method{method_name, &e.global, IGNORE_ARGS, IGNORE_CLASS}) ){
+                std::string others = environment_similar_methods(context, &e.global, Method{method_name, &e.global, IGNORE_ARGS, IGNORE_CLASS});
+
+                if(base_class.name != ""){
+                    std::string call_string = base_class.name + "."  + method_name + "(";
+
+                    for(unsigned int i = 0; i < arguments.size(); i++){
+                        call_string += arguments[i].type.name;
+
+                        if(i != arguments.size()-1){
+                            call_string += ", ";
+                        }
+                    }
+
+                    call_string += ")";
+                    die(UNDECLARED_METHOD_OTHERS(call_string) + others);
+                }
+                else {
+                    std::string call_string = method_name + "(";
+
+                    for(unsigned int i = 0; i < arguments.size(); i++){
+                        call_string += arguments[i].type.name;
+
+                        if(i != arguments.size()-1){
+                            call_string += ", ";
+                        }
+                    }
+
+                    call_string += ")";
+                    die(UNDECLARED_METHOD_OTHERS(call_string) + others);
                 }
             }
             else {
@@ -1252,6 +1334,13 @@ bool context_class_compare(TokenContext context, Class a, Class b){
     else if(b.name == "any^" and context_class_can_dereference(context, a)){
         return true;
     }
+
+    if( (a.name == "Integer" and b.name == "int")           or (a.name == "int" and b.name == "Integer") )          return true;
+    if( (a.name == "UnsignedInteger" and b.name == "uint")  or (a.name == "uint" and b.name == "UnsignedInteger") ) return true;
+    if( (a.name == "Boolean" and b.name == "bool")          or (a.name == "bool" and b.name == "Boolean") )         return true;
+    if( (a.name == "Double" and b.name == "double")         or (a.name == "double" and b.name == "Double") )        return true;
+    if( (a.name == "Float" and b.name == "float")           or (a.name == "float" and b.name == "Float") )          return true;
+    if( (a.name == "Byte" and b.name == "char")             or (a.name == "char" and b.name == "Byte") )            return true;
 
     return false;
 }

@@ -48,10 +48,13 @@ void assemble_expression(TokenContext context, std::string& expression, Environm
             expression += str;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
-            expression += "boomslang_Number(" + context.tokens[context.index].data + ")";
+            expression += "boomslang_Double(" + context.tokens[context.index].data + ")";
         }
-        else if(context.tokens[context.index].id == TOKENINDEX_NUMBER_LITERAL){
-            expression += "boomslang_Number(" + context.tokens[context.index].data + ")";
+        else if(context.tokens[context.index].id == TOKENINDEX_DOUBLE_LITERAL){
+            expression += "boomslang_Double(" + context.tokens[context.index].data + ")";
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_FLOAT_LITERAL){
+            expression += "boomslang_Float(" + context.tokens[context.index].data + ")";
         }
         else if(context.tokens[context.index].id == TOKENINDEX_INTEGER_LITERAL){
             expression += "boomslang_Integer(" + context.tokens[context.index].data + ")";
@@ -229,11 +232,15 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
             terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_NUMERIC_LITERAL){
-            output += "boomslang_Number(" + context.tokens[context.index].data + ")";
+            output += "boomslang_Double(" + context.tokens[context.index].data + ")";
             terminate_needed = true;
         }
-        else if(context.tokens[context.index].id == TOKENINDEX_NUMBER_LITERAL){
-            output += "boomslang_Number(" + context.tokens[context.index].data + ")";
+        else if(context.tokens[context.index].id == TOKENINDEX_DOUBLE_LITERAL){
+            output += "boomslang_Double(" + context.tokens[context.index].data + ")";
+            terminate_needed = true;
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_FLOAT_LITERAL){
+            output += "boomslang_Float(" + context.tokens[context.index].data + ")";
             terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_INTEGER_LITERAL){
@@ -374,7 +381,7 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                             die(UNEXPECTED_OPERATOR);
                         }
 
-                        method_arguments += "boomslang_Number(" + context.tokens[context.index].data + ")";
+                        method_arguments += "boomslang_Double(" + context.tokens[context.index].data + ")";
                     }
                     else {
                         die(INVALID_TOKEN);
@@ -1435,7 +1442,7 @@ void build(Configuration* config){
     #endif // __WIN32__
 
 	#if defined(__linux__)
-	
+
 	if (!config->optimize){
         linker_flags += "-O3 ";
     }

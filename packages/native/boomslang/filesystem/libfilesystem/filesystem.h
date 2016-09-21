@@ -46,9 +46,10 @@ class boomslang_BinaryInputFile {
     boomslang_Byte boomslang_readByte();
     boomslang_Integer boomslang_readInteger();
     boomslang_UnsignedInteger boomslang_readUnsignedInteger();
-    boomslang_Number boomslang_readNumber();
+    boomslang_Double boomslang_readDouble();
+    boomslang_Float boomslang_readFloat();
     boomslang_Boolean boomslang_readBoolean();
-    boomslang_Array<boomslang_Byte> boomslang_readBytes(boomslang_Number);
+    boomslang_Array<boomslang_Byte> boomslang_readBytes(boomslang_Double);
     boomslang_Array<boomslang_Byte> boomslang_readBytes(boomslang_Integer);
 };
 
@@ -65,7 +66,8 @@ class boomslang_BinaryOutputFile {
     void boomslang_writeByte(boomslang_Byte);
     void boomslang_writeInteger(boomslang_Integer);
     void boomslang_writeUnsignedInteger(boomslang_UnsignedInteger);
-    void boomslang_writeNumber(boomslang_Number);
+    void boomslang_writeDouble(boomslang_Double);
+    void boomslang_writeFloat(boomslang_Float);
     void boomslang_writeBoolean(boomslang_Boolean);
 };
 

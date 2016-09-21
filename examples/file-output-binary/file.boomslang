@@ -13,7 +13,7 @@ def main()
 		die()
 	
 	# Write some data
-	file.writeNumber(12.3)
+	file.writeDouble(12.3)
 	file.writeInteger(1234i)
 	file.writeByte( 157.toByte() )
 	

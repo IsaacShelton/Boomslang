@@ -1,18 +1,18 @@
 
 class BattleShip
-	Number x
-	Number y
+	Double x
+	Double y
 	
 	private
 	List<String> weapons
-	Number fuel = 0.47
+	Double fuel = 0.47
 	
 	public
-	Number direction = 270
-	Number speed = 10
+	Double direction = 270
+	Double speed = 10
 	
 	# Allow modification within class
-	def setFuel(Number amount)
+	def setFuel(Double amount)
 		fuel = amount
 	
 	# Allow returning within class

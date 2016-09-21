@@ -1,0 +1,13 @@
+
+def sum(uint a, uint b)
+	return a + b
+
+def sum(int a, int b)
+	return a + b
+
+def sum(short a, short b)
+	return a + b
+
+def main()
+	UnsignedInteger result = sum(8u, 13u)
+	result.output()

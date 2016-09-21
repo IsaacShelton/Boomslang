@@ -1,5 +1,5 @@
 
-def sum(Number a, Number b)
+def sum(Double a, Double b)
 	return a + b
 
 def main()

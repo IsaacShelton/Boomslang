@@ -9,7 +9,7 @@ class boomslang_Image{
     boomslang_Image();
     ~boomslang_Image();
     void boomslang_load(boomslang_String filename, boomslang_Boolean has_alpha = true, boomslang_Boolean blend = true);
-    void boomslang_draw(boomslang_Number x, boomslang_Number y);
+    void boomslang_draw(boomslang_Double x, boomslang_Double y);
 
     // Not supported yet
     void boomslang_load(unsigned char* data, unsigned int len_h, unsigned int len_w, bool has_alpha, bool blend);

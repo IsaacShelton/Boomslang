@@ -1,4 +1,4 @@
-# Package IsaacShelton/sum Source Code
+# Package IsaacShelton/math Source Code
 
 import "add.boomslang"
 import "subtract.boomslang"

@@ -1,38 +1,38 @@
 
 native include "boomslang_math.h"
 
-register constant Number PI
-register constant Number INFINITY
-register constant Number NAN
+register constant Double PI
+register constant Double INFINITY
+register constant Double NAN
 
-register function cos(Number) -> Number
-register function sin(Number) -> Number
-register function tan(Number) -> Number
-register function acos(Number) -> Number
-register function asin(Number) -> Number
-register function atan(Number) -> Number
-register function atan2(Number, Number) -> Number
-register function cosh(Number) -> Number
-register function sinh(Number) -> Number
-register function tanh(Number) -> Number
-register function acosh(Number) -> Number
-register function asinh(Number) -> Number
-register function atanh(Number) -> Number
-register function exp(Number) -> Number
-register function pow(Number) -> Number
-register function sqrt(Number) -> Number
-register function cbrt(Number) -> Number
-register function hypot(Number, Number) -> Number
-register function ceil(Number) -> Number
-register function floor(Number) -> Number
-register function fmod(Number, Number) -> Number
-register function mod(Number, Number) -> Number
-register function trunc(Number) -> Number
-register function round(Number) -> Number
-register function fdim(Number, Number) -> Number
-register function fmax(Number, Number) -> Number
-register function max(Number, Number) -> Number
-register function fmin(Number, Number) -> Number
-register function min(Number, Number) -> Number
-register function fabs(Number) -> Number
-register function abs(Number) -> Number
+register function cos(Double) -> Double
+register function sin(Double) -> Double
+register function tan(Double) -> Double
+register function acos(Double) -> Double
+register function asin(Double) -> Double
+register function atan(Double) -> Double
+register function atan2(Double, Double) -> Double
+register function cosh(Double) -> Double
+register function sinh(Double) -> Double
+register function tanh(Double) -> Double
+register function acosh(Double) -> Double
+register function asinh(Double) -> Double
+register function atanh(Double) -> Double
+register function exp(Double) -> Double
+register function pow(Double) -> Double
+register function sqrt(Double) -> Double
+register function cbrt(Double) -> Double
+register function hypot(Double, Double) -> Double
+register function ceil(Double) -> Double
+register function floor(Double) -> Double
+register function fmod(Double, Double) -> Double
+register function mod(Double, Double) -> Double
+register function trunc(Double) -> Double
+register function round(Double) -> Double
+register function fdim(Double, Double) -> Double
+register function fmax(Double, Double) -> Double
+register function max(Double, Double) -> Double
+register function fmin(Double, Double) -> Double
+register function min(Double, Double) -> Double
+register function fabs(Double) -> Double
+register function abs(Double) -> Double

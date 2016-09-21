@@ -3,4 +3,4 @@ import ../packages/glfw
 import ../packages/opengl
 
 def main()
-    Number window = glfwCreateWindow()
+	Double window = glfwCreateWindow()

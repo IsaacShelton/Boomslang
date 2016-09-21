@@ -68,6 +68,19 @@ void add_field(Environment& e, Class base, Variable variable){
 void load_core(Environment& environment){
     Scope* type_scope;
 
+    // Primatives
+    add_class(environment, Class{"uint"});
+    add_class(environment, Class{"int"});
+    add_class(environment, Class{"float"});
+    add_class(environment, Class{"double"});
+    add_class(environment, Class{"short"});
+    add_class(environment, Class{"ushort"});
+    add_class(environment, Class{"long"});
+    add_class(environment, Class{"ulong"});
+    add_class(environment, Class{"bool"});
+    add_class(environment, Class{"char"});
+    add_class(environment, Class{"uchar"});
+
     // Base Die Function
     add_function(environment, Method{"die", &environment.global, std::vector<MethodArgument>(), Class("void")});
 
@@ -85,24 +98,39 @@ void load_core(Environment& environment){
     add_method(environment, Class{"String"}, Method{"printError", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"String"}, Method{"log", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"String"}, Method{"printLog", type_scope, std::vector<MethodArgument>(), Class("void")});
-    add_method(environment, Class{"String"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), Class("Number")});
-    add_method(environment, Class{"String"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), Class("Number")});
-    add_method(environment, Class{"String"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), Class("Number")});
+    add_method(environment, Class{"String"}, Method{"toDouble", type_scope, std::vector<MethodArgument>(), Class("Double")});
+    add_method(environment, Class{"String"}, Method{"toFloat", type_scope, std::vector<MethodArgument>(), Class("Float")});
+    add_method(environment, Class{"String"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), Class("UnsignedInteger")});
+    add_method(environment, Class{"String"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), Class("Integer")});
     add_method(environment, Class{"String"}, Method{"toByte", type_scope, std::vector<MethodArgument>(), Class("Byte")});
     add_method(environment, Class{"String"}, Method{"toBoolean", type_scope, std::vector<MethodArgument>(), Class("Boolean")});
     add_method(environment, Class{"String"}, Method{"new", type_scope, { MethodArgument{Class{"String"}, false} }, Class("void")});
 
-    // Base Number Class
-    type_scope = add_class(environment, Class{"Number"});
-    add_method(environment, Class{"Number"}, Method{"output", type_scope, std::vector<MethodArgument>(), Class("void")});
-    add_method(environment, Class{"Number"}, Method{"input", type_scope, std::vector<MethodArgument>(), Class("void")});
-    add_method(environment, Class{"Number"}, Method{"print", type_scope, std::vector<MethodArgument>(), Class("void")});
-    add_method(environment, Class{"Number"}, Method{"toString", type_scope, std::vector<MethodArgument>(), Class("String")});
-    add_method(environment, Class{"Number"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), Class("UnsignedInteger")});
-    add_method(environment, Class{"Number"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), Class("Integer")});
-    add_method(environment, Class{"Number"}, Method{"toByte", type_scope, std::vector<MethodArgument>(), Class("Byte")});
-    add_method(environment, Class{"Number"}, Method{"toBoolean", type_scope, std::vector<MethodArgument>(), Class("Boolean")});
-    add_method(environment, Class{"Number"}, Method{"new", type_scope, { MethodArgument{Class{"Number"}, false} }, Class("void")});
+    // Base Double Class
+    type_scope = add_class(environment, Class{"Double"});
+    add_method(environment, Class{"Double"}, Method{"output", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"Double"}, Method{"input", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"Double"}, Method{"print", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"Double"}, Method{"toString", type_scope, std::vector<MethodArgument>(), Class("String")});
+    add_method(environment, Class{"Double"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), Class("UnsignedInteger")});
+    add_method(environment, Class{"Double"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), Class("Integer")});
+    add_method(environment, Class{"Double"}, Method{"toByte", type_scope, std::vector<MethodArgument>(), Class("Byte")});
+    add_method(environment, Class{"Double"}, Method{"toBoolean", type_scope, std::vector<MethodArgument>(), Class("Boolean")});
+    add_method(environment, Class{"Double"}, Method{"toFloat", type_scope, std::vector<MethodArgument>(), Class("Float")});
+    add_method(environment, Class{"Double"}, Method{"new", type_scope, { MethodArgument{Class{"Double"}, false} }, Class("void")});
+
+    // Base Double Class
+    type_scope = add_class(environment, Class{"Float"});
+    add_method(environment, Class{"Float"}, Method{"output", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"Float"}, Method{"input", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"Float"}, Method{"print", type_scope, std::vector<MethodArgument>(), Class("void")});
+    add_method(environment, Class{"Float"}, Method{"toString", type_scope, std::vector<MethodArgument>(), Class("String")});
+    add_method(environment, Class{"Float"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), Class("UnsignedInteger")});
+    add_method(environment, Class{"Float"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), Class("Integer")});
+    add_method(environment, Class{"Float"}, Method{"toByte", type_scope, std::vector<MethodArgument>(), Class("Byte")});
+    add_method(environment, Class{"Float"}, Method{"toBoolean", type_scope, std::vector<MethodArgument>(), Class("Boolean")});
+    add_method(environment, Class{"Float"}, Method{"toDouble", type_scope, std::vector<MethodArgument>(), Class("Double")});
+    add_method(environment, Class{"Float"}, Method{"new", type_scope, { MethodArgument{Class{"Float"}, false} }, Class("void")});
 
     // Base Unsigned Integer Class
     type_scope = add_class(environment, Class{"UnsignedInteger"});
@@ -110,7 +138,8 @@ void load_core(Environment& environment){
     add_method(environment, Class{"UnsignedInteger"}, Method{"input", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"UnsignedInteger"}, Method{"print", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"UnsignedInteger"}, Method{"toString", type_scope, std::vector<MethodArgument>(), Class("String")});
-    add_method(environment, Class{"UnsignedInteger"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), Class("Number")});
+    add_method(environment, Class{"UnsignedInteger"}, Method{"toDouble", type_scope, std::vector<MethodArgument>(), Class("Double")});
+    add_method(environment, Class{"UnsignedInteger"}, Method{"toFloat", type_scope, std::vector<MethodArgument>(), Class("Float")});
     add_method(environment, Class{"UnsignedInteger"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), Class("Integer")});
     add_method(environment, Class{"UnsignedInteger"}, Method{"toByte", type_scope, std::vector<MethodArgument>(), Class("Byte")});
     add_method(environment, Class{"UnsignedInteger"}, Method{"toBoolean", type_scope, std::vector<MethodArgument>(), Class("Boolean")});
@@ -122,11 +151,13 @@ void load_core(Environment& environment){
     add_method(environment, Class{"Integer"}, Method{"input", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"Integer"}, Method{"print", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"Integer"}, Method{"toString", type_scope, std::vector<MethodArgument>(), Class("String")});
-    add_method(environment, Class{"Integer"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), Class("Number")});
+    add_method(environment, Class{"Integer"}, Method{"toDouble", type_scope, std::vector<MethodArgument>(), Class("Double")});
+    add_method(environment, Class{"Integer"}, Method{"toFloat", type_scope, std::vector<MethodArgument>(), Class("Float")});
     add_method(environment, Class{"Integer"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), Class("UnsignedInteger")});
     add_method(environment, Class{"Integer"}, Method{"toByte", type_scope, std::vector<MethodArgument>(), Class("Byte")});
     add_method(environment, Class{"Integer"}, Method{"toBoolean", type_scope, std::vector<MethodArgument>(), Class("Boolean")});
     add_method(environment, Class{"Integer"}, Method{"new", type_scope, { MethodArgument{Class{"Integer"}, false} }, Class("void")});
+    add_method(environment, Class{"Integer"}, Method{"new", type_scope, { MethodArgument{Class{"int"}, false} }, Class("void")});
 
     // Base Byte Class
     type_scope = add_class(environment, Class{"Byte"});
@@ -134,7 +165,8 @@ void load_core(Environment& environment){
     add_method(environment, Class{"Byte"}, Method{"input", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"Byte"}, Method{"print", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"Byte"}, Method{"toString", type_scope, std::vector<MethodArgument>(), Class("String")});
-    add_method(environment, Class{"Byte"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), Class("Number")});
+    add_method(environment, Class{"Byte"}, Method{"toDouble", type_scope, std::vector<MethodArgument>(), Class("Double")});
+    add_method(environment, Class{"Byte"}, Method{"toFloat", type_scope, std::vector<MethodArgument>(), Class("Float")});
     add_method(environment, Class{"Byte"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), Class("Integer")});
     add_method(environment, Class{"Byte"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), Class("UnsignedInteger")});
     add_method(environment, Class{"Byte"}, Method{"toBoolean", type_scope, std::vector<MethodArgument>(), Class("Boolean")});
@@ -146,7 +178,8 @@ void load_core(Environment& environment){
     add_method(environment, Class{"Boolean"}, Method{"print", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"Boolean"}, Method{"input", type_scope, std::vector<MethodArgument>(), Class("void")});
     add_method(environment, Class{"Boolean"}, Method{"toString", type_scope, std::vector<MethodArgument>(), Class("String")});
-    add_method(environment, Class{"Boolean"}, Method{"toNumber", type_scope, std::vector<MethodArgument>(), Class("Number")});
+    add_method(environment, Class{"Boolean"}, Method{"toDouble", type_scope, std::vector<MethodArgument>(), Class("Double")});
+    add_method(environment, Class{"Boolean"}, Method{"toFloat", type_scope, std::vector<MethodArgument>(), Class("Float")});
     add_method(environment, Class{"Boolean"}, Method{"toInteger", type_scope, std::vector<MethodArgument>(), Class("Integer")});
     add_method(environment, Class{"Boolean"}, Method{"toUnsignedInteger", type_scope, std::vector<MethodArgument>(), Class("UnsignedInteger")});
     add_method(environment, Class{"Boolean"}, Method{"toByte", type_scope, std::vector<MethodArgument>(), Class("Byte")});
@@ -158,23 +191,16 @@ void load_core(Environment& environment){
     add_method(environment, Class("List"), Method{"append",  type_scope, { MethodArgument{Class("List", {Class("Type")}), false} }, Class("void")});
     add_method(environment, Class("List"), Method{"prepend", type_scope, { MethodArgument{Class{"Type"}, false} }, Class("void")});
     add_method(environment, Class("List"), Method{"prepend", type_scope, { MethodArgument{Class("List", {Class("Type")}), false} }, Class("void")});
-    add_method(environment, Class("List"), Method{"insert",  type_scope, { MethodArgument{Class{"Number"}, false}, MethodArgument{Class("Type"), false} }, Class("void")});
     add_method(environment, Class("List"), Method{"insert",  type_scope, { MethodArgument{Class{"Integer"}, false}, MethodArgument{Class("Type"), false} }, Class("void")});
-    add_method(environment, Class("List"), Method{"insert",  type_scope, { MethodArgument{Class("Number"), false}, MethodArgument{Class("List", {Class("Type")}), false} }, Class("void")});
     add_method(environment, Class("List"), Method{"insert",  type_scope, { MethodArgument{Class{"Integer"}, false}, MethodArgument{Class("List", {Class("Type")}), false} }, Class("void")});
     add_method(environment, Class("List"), Method{"remove",  type_scope, { MethodArgument{Class{"Integer"}, false} }, Class("void")});
-    add_method(environment, Class("List"), Method{"remove",  type_scope, { MethodArgument{Class{"Number"}, false} }, Class("void")});
     add_method(environment, Class("List"), Method{"remove",  type_scope, NO_ARGUMENTS, Class("void")});
-    add_method(environment, Class("List"), Method{"get",     type_scope, { MethodArgument{Class{"Number"}, false} }, Class("Type")});
     add_method(environment, Class("List"), Method{"get",     type_scope, { MethodArgument{Class{"Integer"}, false} }, Class("Type")});
     add_method(environment, Class("List"), Method{"length",  type_scope, NO_ARGUMENTS, Class("Integer")});
 
     // Base Array Class
     type_scope = add_class(environment, Class{"Array", {Class("Type")}});
-    add_method(environment, Class("Array"), Method{"new",     type_scope, { MethodArgument{Class{"Number"}, false} }, Class("void")});
     add_method(environment, Class("Array"), Method{"new",     type_scope, { MethodArgument{Class{"Integer"}, false} }, Class("void")});
-    add_method(environment, Class("Array"), Method{"get",     type_scope, { MethodArgument{Class{"Number"}, false} }, Class("Type")});
     add_method(environment, Class("Array"), Method{"get",     type_scope, { MethodArgument{Class{"Integer"}, false} }, Class("Type")});
-    add_method(environment, Class("Array"), Method{"resize",  type_scope, { MethodArgument{Class{"Number"}, false} }, Class("void")});
     add_method(environment, Class("Array"), Method{"resize",  type_scope, { MethodArgument{Class{"Integer"}, false} }, Class("void")});
 }
