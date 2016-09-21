@@ -80,12 +80,12 @@ def main()
 ```python
 def main()
     # All the following are equivalent
-    Number a
-    Number b = new Number
-    Number c = 0
+    Double a
+    Double b = new Double
+    Double c = 0
     
     # Types can also be infered
-    var d = new Number
+    var d = new Double
     var e = 0
 ```
 
@@ -201,7 +201,7 @@ def main()
 ```python
 
 def main()
-    Number speed = 74.6f
+    Double speed = 74.6f
     Integer gears = 14i
     UnsignedInteger wheels = 4u
 ```
@@ -216,10 +216,37 @@ def main()
     randomize()
     
     # Get a floating point number (0.0 through 9.0)
-    Number amount = random_under(10)
+    Double amount = random_under(10)
     
     # See the result
     amount.output()
+```
+
+###Primitives
+```python
+
+def sum(Integer a, Integer b)
+    return a + b
+
+def main()
+    # Primitives are defined as they would be in C
+    uint u = 21
+    int i = -132
+    float f = 3.14
+    double d = 0.49832
+    
+    # Primitives are auto converted to their Object counterpart
+    UnsignedInteger uintObject = u
+    Integer integerObject = i
+    Float floatObject = f
+    Double doubleObject = d
+    
+    # That includes method calls
+    int result = sum(24i, i)
+    
+    # Note however that primitives can only convert to their own Object type
+    uint x = i  # Incompatible Classes 'uint' and 'int'
+    Float y = d # Incompatible Classes 'Float' and 'double'
 ```
 
 ##Contacting Us
