@@ -68,6 +68,7 @@
 #define UNKNOWN_STRING_ESCAPE(a)           (ERROR_INDICATOR + "Unknown string literal escape symbol '" + a + "'")
 #define EMPTY_EXPRESSION                   (ERROR_INDICATOR + "Empty Expression")
 #define NEW_METHOD_RESERVED                (ERROR_INDICATOR + "The 'new' method name is reserved for constructors")
+#define DELETE_METHOD_RESERVED             (ERROR_INDICATOR + "The 'delete' method name is reserved for deconstructors")
 #define GENERIC_MISMATCH(a)                (ERROR_INDICATOR + "An object of the class '" + a + "' doesn't have the correct number of generics")
 #define UNKNOWN_MACRO(a)                   (ERROR_INDICATOR + "Unknown macro '" + a + "'")
 #define VAR_CANT_INFER_FUNCTION_PTRS       (ERROR_INDICATOR + "The 'var' keyword can't infer function^ types")
@@ -76,6 +77,7 @@
 #define VARIABLE_IS_PRIVATE(a)             (ERROR_INDICATOR + "The member '" + a + "' is private")
 #define PUBLIC_MUST_BE_IN_CLASS            (ERROR_INDICATOR + "The 'public' keyword can only be used while defining a class")
 #define PRIVATE_MUST_BE_IN_CLASS           (ERROR_INDICATOR + "The 'private' keyword can only be used while defining a class")
+#define ALREADY_STATIC                     (ERROR_INDICATOR + "Method was already marked as static")
 
 #define DEV_BLANK_TYPE                     (NOLINE_ERROR_INDICATOR + "Returning blank type at " + to_string(__LINE__))
 

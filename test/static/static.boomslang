@@ -1,0 +1,20 @@
+
+class ConsoleIO
+	
+	def static println(String message)
+		message.output()
+	
+	def static print(String message)
+		message.print()
+	
+	def static getLine()
+		String line
+		
+		line.input()
+		return line
+
+def main()
+	ConsoleIO.print("Enter your name: ")
+	String name = ConsoleIO.getLine()
+	ConsoleIO.println("Welcome " + name)
+	

@@ -74,6 +74,7 @@ std::string token_name(Token token){
         case 37 : token_name = "unsigned integer literal"; break;
         case 38 : token_name = "raw word"; break;
         case 39 : token_name = "float literal"; break;
+        case 40 : token_name = "scope member"; break;
     }
 
     return token_name;
@@ -122,6 +123,7 @@ std::string token_operator(Token token){
         case 37 : token_name = "unsigned integer"; break;
         case 38 : token_name = "raw word"; break;
         case 39 : token_name = "float"; break;
+        case 40 : token_name = "scope member"; break;
     }
 
     return token_name;

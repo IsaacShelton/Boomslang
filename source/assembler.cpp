@@ -313,12 +313,28 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                 std::string method_name;
                 std::string method_code;
                 std::string method_arguments;
+                std::string prefix_string;
                 bool of_class = false;
 
                 unsigned int before_indentation = indentation; // The indentation before processing tokens in method
                 unsigned int token_indent = indentation + 1;    // The indentation during processing
 
                 context.index++;
+                while(context.tokens[context.index].id != TOKENINDEX_WORD){
+                    if(context.tokens[context.index].id == TOKENINDEX_KEYWORD){
+                        if(context.tokens[context.index].data == "static"){
+                            prefix_string += "static ";
+                        }
+                        else if(context.tokens[context.index].data == "public"){
+                            prefix_string += "public: ";
+                        }
+                        else if(context.tokens[context.index].data == "private"){
+                            prefix_string += "private: ";
+                        }
+                    }
+
+                    context.index++;
+                }
                 method_name = context.tokens[context.index].data;
                 context.index += 2;
 
@@ -566,11 +582,11 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
                     }
                     else if(return_value.name == "void"){
                         write  << "void " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                        output += "void " + resource(method_name) + "(" + method_arguments + ");\n";
+                        output += prefix_string + "void " + resource(method_name) + "(" + method_arguments + ");\n";
                     }
                     else {
                         write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                        output += return_value.native() + " " + resource(method_name) + "(" + method_arguments + ");\n";
+                        output += prefix_string + return_value.native() + " " + resource(method_name) + "(" + method_arguments + ");\n";
                     }
                 }
                 else {
@@ -1302,6 +1318,10 @@ void assemble_token(Configuration* config, TokenContext context, bool& terminate
         }
         else if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
             output += ".";
+            terminate_needed = true;
+        }
+        else if(context.tokens[context.index].id == TOKENINDEX_SCOPE_MEMBER){
+            output += "::";
             terminate_needed = true;
         }
         else if(context.tokens[context.index].id == TOKENINDEX_POINTERMEMBER){

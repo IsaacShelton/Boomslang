@@ -241,6 +241,17 @@ TokenList tokenize(std::string code){
             code = string_delete_amount(code,3);
             code = string_kill_whitespace(code);
 
+            std::string keyword = string_get_until(code, " ");
+            while(keyword == "static" or keyword == "public" or keyword == "private"){
+                code = string_delete_amount(code, keyword.length());
+
+                log_lexer(LEXER_LOG_PREFIX + "Found `" + keyword + "` keyword");
+                tokens.push_back( TOKEN_KEYWORD(keyword) );
+
+                code = string_kill_whitespace(code);
+                keyword = string_get_until(code, " ");
+            }
+
             tokens.push_back( TOKEN_WORD(string_get_until_or(code," (\n")) );
             code = string_delete_until_or(code," (\n");
         }
@@ -432,6 +443,13 @@ TokenList tokenize(std::string code){
             tokens.push_back( TOKEN_KEYWORD("private") );
 
             code = string_delete_amount(code,7);
+            code = string_kill_whitespace(code);
+        }
+        else if( string_get_until_or(code," )\n") == "static"){ // static
+            log_lexer(LEXER_LOG_PREFIX + "Found `static` keyword");
+            tokens.push_back( TOKEN_KEYWORD("static") );
+
+            code = string_delete_amount(code,6);
             code = string_kill_whitespace(code);
         }
         else if(string_get_until_or(code," ") == "cast"){        // cast

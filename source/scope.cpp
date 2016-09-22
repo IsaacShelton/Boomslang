@@ -117,29 +117,49 @@ Variable::Variable(){
     name = "";
     type = Class("");
     is_final = false;
-    is_uniform = false;
+    is_static = false;
     is_private = false;
 }
 Variable::Variable(std::string var_name, Class var_class){
     name = var_name;
     type = var_class;
     is_final = false;
-    is_uniform = false;
+    is_static = false;
     is_private = false;
 }
-Variable::Variable(std::string var_name, Class var_class, bool var_final, bool var_uniform){
+Variable::Variable(std::string var_name, Class var_class, bool var_final, bool var_static){
     name = var_name;
     type = var_class;
     is_final = var_final;
-    is_uniform = var_uniform;
+    is_static = var_static;
     is_private = false;
 }
-Variable::Variable(std::string var_name, Class var_class, bool var_final, bool var_uniform, bool var_private){
+Variable::Variable(std::string var_name, Class var_class, bool var_final, bool var_static, bool var_private){
     name = var_name;
     type = var_class;
     is_final = var_final;
-    is_uniform = var_uniform;
+    is_static = var_static;
     is_private = var_private;
+}
+
+Method::Method(){
+    name = "";
+    parent = NULL;
+    is_static = false;
+}
+Method::Method(std::string method_name, Scope* method_parent, const std::vector<MethodArgument>& method_args, Class method_return_type){
+    name = method_name;
+    parent = method_parent;
+    arguments = method_args;
+    return_type = method_return_type;
+    is_static = false;
+}
+Method::Method(std::string method_name, Scope* method_parent, const std::vector<MethodArgument>& method_args, Class method_return_type, bool method_is_static){
+    name = method_name;
+    parent = method_parent;
+    arguments = method_args;
+    return_type = method_return_type;
+    is_static = method_is_static;
 }
 
 // Scopes

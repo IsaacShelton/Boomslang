@@ -166,12 +166,40 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             std::vector<MethodArgument> method_arguments;
             std::string arguments_string;
             std::string method_return_type;
+            bool is_static = false;
 
-            token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method name after 'on'", ERROR_INDICATOR + "Expected method name after 'on'");
+            index_increase(context);
+            while(context.tokens[context.index].id == TOKENINDEX_KEYWORD and (context.tokens[context.index].data == "static" or
+                context.tokens[context.index].data == "public" or context.tokens[context.index].data == "private"
+            )){
+                if(context.tokens[context.index].data == "static"){
+                    if(is_static) fail(ALREADY_STATIC);
+                    is_static = true;
+                }
+                else if(context.tokens[context.index].data == "public"){
+                    private_member = false;
+
+                    if( !name_is_class(environment.scope->name) ){
+                        die(PUBLIC_MUST_BE_IN_CLASS);
+                    }
+                }
+                else if(context.tokens[context.index].data == "private"){
+                    private_member = true;
+
+                    if( !name_is_class(environment.scope->name) ){
+                        die(PRIVATE_MUST_BE_IN_CLASS);
+                    }
+                }
+
+                index_increase(context);
+            }
+
+            index_decrease(context);
+            token_force(context, TOKENINDEX_WORD, ERROR_INDICATOR + "Unexpected statement termination\nExpected method name after 'def'", ERROR_INDICATOR + "Expected method name after 'def'");
             method_name = context.tokens[context.index].data;
 
             // Create method scope
-            environment.scope->children.push_back(new Scope{METHOD_PREFIX + method_name, environment.scope});
+            environment.scope->children.push_back( new Scope{METHOD_PREFIX + method_name, environment.scope} );
             environment.scope = environment.scope->children[environment.scope->children.size()-1];
 
             // Enforce method declaration arguments
@@ -180,7 +208,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             current_line++;
 
             // Add method reference to parent scope
-            environment.scope->parent->methods.push_back( Method{method_name, environment.scope->parent, method_arguments, Class("void")} );
+            environment.scope->parent->methods.push_back( Method(method_name, environment.scope->parent, method_arguments, Class("void"), is_static) );
 
             std::string func_type = "function^(";
             for(unsigned int i = 0; i < method_arguments.size(); i++){
@@ -1064,7 +1092,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
                 die(PRIVATE_MUST_BE_IN_CLASS);
             }
 
-            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline after 'private' keyword", ERROR_INDICATOR + "Expected newline after 'private' keyword");
+            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline after 'public' keyword", ERROR_INDICATOR + "Expected newline after 'public' keyword");
             current_line++;
         }
         else {
@@ -1174,58 +1202,74 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
             index_decrease(context);
             context_enforce_type(context, environment, type);
 
-            if(context.tokens[context.index].id != TOKENINDEX_WORD){
-                die(UNEXPECTED_OPERATOR);
-            }
-
-            std::string variable_name = context.tokens[context.index].data;
-            environment.scope->variables.push_back( Variable(variable_name, type, is_final, false, private_member) );
-            index_increase(context);
-
-            // Are we gonna assign it to something
-            if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
-                index_increase(context);
-                context_enforce_expression(context, environment, type);
-            }
-            else {
-                Token token_one = context.tokens[context.index];
+            if(context.tokens[context.index].id == TOKENINDEX_WORD){
+                std::string variable_name = context.tokens[context.index].data;
+                environment.scope->variables.push_back( Variable(variable_name, type, is_final, false, private_member) );
                 index_increase(context);
 
-                Token token_two = context.tokens[context.index];
-                index_decrease(context);
+                // Are we gonna assign it to something
+                if(context.tokens[context.index].id == TOKENINDEX_ASSIGN){
+                    index_increase(context);
+                    context_enforce_expression(context, environment, type);
+                }
+                else {
+                    Token token_one = context.tokens[context.index];
+                    index_increase(context);
 
-                if(token_two.id == TOKENINDEX_ASSIGN){
-                    if(token_one.id == TOKENINDEX_ADD){
-                        fail(VARIABLE_NOT_EXIST_YET(variable_name));
-                        index_increase(context);
-                        index_increase(context);
-                        context_enforce_expression(context, environment, type);
-                    }
-                    else if(token_one.id == TOKENINDEX_SUBTRACT){
-                        fail(VARIABLE_NOT_EXIST_YET(variable_name));
-                        index_increase(context);
-                        index_increase(context);
-                        context_enforce_expression(context, environment, type);
-                    }
-                    else if(token_one.id == TOKENINDEX_MULTIPLY){
-                        fail(VARIABLE_NOT_EXIST_YET(variable_name));
-                        index_increase(context);
-                        index_increase(context);
-                        context_enforce_expression(context, environment, type);
-                    }
-                    else if(token_one.id == TOKENINDEX_DIVIDE){
-                        fail(VARIABLE_NOT_EXIST_YET(variable_name));
-                        index_increase(context);
-                        index_increase(context);
-                        context_enforce_expression(context, environment, type);
+                    Token token_two = context.tokens[context.index];
+                    index_decrease(context);
+
+                    if(token_two.id == TOKENINDEX_ASSIGN){
+                        if(token_one.id == TOKENINDEX_ADD){
+                            fail(VARIABLE_NOT_EXIST_YET(variable_name));
+                            index_increase(context);
+                            index_increase(context);
+                            context_enforce_expression(context, environment, type);
+                        }
+                        else if(token_one.id == TOKENINDEX_SUBTRACT){
+                            fail(VARIABLE_NOT_EXIST_YET(variable_name));
+                            index_increase(context);
+                            index_increase(context);
+                            context_enforce_expression(context, environment, type);
+                        }
+                        else if(token_one.id == TOKENINDEX_MULTIPLY){
+                            fail(VARIABLE_NOT_EXIST_YET(variable_name));
+                            index_increase(context);
+                            index_increase(context);
+                            context_enforce_expression(context, environment, type);
+                        }
+                        else if(token_one.id == TOKENINDEX_DIVIDE){
+                            fail(VARIABLE_NOT_EXIST_YET(variable_name));
+                            index_increase(context);
+                            index_increase(context);
+                            context_enforce_expression(context, environment, type);
+                        }
                     }
                 }
-            }
 
-            // At this point token should be a terminate
-            index_decrease(context);
-            token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
-            current_line++;
+                // At this point token should be a terminate
+                index_decrease(context);
+                token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+                current_line++;
+            }
+            else if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                std::string method_name;
+
+                context.tokens[context.index].id = TOKENINDEX_SCOPE_MEMBER;
+                index_increase(context);
+                if(context.tokens[context.index].id != TOKENINDEX_WORD){
+                    die(UNEXPECTED_OPERATOR);
+                }
+
+                method_name = context.tokens[context.index].id;
+                context_enforce_arguments(context, environment, type, "", true);
+
+                token_force(context, TOKENINDEX_TERMINATE,  ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
+                current_line++;
+            }
+            else {
+                die(UNEXPECTED_OPERATOR);
+            }
         }
         else { // Plain Variable
             std::string variable_name;

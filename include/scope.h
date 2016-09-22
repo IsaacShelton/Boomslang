@@ -61,7 +61,7 @@ struct Variable {
     std::string name;
     Class type;
     bool is_final;
-    bool is_uniform;
+    bool is_static;
     bool is_private;
 
     Variable();
@@ -80,6 +80,11 @@ struct Method {
     Scope* parent;
     std::vector<MethodArgument> arguments;
     Class return_type;
+    bool is_static;
+
+    Method();
+    Method(std::string method_name, Scope* method_parent, const std::vector<MethodArgument>& method_args, Class method_return_type);
+    Method(std::string method_name, Scope* method_parent, const std::vector<MethodArgument>& method_args, Class method_return_type, bool method_is_static);
 };
 
 struct Scope {

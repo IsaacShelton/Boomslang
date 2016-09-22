@@ -64,6 +64,7 @@
 #define TOKENINDEX_UNSIGNED_LITERAL  37
 #define TOKENINDEX_RAW_WORD          38 // Generated
 #define TOKENINDEX_FLOAT_LITERAL     39
+#define TOKENINDEX_SCOPE_MEMBER      40 // Generated
 
 #define TOKEN_STRING_LITERAL(a)   Token{ 0, a}
 #define TOKEN_NUMERIC_LITERAL(a)  Token{ 1, a}
@@ -104,7 +105,8 @@
 #define TOKEN_INTEGER_LITERAL(a)  Token{36,a}
 #define TOKEN_UNSIGNED_LITERAL(a) Token{37,a}
 #define TOKEN_RAW_WORD(a)         Token{38,a} // Generated
-#define TOKEN_FLOAT_LITERAL(a)         Token{39,a}
+#define TOKEN_FLOAT_LITERAL(a)    Token{39,a}
+#define TOKEN_SCOPE_MEMBER        Token{40}   // Generated
 
 struct Token {
     unsigned int id;

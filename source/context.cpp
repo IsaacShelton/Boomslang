@@ -282,6 +282,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
             }
         }
         else if(context.tokens[context.index].id == TOKENINDEX_WORD){
+            std::string class_name = context.tokens[context.index].data;
             index_increase(context);
 
             if(context.tokens[context.index].id == TOKENINDEX_OPEN){ // Function call
@@ -290,8 +291,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 }
 
                 index_decrease(context);
-
-                std::string method_name = context.tokens[context.index].data;
+                std::string method_name = class_name;
                 Class return_type;
 
                 context_enforce_arguments(context, e, return_type);
@@ -315,6 +315,25 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 }
 
                 index_decrease(context);
+            }
+            else if( environment_class_exists(&e.global, Class(class_name)) ){ // Class Name (for static methods)
+                Class type = Class(class_name);
+
+                if(context.tokens[context.index].id == TOKENINDEX_MEMBER){
+                    std::string method_name;
+
+                    context.tokens[context.index].id = TOKENINDEX_SCOPE_MEMBER;
+                    index_increase(context);
+                    if(context.tokens[context.index].id != TOKENINDEX_WORD){
+                        die(UNEXPECTED_OPERATOR);
+                    }
+                    method_name = context.tokens[context.index].id;
+
+                    context_enforce_arguments(context, e, type, "", true);
+                }
+                else {
+                    die(UNEXPECTED_OPERATOR);
+                }
             }
             else { // Variable with possible method calls after
                 std::string variable_name;
@@ -741,7 +760,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
         index_increase(context);
     }
 }
-void context_enforce_arguments(TokenContext context, Environment& e, Class& base_class, std::string override_method){
+void context_enforce_arguments(TokenContext context, Environment& e, Class& base_class, std::string override_method, bool is_static){
     std::vector<MethodArgument> arguments;
     std::string type;
     std::string method_name = context.tokens[context.index].data;
@@ -751,6 +770,9 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
 
     if(method_name == "new"){
         die(NEW_METHOD_RESERVED);
+    }
+    else if(method_name == "delete"){
+        die(DELETE_METHOD_RESERVED);
     }
 
     // Override Method Name
@@ -798,7 +820,7 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
         }
 
         // Ensure method exists
-        if( !environment_generic_method_exists(context, root_class_scope, Method{method_name, NULL, arguments, IGNORE_CLASS}, actual_class, base_class) ){
+        if( !environment_generic_method_exists(context, root_class_scope, Method{method_name, NULL, arguments, IGNORE_CLASS, is_static}, actual_class, base_class) ){
             if( environment_generic_method_exists(context, root_class_scope, Method{method_name, NULL, IGNORE_ARGS, IGNORE_CLASS}, actual_class, base_class) ){
                 std::string call_string = root_class.name + "."  + method_name + "(";
                 std::string others = environment_similar_methods(context, root_class_scope, Method{method_name, NULL, IGNORE_ARGS, IGNORE_CLASS});
@@ -821,7 +843,7 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
         }
 
         // Update return type
-        if( environment_generic_method_exists(context, root_class_scope, Method{method_name, NULL, arguments, IGNORE_CLASS}, actual_class, base_class) ){
+        if( environment_generic_method_exists(context, root_class_scope, Method{method_name, NULL, arguments, IGNORE_CLASS, is_static}, actual_class, base_class) ){
             Method method = environment_generic_method_get(context, root_class_scope, Method{method_name, NULL, arguments, IGNORE_CLASS}, actual_class, base_class);
             base_class = method.return_type;
 

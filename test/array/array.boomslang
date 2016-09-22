@@ -1,0 +1,10 @@
+
+def main()
+	Array<String> array
+	array.resize(3i)
+	array.get(0i) = "Isaac"
+	array.get(1i) = "Jeff"
+	array.get(2i) = "Bill"
+	
+	for int i = 0, i < 3, i++
+		array.get(i).output()
