@@ -25,16 +25,6 @@ def main()
     greet("Isaac")
 ```
 
-###Specifing Default Arguments
-```python
-
-def greet(name = "Anonymous")
-    ("Welcome " + name).output()
-
-def main()
-    greet()
-```
-
 ###Taking input
 ```python
 def main()
@@ -42,38 +32,7 @@ def main()
     
     "Enter your name:".output()
     name.input()
-    
     ("Welcome " + name).output()
-```
-
-###Displaying the current time
-```python
-import boomslang/time
-
-def main()
-    Time.now().output()
-```
-###Creating a basic window
-```python
-import boomslang/ui
-
-def main()
-    Window window
-    window.show()
-```
-###Drawing a rectangle
-```python
-import boomslang/ui
-
-class AppWindow < Window
-    Rectangle rect(100,100)
-    
-    def display()
-        rect.draw(0,0)
-
-def main()
-    AppWindow window
-    window.show()
 ```
 
 ###Declaring Variables
@@ -97,7 +56,7 @@ class Dog
     Integer id
     
     def bark()
-        "BARK ".print()
+        "Bark Bark Bark Bark".output()
 
 def main()
     Dog ruff
@@ -108,21 +67,21 @@ def main()
 ```python
 
 class Dog
-    String name = "Unnamed"
-    Integer id = 0
+    String name = "An Unnamed Dog"
+    Integer id = -1
     
     def new(String name, Integer id)
         self.name = name
         self.id = id
     
     def bark()
-        "BARK ".print()
+        "Bark Bark Bark Bark".output()
     
     def info()
-        ("Dog " + name + " has an id of " + id.toString() + ".").output()
+        ("The dog " + name + " has an id of " + id.toString() + ".").output()
 
 def main()
-    Dog ruff("Ruff", 1)
+    Dog ruff("Ruff", 21)
     
     ruff.info()
     ruff.bark()
@@ -185,7 +144,7 @@ class Dog Animal
         self.weight = 150
 ```
 
-###Generic Classes
+###Basic Generic Classes
 ```python
 
 class Box<Type>
