@@ -34,24 +34,17 @@ void process_indentation(TokenList& tokens, std::string& code, unsigned int& ind
 
     while(is_indent(code)){
         line_indentaion++;
+        if(code.substr(0,4) == "    ") { code = string_delete_amount(code,4); }
+        else code = string_delete_amount(code,1);
+    }
 
-        if(code.substr(0,4) == "    "){
-            code = string_delete_amount(code,4);
-        } else {
-            code = string_delete_amount(code,1);
-        }
+    while(line_indentaion > indentation){
+        indentation++;
+        tokens.push_back( TOKEN_INDENT );
     }
-    if(line_indentaion > indentation){
-        while(line_indentaion > indentation){
-            indentation++;
-            tokens.push_back( TOKEN_INDENT );
-        }
-    }
-    else if(line_indentaion < indentation){
-        while(line_indentaion < indentation){
-            indentation--;
-            tokens.push_back( TOKEN_DEDENT );
-        }
+    while(line_indentaion < indentation){
+        indentation--;
+        tokens.push_back( TOKEN_DEDENT );
     }
 }
 
@@ -61,7 +54,6 @@ TokenList tokenize(std::string code){
     TokenList tokens;
     unsigned int indentation = 0;
     std::string prev;
-
     process_indentation(tokens, code, indentation);
 
     if(code == ""){
@@ -70,11 +62,9 @@ TokenList tokenize(std::string code){
         return tokens;
     }
 
-    if(code[code.length()-1] != '\n'){
-        code += "\n";
-    }
+    if(code[code.length()-1] != '\n') code += "\n";
 
-    while(code != "" and code!=prev){
+    while(code != "" and code != prev){
         prev = code;
 
         // Remove Newlines and track indentation
@@ -82,7 +72,6 @@ TokenList tokenize(std::string code){
             log_lexer(LEXER_LOG_PREFIX + "Found a newline, adding terminate token");
             code = string_delete_amount(code,1);
             tokens.push_back( TOKEN_TERMINATE );
-
             process_indentation(tokens, code, indentation);
         }
 
@@ -93,12 +82,12 @@ TokenList tokenize(std::string code){
             code = string_delete_until(code,"\"");
             code = string_delete_amount(code,1);
         }
-        else if( (int)code[0] >= 48 and (int)code[0] <= 57){    // Numeric Literal
+        else if( (int)code[0] >= 48 and (int)code[0] <= 57 ){    // Numeric Literal
             std::string number = string_get_until_or(code,",)].\n iuf");
             code = string_delete_amount(code, number.length());
 
             if(code.substr(0,1) == "."){
-                if( (int)code[1] >= 48 and (int)code[1] <= 57){
+                if( (int)code[1] >= 48 and (int)code[1] <= 57 ){
                     code = string_delete_amount(code, 1);
                     number += "." + string_get_until_or(code,",)].\n iuf");
                     code = string_delete_until_or(code,",)].\n iuf");
@@ -488,7 +477,6 @@ TokenList tokenize(std::string code){
 
     if(code == prev){
         log_lexer("Encountered unrecognized operator '" + code.substr(0,1) + "'");
-
         die("Unrecognized operator '" + code.substr(0,1) + "'");
     }
 

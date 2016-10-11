@@ -120,6 +120,10 @@ struct TokenContext {
     unsigned int& index;
 };
 
+#define tokenid(context)   context.tokens[context.index].id
+#define tokendata(context) context.tokens[context.index].data
+#define tokenof(context)   context.tokens[context.index]
+
 std::string token_name(Token token);
 std::string token_operator(Token token);
 void token_print(Token token);

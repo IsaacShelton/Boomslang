@@ -27,7 +27,15 @@
 #include "scope.h"
 #include "options.h"
 
-Environment enforce(Configuration* config, TokenList&);
-void enforce_package(Configuration* config, TokenList&, Environment&);
+Environment enforce(Configuration*, TokenList&);
+void enforce_package(Configuration*, TokenList&, Environment&);
+
+void enforce_token(Configuration*, TokenContext, Environment&);
+void enforce_literal(Configuration*, TokenContext, Environment&);
+void enforce_beginning_expression(Configuration*, TokenContext, Environment&);
+void enforce_keyword(Configuration*, TokenContext, Environment&, bool&, unsigned int&);
+void enforce_word(Configuration*, TokenContext, Environment&, bool&);
+void enforce_pointer(Configuration*, TokenContext, Environment&);
+void enforce_library_file(TokenContext, unsigned int&);
 
 #endif // ENFORCER_H_INCLUDED

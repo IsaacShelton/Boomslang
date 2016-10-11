@@ -47,6 +47,7 @@ void context_enforce_following_method_calls(TokenContext context, Environment& e
 void context_enforce_string(TokenContext context, Environment& environment, std::string str);
 void context_enforce_type(TokenContext context, Environment& environment, Class& type);
 
+std::string context_assemble_string_expression(TokenContext context, Environment&, std::string&, size_t&);
 void context_assemble_string(TokenContext context, Environment& environment, std::string, std::string&);
 
 void context_class_dereference(TokenContext context, Class& type);
