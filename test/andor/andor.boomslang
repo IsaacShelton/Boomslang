@@ -2,7 +2,7 @@
 def main()
     int zero = 0
     int one = 1
-    
+	
     # Logical Or
     if zero = 0i or zero = 10i
         "zero is 0 or 10".output()
@@ -14,3 +14,8 @@ def main()
         "zero is 0 and one is 1".output()
     else
         "zero is not 0 or one is not 1".output()
+	
+	# Expression Type Indiffenence
+	if zero == one or "hi" == "hi"
+		"zero is one or 'hi' is 'hi'".output()
+	

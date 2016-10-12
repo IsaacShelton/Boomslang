@@ -52,6 +52,16 @@ bool Class::operator==(const Class& other){
 
     return true;
 }
+bool Class::operator!=(const Class& other){
+    if(this->name != other.name) return true;
+    if(this->generics.size() != other.generics.size()) return true;
+
+    for(size_t i = 0; i < generics.size(); i++){
+        if(!( this->generics[i] == other.generics[i] )) return true;
+    }
+
+    return false;
+}
 void Class::load(std::string rawtype){
     name = string_get_until(rawtype, "<");
     rawtype = string_delete_amount(rawtype, name.length());

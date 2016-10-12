@@ -174,5 +174,5 @@ void index_decrease(TokenContext context){
 // Token Forcing
 void token_force(TokenContext context, unsigned int token_id, std::string cant_advance, std::string fail){
     if( !advance_index(context.index, context.tokens.size()) ) die(cant_advance);
-    if(context.tokens[context.index].id != token_id) die(fail);
+    if(tokenid(context) != token_id) die(fail);
 }

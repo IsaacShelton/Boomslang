@@ -43,31 +43,24 @@ bool context_method_exists(TokenContext context, Environment& e, Method method){
     return environment_method_exists(context, &e.global, method);
 }
 bool context_method_exists(TokenContext context, Environment& e, Class base, Method method){
-    if(environment_get_child(&e.global, CLASS_PREFIX + base.name) == NULL){
-        return false;
-    }
-
+    if(environment_get_child(&e.global, CLASS_PREFIX + base.name) == NULL) return false;
     return environment_method_exists(context, environment_get_child(&e.global, CLASS_PREFIX + base.name), method);
 }
 Class context_root_class(Class base){
     base.name = string_get_until(base.name, "<");
 
-    if(base.name != ""){
-        if(base.name.substr(base.name.length()-1, 1) == "^"){
+    if(base.name != "")
+        if(base.name.substr(base.name.length()-1, 1) == "^")
             base.name = base.name.substr(0, base.name.length()-1);
-        }
-    }
 
     return base;
 }
 std::string context_root_class(std::string base){
     base = string_get_until(base, "<");
 
-    if(base != ""){
-        if(base.substr(base.length()-1, 1) == "^"){
+    if(base != "")
+        if(base.substr(base.length()-1, 1) == "^")
             base = base.substr(0, base.length()-1);
-        }
-    }
 
     return base;
 }
@@ -95,9 +88,13 @@ Method context_method_get(TokenContext context, Environment& e, Class base, Meth
 
 void context_enforce_expression(TokenContext context, Environment& e, Class& type){
     int balance = 0;
+    bool compared = false;
+    bool andor = false;
 
     while(balance != 0 or (tokenid(context) != TOKENINDEX_NEXT and tokenid(context) != TOKENINDEX_TERMINATE and tokenid(context) != TOKENINDEX_CLOSE)){
-        if(tokenid(context) == TOKENINDEX_OPEN){
+        unsigned int token_id = tokenid(context);
+
+        if(token_id == TOKENINDEX_OPEN){
             Class base_class;
 
             balance++;
@@ -136,13 +133,13 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 fail( INCOMPATIBLE_CLASSES(type.toString(), base_class.toString()) );
             }
         }
-        else if(tokenid(context) == TOKENINDEX_LESSTHAN){
+        else if(token_id == TOKENINDEX_LESSTHAN){
             // We're fine with that
         }
-        else if(tokenid(context) == TOKENINDEX_GREATERTHAN){
+        else if(token_id == TOKENINDEX_GREATERTHAN){
              // We're fine with that
         }
-        else if(tokenid(context) == TOKENINDEX_POINTER){
+        else if(token_id == TOKENINDEX_POINTER){
             index_increase(context);
 
             if(tokenid(context) == TOKENINDEX_WORD){
@@ -204,7 +201,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 die(UNEXPECTED_OPERATOR_INEXP);
             }
         }
-        else if(tokenid(context) == TOKENINDEX_ADDRESS){
+        else if(token_id== TOKENINDEX_ADDRESS){
             index_increase(context);
 
             if(tokenid(context) == TOKENINDEX_WORD){
@@ -281,7 +278,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 die(UNEXPECTED_OPERATOR_INEXP);
             }
         }
-        else if(tokenid(context) == TOKENINDEX_WORD){
+        else if(token_id == TOKENINDEX_WORD){
             std::string class_name = tokendata(context);
             index_increase(context);
 
@@ -408,7 +405,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 index_decrease(context);
             }
         }
-        else if(tokenid(context) == TOKENINDEX_KEYWORD){
+        else if(token_id == TOKENINDEX_KEYWORD){
             if(tokendata(context) == "new"){
                 std::string class_name;
 
@@ -485,8 +482,16 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 }
             }
             else if(tokendata(context) == "and"){
+                if( !compared and !context_class_compare(context, type, Class("Boolean")) ) fail( EXPRESSION_BOOLEAN_AND(type.toString()) );
+                compared = false;
+                andor = true;
+                type = Class();
             }
             else if(tokendata(context) == "or"){
+                if( !compared and !context_class_compare(context, type, Class("Boolean")) ) fail( EXPRESSION_BOOLEAN_OR(type.toString()) );
+                compared = false;
+                andor = true;
+                type = Class();
             }
             else if(tokendata(context) == "cast"){
                 index_increase(context);
@@ -526,7 +531,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 die(UNEXPECTED_KEYWORD(tokendata(context)));
             }
         }
-        else if(tokenid(context) == TOKENINDEX_STRING_LITERAL){
+        else if(token_id == TOKENINDEX_STRING_LITERAL){
             Class base_class = Class("String");
 
             index_increase(context);
@@ -560,7 +565,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 fail( INCOMPATIBLE_CLASSES(type.toString(), base_class.toString()) );
             }
         }
-        else if(tokenid(context) == TOKENINDEX_NUMERIC_LITERAL){
+        else if(token_id == TOKENINDEX_NUMERIC_LITERAL){
             Class base_class = Class("Double");
             tokenid(context) = TOKENINDEX_DOUBLE_LITERAL;
 
@@ -609,7 +614,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 fail( INCOMPATIBLE_CLASSES(type.toString(), base_class.toString()) );
             }
         }
-        else if(tokenid(context) == TOKENINDEX_DOUBLE_LITERAL){
+        else if(token_id == TOKENINDEX_DOUBLE_LITERAL){
             Class base_class = Class("Double");
 
             index_increase(context);
@@ -643,7 +648,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 fail( INCOMPATIBLE_CLASSES(type.toString(), base_class.toString()) );
             }
         }
-        else if(tokenid(context) == TOKENINDEX_FLOAT_LITERAL){
+        else if(token_id == TOKENINDEX_FLOAT_LITERAL){
             Class base_class = Class("Float");
 
             index_increase(context);
@@ -677,7 +682,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 fail( INCOMPATIBLE_CLASSES(type.toString(), base_class.toString()) );
             }
         }
-        else if(tokenid(context) == TOKENINDEX_INTEGER_LITERAL){
+        else if(token_id == TOKENINDEX_INTEGER_LITERAL){
             Class base_class = Class("Integer");
 
             index_increase(context);
@@ -711,7 +716,7 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 fail( INCOMPATIBLE_CLASSES(type.toString(), base_class.toString()) );
             }
         }
-        else if(tokenid(context) == TOKENINDEX_UNSIGNED_LITERAL){
+        else if(token_id == TOKENINDEX_UNSIGNED_LITERAL){
             Class base_class = Class("UnsignedInteger");
 
             index_increase(context);
@@ -745,13 +750,15 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
                 fail( INCOMPATIBLE_CLASSES(type.toString(), base_class.toString()) );
             }
         }
-        else if(tokenid(context) == TOKENINDEX_ADD
-        or tokenid(context) == TOKENINDEX_SUBTRACT
-        or tokenid(context) == TOKENINDEX_MULTIPLY
-        or tokenid(context) == TOKENINDEX_DIVIDE
-        or tokenid(context) == TOKENINDEX_ASSIGN
-        or tokenid(context) == TOKENINDEX_NOT){
+        else if(token_id == TOKENINDEX_ADD
+        or token_id == TOKENINDEX_SUBTRACT
+        or token_id == TOKENINDEX_MULTIPLY
+        or token_id == TOKENINDEX_DIVIDE
+        or token_id == TOKENINDEX_NOT){
             // We're fine with that
+        }
+        else if(token_id == TOKENINDEX_ASSIGN){
+            compared = true;
         }
         else {
             die(UNEXPECTED_OPERATOR_INEXP);
@@ -759,6 +766,8 @@ void context_enforce_expression(TokenContext context, Environment& e, Class& typ
 
         index_increase(context);
     }
+
+    if( andor and !compared and !context_class_compare(context, type, Class("Boolean")) ) fail( EXPRESSION_BOOLEAN_ANDOR(type.toString()) );
 }
 void context_enforce_arguments(TokenContext context, Environment& e, Class& base_class, std::string override_method, bool is_static){
     std::vector<MethodArgument> arguments;

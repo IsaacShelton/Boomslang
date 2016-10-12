@@ -26,7 +26,14 @@
 #include "scope.h"
 #include "options.h"
 
-void assemble(Configuration*, TokenList&, Environment&);
 void assemble_expression(TokenContext, std::string&, Environment&);
+void assemble_token(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+
+void compile(Configuration*, TokenList&, Environment&);
+void build(Configuration*);
+void assemble(Configuration*, TokenList&, Environment&);
+
+void assemble_expression_keyword(TokenContext, std::string&);
+void assemble_keyword(Configuration* , TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
 
 #endif // ASSEMBLER_H_INCLUDED
