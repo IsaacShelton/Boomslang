@@ -455,380 +455,10 @@ void assemble_keyword(Configuration* config, TokenContext context, bool& termina
     std::string keyword = tokendata(context);
 
     if(keyword == "def"){
-        Class return_value;
-        std::string method_name;
-        std::string method_code;
-        std::string method_arguments;
-        std::string prefix_string;
-        bool of_class = false;
-
-        unsigned int before_indentation = indentation; // The indentation before processing tokens in method
-        unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-        context.index++;
-        while(tokenid(context) != TOKENINDEX_WORD){
-            if(tokenid(context) == TOKENINDEX_KEYWORD){
-                if(tokendata(context) == "static"){
-                    prefix_string += "static ";
-                }
-                else if(tokendata(context) == "public"){
-                    prefix_string += "public: ";
-                }
-                else if(tokendata(context) == "private"){
-                    prefix_string += "private: ";
-                }
-            }
-
-            context.index++;
-        }
-        method_name = tokendata(context);
-        context.index += 2;
-
-        // Make sure the method is implemented
-        if(!environment_method_exists(context, environment.scope, Method{method_name, environment.scope, IGNORE_ARGS, IGNORE_CLASS})){
-            die("Declared Method '" + method_name + "' has no Implementation ");
-        }
-
-        // Get method return value
-        return_value = environment_method_get(context, environment.scope, Method{method_name, environment.scope, IGNORE_ARGS, IGNORE_CLASS}).return_type;
-
-        // Set scope to the method scope
-        environment.scope = environment_get_child(environment.scope, METHOD_PREFIX + method_name);
-
-        unsigned int balance = 0;
-        bool value = false;
-        bool first_word = true;
-
-        while(balance != 0 or (tokenid(context) != TOKENINDEX_CLOSE)){
-            if(tokenid(context) == TOKENINDEX_OPEN){
-                balance++;
-            }
-            else if(tokenid(context) == TOKENINDEX_CLOSE){
-                balance--;
-            }
-            else if(tokenid(context) == TOKENINDEX_WORD){
-                if(!first_word){
-                    method_arguments += " ";
-                }
-
-                method_arguments += resource(tokendata(context));
-                first_word = false;
-            }
-            else if(tokenid(context) == TOKENINDEX_ASSIGN){
-                if(value == true){
-                    die(UNEXPECTED_OPERATOR_INEXP);
-                }
-
-                value = true;
-                method_arguments += "=";
-            }
-            else if(tokenid(context) == TOKENINDEX_NEXT){
-                method_arguments += ", ";
-                value = false;
-                first_word = true;
-            }
-            else if(tokenid(context) == TOKENINDEX_POINTER){
-                method_arguments += "*";
-                first_word = false;
-            }
-            else if(tokenid(context) == TOKENINDEX_STRING_LITERAL){
-                if(value == false){
-                    die(UNEXPECTED_OPERATOR);
-                }
-
-                method_arguments += "boomslang_String(\"" + tokendata(context) + "\")";
-            }
-            else if(tokenid(context) == TOKENINDEX_NUMERIC_LITERAL){
-                if(value == false){
-                    die(UNEXPECTED_OPERATOR);
-                }
-
-                method_arguments += "boomslang_Double(" + tokendata(context) + ")";
-            }
-            else {
-                die(INVALID_TOKEN);
-            }
-
-            context.index++;
-        }
-
-        context.index+=2;
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
-            context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, method_code, write, header, token_indent, environment);
-                context.index++;
-            }
-        }
-
-        environment.scope = environment.scope->parent;
-        context.index--;
-
-        if(name_is_class(environment.scope->name)){
-            of_class = true;
-        }
-
-        if(of_class){
-            if(method_name == "new"){
-                if(return_value.name != "void"){
-                    die(METHOD_NEW_MUST_RETURN_VOID);
-                }
-
-                write  << resource(name_get_class(environment.scope->name)) + "::" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                output += resource(name_get_class(environment.scope->name)) + "(" + method_arguments + ");\n";
-            }
-            else if(method_name == "delete"){
-                if(return_value.name != "void"){
-                    die(METHOD_DELETE_MUST_RETURN_VOID);
-                }
-
-                write  << resource(name_get_class(environment.scope->name)) + "::~" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                output += "~" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + ");\n";
-            }
-            else if(method_name == "="){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator=(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator=(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "+"){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator+(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator+(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator+(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator+(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "-"){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator-(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator-(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator-(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator-(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "*"){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator*(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator*(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator*(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator*(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "/"){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator/(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator/(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator/(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator/(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "+="){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator+=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator+=(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator+=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator+=(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "-="){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator-=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator-=(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator-=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator-=(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "*="){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator*=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator*=(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator*=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator*=(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "/="){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator/=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator/=(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator/=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator/=(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "=="){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator==(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator==(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator==(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator==(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == ">"){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator>(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator>(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator>(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator>(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "<"){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator<(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator<(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator<(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator<(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == ">="){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator>=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator>=(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator>=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator>=(" + method_arguments + ");\n";
-                }
-            }
-            else if(method_name == "<="){
-                if(return_value.name == "void"){
-                    write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator<=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += "void operator<=(" + method_arguments + ");\n";
-                }
-                else {
-                    write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator<=(" + method_arguments + "){\n" + method_code + "}\n";
-                    output += return_value.native() + " " + "operator<=(" + method_arguments + ");\n";
-                }
-            }
-            else if(return_value.name == "void"){
-                write  << "void " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                output += prefix_string + "void " + resource(method_name) + "(" + method_arguments + ");\n";
-            }
-            else {
-                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                output += prefix_string + return_value.native() + " " + resource(method_name) + "(" + method_arguments + ");\n";
-            }
-        }
-        else {
-            if(return_value.name == "void"){
-                write  << "void " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                output += "void " + resource(method_name) + "(" + method_arguments + ");\n";
-            }
-            else {
-                write  << return_value.native() + " " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
-                output += return_value.native() + " " + resource(method_name) + "(" + method_arguments + ");\n";
-            }
-        }
+        assemble_keyword_def(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "class"){
-        std::string class_name;
-        std::string class_code;
-        std::vector<std::string> parents_native;
-        std::vector<std::string> generics_native;
-
-        unsigned int before_indentation = indentation; // The indentation before processing tokens in method
-        unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-        context.index++;
-        class_name = tokendata(context);
-
-        // Get Generic Classes
-        context.index++;
-        if(tokenid(context) == TOKENINDEX_LESSTHAN){
-            context.index++;
-
-            while(tokenid(context) != TOKENINDEX_GREATERTHAN){
-                generics_native.push_back( resource(tokendata(context)) );
-                context.index++;
-
-                if(tokenid(context) == TOKENINDEX_NEXT) context.index++;
-            }
-
-            context.index++;
-        }
-
-        // Get Parent Classes
-        while(tokenid(context) == TOKENINDEX_WORD){
-            parents_native.push_back( resource(tokendata(context)) );
-            context.index++;
-        }
-        context.index--;
-
-        if(!environment_class_exists(environment.scope, Class{class_name})){
-            die("Declared Class has no Implementation");
-        }
-
-        environment.scope = environment_get_child(environment.scope, CLASS_PREFIX + class_name);
-
-        context.index += 2;
-
-        // Write generics
-        if(generics_native.size() > 0){
-            header << "template<";
-            for(size_t i = 0; i < generics_native.size(); i++){
-                header << "typename " + generics_native[i];
-                if(i + 1 < generics_native.size()) header << ",";
-            }
-            header << "> ";
-        }
-        // Write Class Name
-        header << "class " + resource(class_name);
-        if(parents_native.size() > 0){
-            header << ": ";
-        }
-        // Write Parents
-        for(size_t i = 0; i < parents_native.size(); i++){
-            header << "public " + parents_native[i];
-            if(i + 1 < parents_native.size()) header << ",";
-            header << " ";
-        }
-        // Write Opening Brace
-        header << "{\npublic:\n";
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
-            context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, class_code, write, header, token_indent, environment);
-                context.index++;
-            }
-            environment.scope = environment.scope->parent;
-        }
-        else {
-            context.index--;
-
-            if(environment.scope->parent != NULL){
-                environment.scope = environment.scope->parent;
-            }
-        }
-
-        header << class_code + "\n};\n";
-        terminate_needed = true;
+        assemble_keyword_class(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "return"){
         output += "return ";
@@ -845,479 +475,41 @@ void assemble_keyword(Configuration* config, TokenContext context, bool& termina
         terminate_needed = true;
     }
     else if(keyword == "if"){
-        std::string expression;
-        std::string conditional_code;
-        unsigned int before_indentation = indentation; // The indentation before processing tokens
-        unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-        context.index++;
-        assemble_expression(context, expression, environment);
-        context.index++;
-
-        output += "if (" + expression + "){\n";
-
-        if(tokenid(context) != TOKENINDEX_TERMINATE){
-            die("Expected terminate after 'if' statement");
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
-            context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                context.index++;
-            }
-            context.index--;
-        }
-        else {
-            index_decrease(context);
-        }
-
-        output += conditional_code + "}\n";
+        assemble_keyword_if(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "unless"){
-        std::string expression;
-        std::string conditional_code;
-        unsigned int before_indentation = indentation; // The indentation before processing tokens
-        unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-        context.index++;
-        assemble_expression(context, expression, environment);
-        context.index++;
-
-        output += "if (! (" + expression + ") ){\n";
-
-        if(tokenid(context) != TOKENINDEX_TERMINATE){
-            die("Expected terminate after 'unless' statement");
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
-            context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                context.index++;
-            }
-            context.index--;
-        }
-        else {
-            index_decrease(context);
-        }
-
-        output += conditional_code + "}\n";
+        assemble_keyword_unless(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "else"){
-        context.index++;
-
-        if(tokendata(context) == "if"){          // Else If
-            std::string expression;
-            std::string conditional_code;
-            unsigned int before_indentation = indentation; // The indentation before processing tokens
-            unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-            context.index++;
-            assemble_expression(context, expression, environment);
-            context.index++;
-
-            output += "else if (" + expression + "){\n";
-
-            if(tokenid(context) != TOKENINDEX_TERMINATE){
-                die("Expected terminate after 'else if' statement");
-            }
-
-            index_increase(context);
-
-            if(tokenid(context) == TOKENINDEX_INDENT){
-                context.index++;
-                while(before_indentation != token_indent){
-                    assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                    context.index++;
-                }
-                context.index--;
-            }
-            else {
-                index_decrease(context);
-            }
-
-            output += conditional_code + "}\n";
-        }
-        else if(tokendata(context) == "unless"){ // Else Unless
-            std::string expression;
-            std::string conditional_code;
-            unsigned int before_indentation = indentation; // The indentation before processing tokens
-            unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-            context.index++;
-            assemble_expression(context, expression, environment);
-            context.index++;
-
-            output += "else if (! (" + expression + ") ){\n";
-
-            if(tokenid(context) != TOKENINDEX_TERMINATE){
-                die("Expected terminate after 'else unless' statement");
-            }
-
-            index_increase(context);
-
-            if(tokenid(context) == TOKENINDEX_INDENT){
-                context.index++;
-                while(before_indentation != token_indent){
-                    assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                    context.index++;
-                }
-                context.index--;
-            }
-            else {
-                index_decrease(context);
-            }
-
-            output += conditional_code + "}\n";
-        }
-        else { // Plain Else
-            std::string conditional_code;
-            unsigned int before_indentation = indentation; // The indentation before processing tokens
-            unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-            output += "else ";
-
-            if(tokenid(context) != TOKENINDEX_TERMINATE){
-                die("Expected terminate after 'else' statement");
-            }
-
-            index_increase(context);
-
-            if(tokenid(context) == TOKENINDEX_INDENT){
-                context.index++;
-                while(before_indentation != token_indent){
-                    assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                    context.index++;
-                }
-                context.index--;
-                output += "{\n" + conditional_code + "}\n";
-            }
-            else {
-                index_decrease(context);
-                output += "{  }\n";
-            }
-        }
+        assemble_keyword_else(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "while"){
-        std::string expression;
-        std::string conditional_code;
-        unsigned int before_indentation = indentation; // The indentation before processing tokens
-        unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-        context.index++;
-        assemble_expression(context, expression, environment);
-        context.index++;
-
-        output += "while (" + expression + "){\n";
-
-        if(tokenid(context) != TOKENINDEX_TERMINATE){
-            die("Expected terminate after 'while' statement");
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
-            context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                context.index++;
-            }
-            context.index--;
-        }
-        else {
-            index_decrease(context);
-        }
-
-        output += conditional_code + "}\n";
+        assemble_keyword_while(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "until"){
-        std::string expression;
-        std::string conditional_code;
-        unsigned int before_indentation = indentation; // The indentation before processing tokens
-        unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-        context.index++;
-        assemble_expression(context, expression, environment);
-        context.index++;
-
-        output += "while ( !(" + expression + ") ){\n";
-
-        if(tokenid(context) != TOKENINDEX_TERMINATE){
-            die("Expected terminate after 'until' statement");
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
-            context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                context.index++;
-            }
-            context.index--;
-        }
-        else {
-            index_decrease(context);
-        }
-
-        output += conditional_code + "}\n";
+        assemble_keyword_until(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "forever"){
-        std::string expression;
-        std::string conditional_code;
-        unsigned int before_indentation = indentation; // The indentation before processing tokens
-        unsigned int token_indent = indentation + 1;    // The indentation during processing
-
-        context.index++;
-
-        output += "while(true){\n";
-
-        if(tokenid(context) != TOKENINDEX_TERMINATE){
-            die("Expected terminate after 'forever' statement");
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
-            context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                context.index++;
-            }
-            context.index--;
-        }
-        else {
-            index_decrease(context);
-        }
-
-        output += conditional_code + "}\n";
+        assemble_keyword_forever(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "for"){
-        std::string declaration;
-        std::string expression;
-        std::string increament;
-        std::string conditional_code;
-        unsigned int before_indentation = indentation; // The indentation before processing tokens
-        unsigned int token_indent = indentation + 1;   // The indentation during processing
-
-        Class type;
-        context.index++;
-
-        if(tokenid(context) == TOKENINDEX_KEYWORD and tokendata(context) == "var"){
-            index_increase(context);
-            declaration = "auto ";
-        }
-        else {
-            context_enforce_type(context, environment, type);
-            declaration = type.native() + " ";
-        }
-
-        declaration += resource(tokendata(context));
-        context.index++;
-
-        if(tokenid(context) == TOKENINDEX_ASSIGN){
-            declaration += " = ";
-            context.index++;
-            assemble_expression(context, declaration, environment);
-            context.index++;
-        }
-
-        context.index++;
-        assemble_expression(context, expression, environment);
-        context.index += 2;
-        assemble_expression(context, increament, environment);
-        context.index++;
-
-        output += "for (" + declaration + ";" + expression + ";" + increament + "){\n";
-
-        if(tokenid(context) != TOKENINDEX_TERMINATE){
-            die("Expected terminate after 'for' statement");
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
-            context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                context.index++;
-            }
-            context.index--;
-        }
-        else {
-            index_decrease(context);
-        }
-
-        output += conditional_code + "}\n";
+        assemble_keyword_for(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "new"){
-        std::string class_name;
-
-        index_increase(context);
-        class_name = tokendata(context);
-
-        output += resource(class_name);
-
-        context.index++;
-        if(tokenid(context) != TOKENINDEX_OPEN){
-            output += "()";
-        }
-        context.index--;
-
-        terminate_needed = true;
+        assemble_keyword_new(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "delete"){
         output += "delete ";
         terminate_needed = true;
     }
     else if(keyword == "create"){
-        std::string class_name;
-
-        index_increase(context);
-        class_name = tokendata(context);
-
-        output += "new " + resource(class_name);
-
-        context.index++;
-        if(tokenid(context) != TOKENINDEX_OPEN){
-            output += "()";
-        }
-        context.index--;
-
-        terminate_needed = true;
+        assemble_keyword_create(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "import"){
-        std::string package;
-        std::string global;
-        std::string prev_filename;
-        bool is_package;
-        TokenList tokens;
-
-        index_increase(context);
-
-        if(tokenid(context) != TOKENINDEX_WORD and tokenid(context) != TOKENINDEX_STRING_LITERAL){
-            die(EXPECTED_PACKAGE_NAME_AFTER_IMPORT);
-        }
-
-        if(tokenid(context) == TOKENINDEX_WORD){
-            is_package = true;
-        }
-        else {
-            is_package = false;
-        }
-
-        package = tokendata(context);
-
-        #ifdef __WIN32__
-        package = string_replace_all(package, "/", "\\");
-        #endif // __WIN32__
-
-        if(is_package){
-            package += ".branch";
-        }
-
-        if( file_exists(package) ){ // Plain Absolute Path
-            prev_filename = current_filename;
-            current_filename = package;
-
-            if(is_package){
-                if(!tokens_load(package, tokens)) die("Failed to load Package '" + package + "'");
-            }
-            else {
-                tokens = tokenize(contents(package));
-            }
-        }
-        else if( file_exists( filename_path(current_filename) + delete_slash(package) ) ){ // Relative Path
-            prev_filename = current_filename;
-            current_filename = filename_path(current_filename) + delete_slash(package);
-
-            if(is_package){
-                if(!tokens_load(filename_path(current_filename) + delete_slash(package), tokens)) die("Failed to load Package '" + package + "'");
-            }
-            else {
-                tokens = tokenize(contents(filename_path(current_filename) + delete_slash(package)));
-            }
-        }
-        else if( file_exists(PACKAGEHOME + delete_slash(package)) ){ // Package Path
-            prev_filename = current_filename;
-            current_filename = PACKAGEHOME + delete_slash(package);
-
-            if(is_package){
-                if(!tokens_load(current_filename, tokens)) die("Failed to load Package '" + package + "'");
-            }
-            else {
-                tokens = tokenize(contents(current_filename));
-            }
-        }
-
-
-        // Process tokens
-        for(unsigned int index = 0; index < tokens.size(); index++){
-            assemble_token(config, TokenContext{tokens, index}, terminate_needed, global, write, header, indentation, environment);
-        }
-
-        current_filename = prev_filename;
+        assemble_keyword_import(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "native"){
-        std::string action;
-        std::string filename;
-
-        context.index++;
-        action = tokendata(context);
-        context.index++;
-        filename = tokendata(context);
-
-        if(action == "link"){
-            std::string path = MINGWHOME + "lib\\" + delete_slash(filename);
-
-            if(file_exists(path)){
-                bool exists = false;
-                for(unsigned int i = 0; i < config->linked.size(); i++){
-                    if(config->linked[i] == path){
-                        exists = true;
-                        break;
-                    }
-                }
-
-                if(!exists){
-                    config->linker_flags += path + " ";
-                    config->linked.push_back(path);
-                }
-            }
-            else {
-                die(FILE_DOESNT_EXIST(path));
-            }
-        }
-        else if(action == "include"){
-            if(file_exists( MINGWHOME + "include\\" + delete_slash(filename) )){
-                std::string path = full_path(MINGWHOME + "include\\" + delete_slash(filename));
-
-                header << contents(path);
-            }
-            else if(file_exists( filename_path(current_filename) + delete_slash(filename) )){
-                std::string path = full_path(filename_path(current_filename) + delete_slash(filename));
-
-                header << contents(path);
-            }
-            else if( file_exists(PACKAGEHOME + delete_slash(filename)) ){
-                std::string path = full_path(PACKAGEHOME + delete_slash(filename));
-
-                header << contents(path);
-            }
-            else if(file_exists(filename)){
-                std::string path = full_path(filename);
-
-                header << contents(path);
-            }
-            else {
-                die(FILE_DOESNT_EXIST(full_path(filename)));
-            }
-        }
+        assemble_keyword_native(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "register"){
         // Jump over construct data
@@ -1328,115 +520,14 @@ void assemble_keyword(Configuration* config, TokenContext context, bool& termina
         terminate_needed = true;
     }
     else if(keyword == "function^"){
-        std::string function_return_type = "";
-        std::vector<std::string> function_args;
-        std::string value;
-
-        context.index += 2;
-
-        while(tokenid(context) != TOKENINDEX_CLOSE){
-            std::string arg;
-
-            if(tokenid(context) == TOKENINDEX_KEYWORD){
-                if(tokendata(context) == "void"){
-                    arg = "any^";
-                }
-            }
-            else {
-                arg = tokendata(context);
-            }
-
-            function_args.push_back(arg);
-            index_increase(context);
-
-            if(tokenid(context) == TOKENINDEX_NEXT){
-                index_increase(context);
-            }
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_SUBTRACT){
-            index_increase(context);
-            if(tokenid(context) == TOKENINDEX_GREATERTHAN){
-                index_increase(context);
-
-                if(tokenid(context) != TOKENINDEX_WORD and tokenid(context) != TOKENINDEX_KEYWORD){
-                    die(UNEXPECTED_OPERATOR);
-                }
-
-                if(tokenid(context) == TOKENINDEX_WORD){
-                    if(!context_class_exists(context, environment, Class{tokendata(context)})){
-                        die(UNDECLARED_CLASS(tokendata(context)));
-                    }
-
-                    function_return_type = tokendata(context);
-                }
-                else if(tokenid(context) == TOKENINDEX_KEYWORD){
-                    if(tokendata(context) == "void"){
-                        function_return_type = "void";
-                    }
-                    else {
-                        die(UNEXPECTED_KEYWORD(tokendata(context)));
-                    }
-                }
-
-                index_increase(context);
-            }
-            else {
-                die(NO_RETURN_TYPE_STATED);
-            }
-        }
-        else {
-            die(NO_RETURN_TYPE_STATED);
-        }
-
-        std::string variable_name = tokendata(context);
-        index_increase(context);
-
-        // Are we gonna assign it to something
-        if(tokenid(context) == TOKENINDEX_ASSIGN){
-            index_increase(context);
-            assemble_expression(context, value, environment);
-        }
-
-        index_decrease(context);
-
-        if(function_return_type != "void"){
-            output += resource(function_return_type) + "(*" + resource(variable_name) + ")(";
-        }
-        else {
-            output += "void (*" + resource(variable_name) + ")(";
-        }
-
-        for(unsigned int i = 0; i < function_args.size(); i++){
-            output += resource(function_args[i]);
-
-            if(i != function_args.size() - 1){
-                output += ",";
-            }
-        }
-
-        output += ")";
-        if(value != ""){
-            output += "=" + value;
-        }
-        output += ";\n";
-
-        terminate_needed = true;
+        assemble_keyword_functionptr(config, context, terminate_needed, output, write, header, indentation, environment);
     }
     else if(keyword == "cast"){
         context.index++;
         output += "static_cast<" + resource(tokendata(context)) + ">";
-
         context.index++;
-        if(tokenid(context) == TOKENINDEX_WORD){
-            output += "(" + resource(tokendata(context)) + ")";
-        }
-        else {
-            context.index--;
-        }
-
+        if(tokenid(context) == TOKENINDEX_WORD){ output += "(" + resource(tokendata(context)) + ")"; }
+        else context.index--;
         terminate_needed = true;
     }
     else if(keyword == "public"){
@@ -1451,3 +542,876 @@ void assemble_keyword(Configuration* config, TokenContext context, bool& termina
         die(UNEXPECTED_KEYWORD(tokendata(context)));
     }
 }
+void assemble_keyword_def(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    Class return_value;
+    std::string method_name;
+    std::string method_code;
+    std::string method_arguments;
+    std::string prefix_string;
+    bool of_class = false;
+
+    unsigned int before_indentation = indentation; // The indentation before processing tokens in method
+    unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+    context.index++;
+    while(tokenid(context) != TOKENINDEX_WORD){
+        if(tokenid(context) == TOKENINDEX_KEYWORD){
+            if(tokendata(context) == "static") { prefix_string += "static "; }
+            else if(tokendata(context) == "public") { prefix_string += "public: "; }
+            else if(tokendata(context) == "private"){ prefix_string += "private: "; }
+        }
+        context.index++;
+    }
+    method_name = tokendata(context);
+    context.index += 2;
+
+    // Make sure the method is implemented
+    if(!environment_method_exists(context, environment.scope, Method{method_name, environment.scope, IGNORE_ARGS, IGNORE_CLASS}))
+        die("Declared Method '" + method_name + "' has no Implementation ");
+
+    // Get method return value
+    return_value = environment_method_get(context, environment.scope, Method{method_name, environment.scope, IGNORE_ARGS, IGNORE_CLASS}).return_type;
+
+    // Set scope to the method scope
+    environment.scope = environment_get_child(environment.scope, METHOD_PREFIX + method_name);
+
+    unsigned int balance = 0;
+    bool value = false;
+    bool first_word = true;
+
+    while(balance != 0 or (tokenid(context) != TOKENINDEX_CLOSE)){
+        if(tokenid(context) == TOKENINDEX_OPEN){
+            balance++;
+        }
+        else if(tokenid(context) == TOKENINDEX_CLOSE){
+            balance--;
+        }
+        else if(tokenid(context) == TOKENINDEX_WORD){
+            if(!first_word){
+                method_arguments += " ";
+            }
+
+            method_arguments += resource(tokendata(context));
+            first_word = false;
+        }
+        else if(tokenid(context) == TOKENINDEX_ASSIGN){
+            if(value == true){
+                die(UNEXPECTED_OPERATOR_INEXP);
+            }
+
+            value = true;
+            method_arguments += "=";
+        }
+        else if(tokenid(context) == TOKENINDEX_NEXT){
+            method_arguments += ", ";
+            value = false;
+            first_word = true;
+        }
+        else if(tokenid(context) == TOKENINDEX_POINTER){
+            method_arguments += "*";
+            first_word = false;
+        }
+        else if(tokenid(context) == TOKENINDEX_STRING_LITERAL){
+            if(value == false){
+                die(UNEXPECTED_OPERATOR);
+            }
+
+            method_arguments += "boomslang_String(\"" + tokendata(context) + "\")";
+        }
+        else if(tokenid(context) == TOKENINDEX_NUMERIC_LITERAL){
+            if(value == false){
+                die(UNEXPECTED_OPERATOR);
+            }
+
+            method_arguments += "boomslang_Double(" + tokendata(context) + ")";
+        }
+        else {
+            die(INVALID_TOKEN);
+        }
+
+        context.index++;
+    }
+
+    context.index += 2;
+
+    if(tokenid(context) == TOKENINDEX_INDENT){
+        context.index++;
+        while(before_indentation != token_indent){
+            assemble_token(config, context, terminate_needed, method_code, write, header, token_indent, environment);
+            context.index++;
+        }
+    }
+
+    environment.scope = environment.scope->parent;
+    context.index--;
+
+    if(name_is_class(environment.scope->name)) of_class = true;
+
+    if(of_class){
+        if(method_name == "new"){
+            if(return_value.name != "void") die(METHOD_NEW_MUST_RETURN_VOID);
+            write  << resource(name_get_class(environment.scope->name)) + "::" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + "){\n" + method_code + "}\n";
+            output += resource(name_get_class(environment.scope->name)) + "(" + method_arguments + ");\n";
+        }
+        else if(method_name == "delete"){
+            if(return_value.name != "void") die(METHOD_NEW_MUST_RETURN_VOID);
+            write  << resource(name_get_class(environment.scope->name)) + "::~" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + "){\n" + method_code + "}\n";
+            output += "~" + resource(name_get_class(environment.scope->name)) + "(" + method_arguments + ");\n";
+        }
+        else if(method_name == "="){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator=(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator=(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "+"){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator+(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator+(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator+(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator+(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "-"){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator-(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator-(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator-(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator-(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "*"){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator*(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator*(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator*(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator*(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "/"){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator/(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator/(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator/(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator/(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "+="){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator+=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator+=(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator+=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator+=(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "-="){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator-=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator-=(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator-=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator-=(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "*="){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator*=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator*=(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator*=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator*=(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "/="){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator/=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator/=(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator/=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator/=(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "=="){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator==(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator==(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator==(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator==(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == ">"){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator>(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator>(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator>(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator>(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "<"){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator<(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator<(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator<(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator<(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == ">="){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator>=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator>=(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator>=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator>=(" + method_arguments + ");\n";
+            }
+        }
+        else if(method_name == "<="){
+            if(return_value.name == "void"){
+                write  << "void " + resource(name_get_class(environment.scope->name)) + "::operator<=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += "void operator<=(" + method_arguments + ");\n";
+            }
+            else {
+                write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::operator<=(" + method_arguments + "){\n" + method_code + "}\n";
+                output += return_value.native() + " " + "operator<=(" + method_arguments + ");\n";
+            }
+        }
+        else if(return_value.name == "void"){
+            write  << "void " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+            output += prefix_string + "void " + resource(method_name) + "(" + method_arguments + ");\n";
+        }
+        else {
+            write  << return_value.native() + " " + resource(name_get_class(environment.scope->name)) + "::" + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+            output += prefix_string + return_value.native() + " " + resource(method_name) + "(" + method_arguments + ");\n";
+        }
+    }
+    else {
+        if(return_value.name == "void"){
+            write  << "void " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+            output += "void " + resource(method_name) + "(" + method_arguments + ");\n";
+        }
+        else {
+            write  << return_value.native() + " " + resource(method_name) + "(" + method_arguments + "){\n" + method_code + "}\n";
+            output += return_value.native() + " " + resource(method_name) + "(" + method_arguments + ");\n";
+        }
+    }
+}
+void assemble_keyword_class(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string class_name;
+    std::string class_code;
+    std::vector<std::string> parents_native;
+    std::vector<std::string> generics_native;
+
+    unsigned int before_indentation = indentation; // The indentation before processing tokens in method
+    unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+    context.index++;
+    class_name = tokendata(context);
+
+    // Get Generic Classes
+    context.index++;
+    if(tokenid(context) == TOKENINDEX_LESSTHAN){
+        context.index++;
+
+        while(tokenid(context) != TOKENINDEX_GREATERTHAN){
+            generics_native.push_back( resource(tokendata(context)) );
+            context.index++;
+
+            if(tokenid(context) == TOKENINDEX_NEXT) context.index++;
+        }
+
+        context.index++;
+    }
+
+    // Get Parent Classes
+    while(tokenid(context) == TOKENINDEX_WORD){
+        parents_native.push_back( resource(tokendata(context)) );
+        context.index++;
+    }
+    context.index--;
+
+    if(!environment_class_exists(environment.scope, Class{class_name})){
+        die("Declared Class has no Implementation");
+    }
+
+    environment.scope = environment_get_child(environment.scope, CLASS_PREFIX + class_name);
+
+    context.index += 2;
+
+    // Write generics
+    if(generics_native.size() > 0){
+        header << "template<";
+        for(size_t i = 0; i < generics_native.size(); i++){
+            header << "typename " + generics_native[i];
+            if(i + 1 < generics_native.size()) header << ",";
+        }
+        header << "> ";
+    }
+    // Write Class Name
+    header << "class " + resource(class_name);
+    if(parents_native.size() > 0){
+        header << ": ";
+    }
+    // Write Parents
+    for(size_t i = 0; i < parents_native.size(); i++){
+        header << "public " + parents_native[i];
+        if(i + 1 < parents_native.size()) header << ",";
+        header << " ";
+    }
+    // Write Opening Brace
+    header << "{\npublic:\n";
+
+    if(tokenid(context) == TOKENINDEX_INDENT){
+        context.index++;
+        while(before_indentation != token_indent){
+            assemble_token(config, context, terminate_needed, class_code, write, header, token_indent, environment);
+            context.index++;
+        }
+        environment.scope = environment.scope->parent;
+    }
+    else {
+        context.index--;
+
+        if(environment.scope->parent != NULL){
+            environment.scope = environment.scope->parent;
+        }
+    }
+
+    header << class_code + "\n};\n";
+    terminate_needed = true;
+}
+void assemble_keyword_if(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string expression;
+    std::string conditional_code;
+    unsigned int before_indentation = indentation; // The indentation before processing tokens
+    unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+    context.index++;
+    assemble_expression(context, expression, environment);
+    context.index++;
+    output += "if (" + expression + "){\n";
+    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'if' statement");
+    index_increase(context);
+
+    if(tokenid(context) == TOKENINDEX_INDENT){
+        context.index++;
+        while(before_indentation != token_indent){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+            context.index++;
+        }
+        context.index--;
+    }
+    else index_decrease(context);
+    output += conditional_code + "}\n";
+}
+void assemble_keyword_unless(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string expression;
+    std::string conditional_code;
+    unsigned int before_indentation = indentation; // The indentation before processing tokens
+    unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+    context.index++;
+    assemble_expression(context, expression, environment);
+    context.index++;
+
+    output += "if (! (" + expression + ") ){\n";
+    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'unless' statement");
+    index_increase(context);
+    if(tokenid(context) == TOKENINDEX_INDENT){
+        context.index++;
+        while(before_indentation != token_indent){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+            context.index++;
+        }
+        context.index--;
+    }
+    else index_decrease(context);
+    output += conditional_code + "}\n";
+}
+void assemble_keyword_else(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    context.index++;
+
+    if(tokendata(context) == "if"){ // Else If
+        std::string expression;
+        std::string conditional_code;
+        unsigned int before_indentation = indentation; // The indentation before processing tokens
+        unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+        context.index++;
+        assemble_expression(context, expression, environment);
+        context.index++;
+
+        output += "else if (" + expression + "){\n";
+
+        if(tokenid(context) != TOKENINDEX_TERMINATE){
+            die("Expected terminate after 'else if' statement");
+        }
+
+        index_increase(context);
+
+        if(tokenid(context) == TOKENINDEX_INDENT){
+            context.index++;
+            while(before_indentation != token_indent){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                context.index++;
+            }
+            context.index--;
+        }
+        else {
+            index_decrease(context);
+        }
+
+        output += conditional_code + "}\n";
+    }
+    else if(tokendata(context) == "unless"){ // Else Unless
+        std::string expression;
+        std::string conditional_code;
+        unsigned int before_indentation = indentation; // The indentation before processing tokens
+        unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+        context.index++;
+        assemble_expression(context, expression, environment);
+        context.index++;
+
+        output += "else if (! (" + expression + ") ){\n";
+
+        if(tokenid(context) != TOKENINDEX_TERMINATE){
+            die("Expected terminate after 'else unless' statement");
+        }
+
+        index_increase(context);
+
+        if(tokenid(context) == TOKENINDEX_INDENT){
+            context.index++;
+            while(before_indentation != token_indent){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                context.index++;
+            }
+            context.index--;
+        }
+        else {
+            index_decrease(context);
+        }
+
+        output += conditional_code + "}\n";
+    }
+    else { // Plain Else
+        std::string conditional_code;
+        unsigned int before_indentation = indentation; // The indentation before processing tokens
+        unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+        output += "else ";
+
+        if(tokenid(context) != TOKENINDEX_TERMINATE){
+            die("Expected terminate after 'else' statement");
+        }
+
+        index_increase(context);
+
+        if(tokenid(context) == TOKENINDEX_INDENT){
+            context.index++;
+            while(before_indentation != token_indent){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                context.index++;
+            }
+            context.index--;
+            output += "{\n" + conditional_code + "}\n";
+        }
+        else {
+            index_decrease(context);
+            output += "{  }\n";
+        }
+    }
+}
+void assemble_keyword_while(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string expression;
+    std::string conditional_code;
+    unsigned int before_indentation = indentation; // The indentation before processing tokens
+    unsigned int token_indent = indentation + 1;   // The indentation during processing
+
+    context.index++;
+    assemble_expression(context, expression, environment);
+    context.index++;
+
+    output += "while (" + expression + "){\n";
+    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'while' statement");
+    index_increase(context);
+
+    if(tokenid(context) == TOKENINDEX_INDENT){
+        context.index++;
+        while(before_indentation != token_indent){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+            context.index++;
+        }
+        context.index--;
+    }
+    else index_decrease(context);
+    output += conditional_code + "}\n";
+}
+void assemble_keyword_until(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string expression;
+    std::string conditional_code;
+    unsigned int before_indentation = indentation; // The indentation before processing tokens
+    unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+    context.index++;
+    assemble_expression(context, expression, environment);
+    context.index++;
+
+    output += "while ( !(" + expression + ") ){\n";
+    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'until' statement");
+    index_increase(context);
+
+    if(tokenid(context) == TOKENINDEX_INDENT){
+        context.index++;
+        while(before_indentation != token_indent){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+            context.index++;
+        }
+        context.index--;
+    }
+    else index_decrease(context);
+    output += conditional_code + "}\n";
+}
+void assemble_keyword_forever(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string expression;
+    std::string conditional_code;
+    unsigned int before_indentation = indentation; // The indentation before processing tokens
+    unsigned int token_indent = indentation + 1;    // The indentation during processing
+
+    context.index++;
+    output += "while(true){\n";
+    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'forever' statement");
+    index_increase(context);
+
+    if(tokenid(context) == TOKENINDEX_INDENT){
+        context.index++;
+        while(before_indentation != token_indent){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+            context.index++;
+        }
+        context.index--;
+    }
+    else index_decrease(context);
+    output += conditional_code + "}\n";
+}
+void assemble_keyword_for(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string declaration;
+    std::string expression;
+    std::string increament;
+    std::string conditional_code;
+    unsigned int before_indentation = indentation; // The indentation before processing tokens
+    unsigned int token_indent = indentation + 1;   // The indentation during processing
+
+    Class type;
+    context.index++;
+
+    if(tokenid(context) == TOKENINDEX_KEYWORD and tokendata(context) == "var"){
+        index_increase(context);
+        declaration = "auto ";
+    }
+    else {
+        context_enforce_type(context, environment, type);
+        declaration = type.native() + " ";
+    }
+
+    declaration += resource(tokendata(context));
+    context.index++;
+
+    if(tokenid(context) == TOKENINDEX_ASSIGN){
+        declaration += " = ";
+        context.index++;
+        assemble_expression(context, declaration, environment);
+        context.index++;
+    }
+
+    context.index++;
+    assemble_expression(context, expression, environment);
+    context.index += 2;
+    assemble_expression(context, increament, environment);
+    context.index++;
+
+    output += "for (" + declaration + ";" + expression + ";" + increament + "){\n";
+    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'for' statement");
+    index_increase(context);
+
+    if(tokenid(context) == TOKENINDEX_INDENT){
+        context.index++;
+        while(before_indentation != token_indent){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+            context.index++;
+        }
+        context.index--;
+    }
+    else index_decrease(context);
+    output += conditional_code + "}\n";
+}
+void assemble_keyword_new(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string class_name;
+    index_increase(context);
+    class_name = tokendata(context);
+    output += resource(class_name);
+    context.index++;
+    if(tokenid(context) != TOKENINDEX_OPEN) output += "()";
+    context.index--;
+    terminate_needed = true;
+}
+void assemble_keyword_create(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string class_name;
+    index_increase(context);
+    class_name = tokendata(context);
+    output += "new " + resource(class_name);
+    context.index++;
+    if(tokenid(context) != TOKENINDEX_OPEN) output += "()";
+    context.index--;
+    terminate_needed = true;
+}
+void assemble_keyword_import(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string package;
+    std::string global;
+    std::string prev_filename;
+    bool is_package;
+    TokenList tokens;
+
+    index_increase(context);
+
+    if(tokenid(context) != TOKENINDEX_WORD and tokenid(context) != TOKENINDEX_STRING_LITERAL){
+        die(EXPECTED_PACKAGE_NAME_AFTER_IMPORT);
+    }
+
+    if(tokenid(context) == TOKENINDEX_WORD){
+        is_package = true;
+    }
+    else {
+        is_package = false;
+    }
+
+    package = tokendata(context);
+
+    #ifdef __WIN32__
+    package = string_replace_all(package, "/", "\\");
+    #endif // __WIN32__
+
+    if(is_package){
+        package += ".branch";
+    }
+
+    if( file_exists(package) ){ // Plain Absolute Path
+        prev_filename = current_filename;
+        current_filename = package;
+
+        if(is_package){
+            if(!tokens_load(package, tokens)) die("Failed to load Package '" + package + "'");
+        }
+        else {
+            tokens = tokenize(contents(package));
+        }
+    }
+    else if( file_exists( filename_path(current_filename) + delete_slash(package) ) ){ // Relative Path
+        prev_filename = current_filename;
+        current_filename = filename_path(current_filename) + delete_slash(package);
+
+        if(is_package){
+            if(!tokens_load(filename_path(current_filename) + delete_slash(package), tokens)) die("Failed to load Package '" + package + "'");
+        }
+        else {
+            tokens = tokenize(contents(filename_path(current_filename) + delete_slash(package)));
+        }
+    }
+    else if( file_exists(PACKAGEHOME + delete_slash(package)) ){ // Package Path
+        prev_filename = current_filename;
+        current_filename = PACKAGEHOME + delete_slash(package);
+
+        if(is_package){
+            if(!tokens_load(current_filename, tokens)) die("Failed to load Package '" + package + "'");
+        }
+        else {
+            tokens = tokenize(contents(current_filename));
+        }
+    }
+
+
+    // Process tokens
+    for(unsigned int index = 0; index < tokens.size(); index++){
+        assemble_token(config, TokenContext{tokens, index}, terminate_needed, global, write, header, indentation, environment);
+    }
+
+    current_filename = prev_filename;
+}
+void assemble_keyword_native(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string action;
+    std::string filename;
+
+    context.index++;
+    action = tokendata(context);
+    context.index++;
+    filename = tokendata(context);
+
+    if(action == "link"){
+        std::string path = MINGWHOME + "lib\\" + delete_slash(filename);
+
+        if(file_exists(path)){
+            bool exists = false;
+            for(unsigned int i = 0; i < config->linked.size(); i++){
+                if(config->linked[i] == path){
+                    exists = true;
+                    break;
+                }
+            }
+
+            if(!exists){
+                config->linker_flags += path + " ";
+                config->linked.push_back(path);
+            }
+        }
+        else {
+            die(FILE_DOESNT_EXIST(path));
+        }
+    }
+    else if(action == "include"){
+        if(file_exists( MINGWHOME + "include\\" + delete_slash(filename) )){
+            std::string path = full_path(MINGWHOME + "include\\" + delete_slash(filename));
+
+            header << contents(path);
+        }
+        else if(file_exists( filename_path(current_filename) + delete_slash(filename) )){
+            std::string path = full_path(filename_path(current_filename) + delete_slash(filename));
+
+            header << contents(path);
+        }
+        else if( file_exists(PACKAGEHOME + delete_slash(filename)) ){
+            std::string path = full_path(PACKAGEHOME + delete_slash(filename));
+
+            header << contents(path);
+        }
+        else if(file_exists(filename)){
+            std::string path = full_path(filename);
+
+            header << contents(path);
+        }
+        else {
+            die(FILE_DOESNT_EXIST(full_path(filename)));
+        }
+    }
+}
+void assemble_keyword_functionptr(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
+    std::string function_return_type = "";
+    std::vector<std::string> function_args;
+    std::string value;
+
+    context.index += 2;
+
+    while(tokenid(context) != TOKENINDEX_CLOSE){
+        std::string arg;
+
+        if(tokenid(context) == TOKENINDEX_KEYWORD){
+            if(tokendata(context) == "void"){
+                arg = "any^";
+            }
+        }
+        else {
+            arg = tokendata(context);
+        }
+
+        function_args.push_back(arg);
+        index_increase(context);
+
+        if(tokenid(context) == TOKENINDEX_NEXT){
+            index_increase(context);
+        }
+    }
+
+    index_increase(context);
+
+    if(tokenid(context) == TOKENINDEX_SUBTRACT){
+        index_increase(context);
+        if(tokenid(context) == TOKENINDEX_GREATERTHAN){
+            index_increase(context);
+
+            if(tokenid(context) != TOKENINDEX_WORD and tokenid(context) != TOKENINDEX_KEYWORD){
+                die(UNEXPECTED_OPERATOR);
+            }
+
+            if(tokenid(context) == TOKENINDEX_WORD){
+                if(!context_class_exists(context, environment, Class{tokendata(context)})){
+                    die(UNDECLARED_CLASS(tokendata(context)));
+                }
+
+                function_return_type = tokendata(context);
+            }
+            else if(tokenid(context) == TOKENINDEX_KEYWORD){
+                if(tokendata(context) == "void"){
+                    function_return_type = "void";
+                }
+                else {
+                    die(UNEXPECTED_KEYWORD(tokendata(context)));
+                }
+            }
+
+            index_increase(context);
+        }
+        else {
+            die(NO_RETURN_TYPE_STATED);
+        }
+    }
+    else {
+        die(NO_RETURN_TYPE_STATED);
+    }
+
+    std::string variable_name = tokendata(context);
+    index_increase(context);
+
+    // Are we gonna assign it to something
+    if(tokenid(context) == TOKENINDEX_ASSIGN){
+        index_increase(context);
+        assemble_expression(context, value, environment);
+    }
+
+    index_decrease(context);
+
+    if(function_return_type != "void"){
+        output += resource(function_return_type) + "(*" + resource(variable_name) + ")(";
+    }
+    else {
+        output += "void (*" + resource(variable_name) + ")(";
+    }
+
+    for(unsigned int i = 0; i < function_args.size(); i++){
+        output += resource(function_args[i]);
+
+        if(i != function_args.size() - 1){
+            output += ",";
+        }
+    }
+
+    output += ")";
+    if(value != ""){
+        output += "=" + value;
+    }
+    output += ";\n";
+
+    terminate_needed = true;
+}
+

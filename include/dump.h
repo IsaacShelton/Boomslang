@@ -24,7 +24,12 @@
 #include <string>
 #include "token.h"
 
+struct DumpHeader {
+    uint16_t dump_version;
+};
+
 void tokens_dump(std::string filename, TokenList tokens);
 bool tokens_load(std::string filename, TokenList& tokens);
+bool token_compat(uint16_t dump_version);
 
 #endif // DUMP_H_INCLUDED

@@ -34,6 +34,20 @@ void build(Configuration*);
 void assemble(Configuration*, TokenList&, Environment&);
 
 void assemble_expression_keyword(TokenContext, std::string&);
-void assemble_keyword(Configuration* , TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_def(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_class(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_if(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_unless(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_else(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_while(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_until(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_forever(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_for(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_new(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_create(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_import(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_native(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
+void assemble_keyword_functionptr(Configuration*, TokenContext, bool&, std::string&, std::ofstream&, std::ofstream&, unsigned int&, Environment&);
 
 #endif // ASSEMBLER_H_INCLUDED

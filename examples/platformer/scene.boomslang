@@ -30,7 +30,7 @@ def gravity(GlfwWindow^ window, GameData^ gamedata)
 		gamedata.player.gravity = 0.5
 	
 	# Check if can jump
-	if glfwGetKey(window, GLFW_KEY_SPACE) = GLFW_PRESS and colliding.toInteger()
+	if colliding and glfwGetKey(window, GLFW_KEY_SPACE) = GLFW_PRESS
 		gamedata.player.vspeed -= 14
 	
 	# Apply gravity and vspeed

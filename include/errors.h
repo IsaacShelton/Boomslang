@@ -81,6 +81,7 @@
 #define EXPRESSION_BOOLEAN_AND(a)          (ERROR_INDICATOR + "Expression type must be 'Boolean' to use 'and' keyword\n    (expression type is '" + a + "')")
 #define EXPRESSION_BOOLEAN_OR(a)           (ERROR_INDICATOR + "Expression type must be 'Boolean' to use 'or' keyword\n    (expression type is '" + a + "')")
 #define EXPRESSION_BOOLEAN_ANDOR(a)        (ERROR_INDICATOR + "Expression type must be 'Boolean' to use 'and'/'or' keywords\n    (expression type is '" + a + "')")
+#define INCOMPATIBLE_PACKAGE               ("The package '" + filename_name(current_filename) + "' is incompatible")
 
 #define DEV_BLANK_TYPE                     (NOLINE_ERROR_INDICATOR + "Returning blank type at " + to_string(__LINE__))
 

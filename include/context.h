@@ -40,12 +40,23 @@ Variable context_variable_get(Environment&, Variable);
 Class context_class_get(Environment&, Class);
 Method context_method_get(TokenContext context, Environment&, Method);
 
-void context_enforce_expression(TokenContext context, Environment& e, Class& type);
-void context_enforce_arguments(TokenContext context, Environment& e, Class& type, std::string override_method = "", bool is_static = false);
-void context_enforce_method_declaration_arguments(TokenContext tokens, Environment& e, MethodArgumentList& method_arguments, std::string& argument_string);
-void context_enforce_following_method_calls(TokenContext context, Environment& e, Class& type);
-void context_enforce_string(TokenContext context, Environment& environment, std::string str);
-void context_enforce_type(TokenContext context, Environment& environment, Class& type);
+void context_enforce_expression(TokenContext, Environment&, Class&);
+void context_enforce_expression_open(TokenContext, Environment&, Class&);
+void context_enforce_expression_pointer(TokenContext, Environment&, Class&);
+void context_enforce_expression_address(TokenContext, Environment&, Class&);
+void context_enforce_expression_word(TokenContext, Environment&, Class&);
+void context_enforce_expression_keyword(TokenContext, Environment&, Class&, bool&, bool&);
+void context_enforce_expression_string(TokenContext, Environment&, Class&);
+void context_enforce_expression_numeric(TokenContext, Environment&, Class&);
+void context_enforce_expression_literal(TokenContext, Environment&, Class&, std::string);
+
+void context_enforce_arguments(TokenContext, Environment&, Class&, std::string override_method = "", bool is_static = false);
+void context_enforce_method_declaration_arguments(TokenContext, Environment&, MethodArgumentList&, std::string&);
+void context_enforce_following_method_calls(TokenContext, Environment&, Class&);
+void context_enforce_string(TokenContext, Environment&, std::string);
+void context_enforce_string_escape(TokenContext, Environment&, std::string&, size_t&);
+void context_enforce_string_escape_expression(TokenContext, Environment&, std::string&, size_t&);
+void context_enforce_type(TokenContext, Environment&, Class&);
 
 std::string context_assemble_string_expression(TokenContext context, Environment&, std::string&, size_t&);
 void context_assemble_string(TokenContext context, Environment& environment, std::string, std::string&);
