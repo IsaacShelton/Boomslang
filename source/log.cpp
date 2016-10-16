@@ -26,50 +26,35 @@
 bool LOGGING_LEXER     = 0;
 bool LOGGING_ENFORCER  = 0;
 bool LOGGING_ASSEMBLER = 0;
+LoggingContext logging_context;
 
-void log_lexer(std::string message){
-    if(LOGGING_LEXER){
-        std::ofstream lexer_logfile(LOGHOME + LOG_LEXER, std::ios::app);
+void LoggingContext::create(){
+    log = true;
+    lexer = new std::ofstream(LOGHOME + LOG_LEXER);
+    enforcer = new std::ofstream(LOGHOME + LOG_ENFORCER);
+    assembler = new std::ofstream(LOGHOME + LOG_ASSEMBLER);
 
-        if(!lexer_logfile) die("Failed to open lexer log file");
-
-        lexer_logfile <<  message << std::endl;
-        lexer_logfile.close();
-    }
+    if( !lexer->is_open() )     die("Failed to open lexer log file");
+    if( !enforcer->is_open() )  die("Failed to open enforcer log file");
+    if( !assembler->is_open() ) die("Failed to open assembler log file");
 }
-void log_enforcer(std::string message){
-    if(LOGGING_ENFORCER){
-        std::ofstream enforcer_logfile(LOGHOME + LOG_ENFORCER, std::ios::app);
+void LoggingContext::destroy(){
+    log = false;
+    lexer->close();
+    enforcer->close();
+    assembler->close();
 
-        if(!enforcer_logfile) die("Failed to open enforcer log file");
-
-        enforcer_logfile <<  message << std::endl;
-        enforcer_logfile.close();
-    }
-}
-void log_assembler(std::string message){
-    if(LOGGING_ASSEMBLER){
-        std::ofstream assembler_logfile(LOGHOME + LOG_ASSEMBLER, std::ios::app);
-
-        if(!assembler_logfile) die("Failed to open assembler log file");
-
-        assembler_logfile <<  message << std::endl;
-        assembler_logfile.close();
-    }
+    delete lexer;
+    delete enforcer;
+    delete assembler;
 }
 
-void clear_lexer_log(){
-    if(LOGGING_LEXER){
-        std::remove( (LOGHOME + LOG_LEXER).c_str() );
-    }
+void LoggingContext::log_lexer(std::string message){
+    if(log and LOGGING_LEXER) *lexer << message << std::endl;
 }
-void clear_enforcer_log(){
-    if(LOGGING_ENFORCER){
-        std::remove( (LOGHOME + LOG_ENFORCER).c_str() );
-    }
+void LoggingContext::log_enforcer(std::string message){
+    if(log and LOGGING_ENFORCER) *enforcer << message << std::endl;
 }
-void clear_assembler_log(){
-    if(LOGGING_ASSEMBLER){
-        std::remove( (LOGHOME + LOG_ASSEMBLER).c_str() );
-    }
+void LoggingContext::log_assembler(std::string message){
+    if(log and LOGGING_ASSEMBLER) *assembler << message << std::endl;
 }

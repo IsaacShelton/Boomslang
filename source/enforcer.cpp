@@ -56,7 +56,7 @@ Environment enforce(Configuration* config, TokenList& tokens){
         exit(1);
     }
 
-    log_enforcer("The Program is Valid");
+    logging_context.log_enforcer("The Program is Valid");
     return environment;
 }
 void enforce_package(Configuration* config, TokenList& tokens, Environment& environment){
@@ -65,7 +65,7 @@ void enforce_package(Configuration* config, TokenList& tokens, Environment& envi
     }
 
     if(error_count > 0) exit(1);
-    log_enforcer("The Package is Valid");
+    logging_context.log_enforcer("The Package is Valid");
 }
 
 void enforce_token(Configuration* config, TokenContext context, Environment& environment){
@@ -73,7 +73,7 @@ void enforce_token(Configuration* config, TokenContext context, Environment& env
     static unsigned int next_lib = 0;
     static bool private_member = false;
 
-    log_enforcer("Enforcing Token '" + token_name(tokenof(context)) + "' with a value of '" + tokendata(context) + "'");
+    logging_context.log_enforcer("Enforcing Token '" + token_name(tokenof(context)) + "' with a value of '" + tokendata(context) + "'");
 
     switch(tokenid(context)){
     case TOKENINDEX_TERMINATE:

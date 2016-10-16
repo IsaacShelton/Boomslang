@@ -27,31 +27,32 @@
 #include "../include/options.h"
 #include "../include/management.h"
 
-using namespace std;
-
 void show_help(){
-    cout << "BoomslangCompiler <filename> [options]" << endl << endl;
+    std::cout << "BoomslangCompiler <filename> [options]" << std::endl << std::endl;
 
-    cout << "             General" << endl;
-    cout << "  -help         : help" << endl;
-    cout << "  -console      : uses the console" << endl;
-    cout << "  -optimize     : optimizes code" << endl;
-    cout << "  -package      : packages code" << endl;
-    cout << "  -output       : sets output destination" << endl << endl;
-    cout << "            Platform" << endl;
-    cout << "  -windows      : compile for windows" << endl;
-    cout << "  -osx          : compile for mac osx" << endl;
-    cout << "  -linux        : compile for linux" << endl;
-    cout << "  -debian       : compile for debian linux" << endl << endl;
-    cout << "            Utilities" << endl;
-    cout << "  -wait         : wait after compiled" << endl;
-    cout << "  -run          : run after compiled" << endl;
-    cout << "  -log          : log everything" << endl;
+    std::cout << "             General" << std::endl;
+    std::cout << "  -help         : help" << std::endl;
+    std::cout << "  -console      : uses the console" << std::endl;
+    std::cout << "  -optimize     : optimizes code" << std::endl;
+    std::cout << "  -package      : packages code" << std::endl;
+    std::cout << "  -output       : sets output destination" << std::endl << std::endl;
+    std::cout << "            Platform" << std::endl;
+    std::cout << "  -windows      : compile for windows" << std::endl;
+    std::cout << "  -osx          : compile for mac osx" << std::endl;
+    std::cout << "  -linux        : compile for linux" << std::endl;
+    std::cout << "  -debian       : compile for debian linux" << std::endl << std::endl;
+    std::cout << "            Utilities" << std::endl;
+    std::cout << "  -wait         : wait after compiled" << std::endl;
+    std::cout << "  -run          : run after compiled" << std::endl;
+    std::cout << "  -log          : log everything" << std::endl;
 }
 
 Configuration configure(int* argc, char*** argv){
     Configuration config;
-    string option;
+    std::string option;
+
+    // Start Timer
+    config.start_time = std::chrono::steady_clock::now();
 
     // Make sure we have at least to arguments
     if(*argc < 2){
@@ -85,7 +86,7 @@ Configuration configure(int* argc, char*** argv){
 
     #endif
 
-    for(unsigned int item = 2; item < (unsigned int)(*argc); item++){
+    for(size_t item = 2; item < (size_t)(*argc); item++){
         option = (*argv)[item];
 
         if(option == "-help"){
@@ -103,15 +104,8 @@ Configuration configure(int* argc, char*** argv){
             config.output_filename = filename_change_ext(config.output_filename, "branch");
         }
         else if(option == "-output"){
-            if(item + 1 >= (unsigned int)(*argc)){
-                die("Expected output filename after -output flag");
-            }
-
-            item++;
+            if(++item >= (size_t) *argc) die("Expected output filename after -output flag");
             config.output_filename = (*argv)[item];
-        }
-        else if(option.substr(0,7) == "-output"){
-            config.output_filename = option.substr(7, option.length()-7);
         }
         else if(option == "-wait"){
             config.wait = true;
@@ -126,8 +120,8 @@ Configuration configure(int* argc, char*** argv){
             config.platform = PLATFORM_WINDOWS;
         }
         else {
-            cerr << "Unknown option '" + option + "'" << endl;
-            cerr << "Type -help for a list of options" << endl;
+            std::cerr << "Unknown option '" + option + "'" << std::endl;
+            std::cerr << "Type -help for a list of options" << std::endl;
             exit(1);
         }
     }
@@ -136,15 +130,16 @@ Configuration configure(int* argc, char*** argv){
         LOGGING_LEXER = true;
         LOGGING_ENFORCER = true;
         LOGGING_ASSEMBLER = true;
+
+        std::remove( (LOGHOME + LOG_LEXER).c_str()     );
+        std::remove( (LOGHOME + LOG_ENFORCER).c_str()  );
+        std::remove( (LOGHOME + LOG_ASSEMBLER).c_str() );
+
+        logging_context.create();
+        logging_context.log_lexer("-=-=- Lexer Log -=-=-");
+        logging_context.log_enforcer("-=-=- Enforcer Log -=-=-");
+        logging_context.log_assembler("-=-=- Assembler Log -=-=-");
     }
-
-    clear_lexer_log();
-    clear_enforcer_log();
-    clear_assembler_log();
-
-    log_lexer    ("-=-=- Lexer Log -=-=-");
-    log_enforcer ("-=-=- Enforcer Log -=-=-");
-    log_assembler("-=-=- Assembler Log -=-=-");
 
     return config;
 }

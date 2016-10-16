@@ -22,17 +22,25 @@
 */
 
 #include <string>
+#include <fstream>
+
+struct LoggingContext {
+    bool log = false;
+    std::ofstream* lexer;
+    std::ofstream* enforcer;
+    std::ofstream* assembler;
+
+    void create();
+    void destroy();
+
+    void log_lexer(std::string message);
+    void log_enforcer(std::string message);
+    void log_assembler(std::string message);
+};
 
 extern bool LOGGING_LEXER;
 extern bool LOGGING_ENFORCER;
 extern bool LOGGING_ASSEMBLER;
-
-void log_lexer(std::string message);
-void log_enforcer(std::string message);
-void log_assembler(std::string message);
-
-void clear_lexer_log();
-void clear_enforcer_log();
-void clear_assembler_log();
+extern LoggingContext logging_context;
 
 #endif // LOG_H_INCLUDED

@@ -18,6 +18,8 @@
     along with Boomslang. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <math.h>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include "../include/die.h"
@@ -37,7 +39,7 @@
 #include "../include/management.h"
 
 void assemble_expression(TokenContext context, std::string& expression, Environment& environment){
-    log_assembler("Assembling Expression");
+    logging_context.log_assembler("Assembling Expression");
     int balance = 0;
 
     while( (tokenid(context) != TOKENINDEX_TERMINATE and tokenid(context) != TOKENINDEX_NEXT and tokenid(context) != TOKENINDEX_CLOSE) or balance != 0 ){
@@ -152,7 +154,7 @@ void assemble_expression(TokenContext context, std::string& expression, Environm
     /* Next token should be a terminate */
 }
 void assemble_token(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
-    log_assembler("Assembling Token '" + token_name(tokenof(context)) + "' with a value of '" + tokendata(context) + "'");
+    logging_context.log_assembler("Assembling Token '" + token_name(tokenof(context)) + "' with a value of '" + tokendata(context) + "'");
     static unsigned int next_lib = 0;
 
     switch(tokenid(context)){
@@ -342,11 +344,11 @@ void build(Configuration* config){
     }
 
     { //Run MinGW
-        log_assembler("Compiling Source");
+        logging_context.log_assembler("Compiling Source");
         bool bad = execute_silent(MINGWHOME + "bin\\g++","-c \"" + HOME + CPP_SOURCE + "\" " + compile_flags + " -o \"" + HOME + CPP_OBJECT + "\" 2>\"" + LOGHOME + "native.log\"");
 
         if(bad){
-            log_assembler("Failed to Compile");
+            logging_context.log_assembler("Failed to Compile");
             die("Native Compiler Error");
         }
     }
@@ -358,11 +360,11 @@ void build(Configuration* config){
         //branch_create(filename_path(file_read_name) + filename_change_ext(filename_name(file_read_name),"branch"),"C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.a","C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.h","C:\\Users\\" + USERNAME + "\\AppData\\Roaming\\Boomslang\\source\\final.boomslang");
     }
     else {
-        log_assembler("Linking Objects");
+        logging_context.log_assembler("Linking Objects");
         bool bad = execute_silent(MINGWHOME + "bin\\g++","\"" + HOME + CPP_OBJECT + "\" " + linker_flags + "\"" + COREHOME + "libboomslangcore.a\" -o \"" +  config->output_filename + "\" 2>\"" + LOGHOME + "linker.log\"");
 
         if(bad){
-            log_assembler("Failed the Link");
+            logging_context.log_assembler("Failed the Link");
             die("Native Compiler Error");
         }
     }
@@ -381,28 +383,32 @@ void build(Configuration* config){
     }
 
 	{ //Run g++
-        log_assembler("Compiling Source");
+        logging_context.log_assembler("Compiling Source");
         bool bad = execute_silent("g++","-c \"" + HOME + CPP_SOURCE + "\" " + compile_flags + " -o \"" + HOME + CPP_OBJECT + "\" 2>\"" + LOGHOME + "native.log\"");
 
         if(bad){
-            log_assembler("Failed to Compile");
+            logging_context.log_assembler("Failed to Compile");
             die("Native Compiler Error");
         }
     }
 
 	{ //Link with g++
-		log_assembler("Linking Objects");
+		logging_context.log_assembler("Linking Objects");
 		bool bad = execute_silent("g++","\"" + HOME + CPP_OBJECT + "\" " + linker_flags + "\"" + COREHOME + "libboomslangcore.a\" -o \"" +  config->output_filename + "\" 2>\"" + LOGHOME + "linker.log\"");
 
 		if(bad){
-		    log_assembler("Failed the Link");
+		    logging_context.log_assembler("Failed the Link");
 		    die("Native Compiler Error");
 		}
 	}
 
 	#endif // __linux__
 
-    if(!config->run) std::cout << "Successfully Built '" + filename_name(config->output_filename) + "'" << std::endl;
+	// Get Total Time
+    std::chrono::time_point<std::chrono::steady_clock> finish = std::chrono::steady_clock::now();
+    double seconds = (std::chrono::duration<double, std::milli> (finish - config->start_time).count())/1000;
+
+    if(!config->run) std::cout << "Successfully Built '" + filename_name(config->output_filename) + "' (" << floor(seconds*1000)/1000 << "s)" << std::endl;
 }
 void assemble(Configuration* config, TokenList& tokens, Environment& environment){
     // Creates executable/package from code
@@ -414,17 +420,22 @@ void assemble(Configuration* config, TokenList& tokens, Environment& environment
         // Write source code
         compile(config, tokens, environment);
 
-        log_assembler("Attempting to Compile and Link");
+        logging_context.log_assembler("Attempting to Compile and Link");
 
         // Build the result
         build(config);
     }
     else {
         tokens_dump(config->output_filename, tokens);
-        std::cout << "Successfully Created Package '" + filename_name(config->output_filename) + "'" << std::endl;
+
+        // Get Total Time
+        std::chrono::time_point<std::chrono::steady_clock> finish = std::chrono::steady_clock::now();
+        double seconds = (std::chrono::duration<double, std::milli> (finish - config->start_time).count())/1000;
+
+        std::cout << "Successfully Created Package '" + filename_name(config->output_filename) + "' (" << floor(seconds*1000)/1000 << "s)" << std::endl;
     }
 
-    log_assembler("Build Successful");
+    logging_context.log_assembler("Build Successful");
 }
 
 void assemble_expression_keyword(TokenContext context, std::string& expression){

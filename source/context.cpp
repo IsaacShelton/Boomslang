@@ -638,7 +638,7 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
             base_class.generics.clear();
         }
         else {
-            log_enforcer("Method exists, but no implementation for the scope");
+            logging_context.log_enforcer("Method exists, but no implementation for the scope");
         }
     }
     else {
@@ -730,7 +730,7 @@ void context_enforce_arguments(TokenContext context, Environment& e, Class& base
             base_class.name = string_kill_whitespace(string_delete_amount(string_get_until(type,"->"),2));
         }*/
         else {
-            log_enforcer("Method exists, but no implementation for the scope");
+            logging_context.log_enforcer("Method exists, but no implementation for the scope");
         }
     }
 }

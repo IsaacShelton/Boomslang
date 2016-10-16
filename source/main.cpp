@@ -22,6 +22,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include "../include/file.h"
+#include "../include/clean.h"
 #include "../include/token.h"
 #include "../include/lexer.h"
 #include "../include/options.h"
@@ -41,8 +42,7 @@ int main(int argc, char** argv){
     // Assemble results
     assemble(&config, tokens, environment);
 
-    // Clean up after scopes
-    clean_scopes(&environment.global);
-
+    // Clean up
+    clean(&config, environment);
     return 0;
 }

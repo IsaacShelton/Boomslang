@@ -103,6 +103,43 @@ std::string string_get_until_or(std::string parent_string, std::string character
     }
 }
 
+std::string string_iter_until(std::string& code, size_t& i, char character){
+    std::string content;
+    while(code[i] != character and i < code.length()){
+        content += code[i];
+        i++;
+    }
+    return content;
+}
+
+std::string string_iter_until_or(std::string& code, size_t& i, std::string characters){
+    std::string content;
+    while( i < code.length() and !string_contains(characters, code.substr(i, 1)) ){
+        content += code[i];
+        i++;
+    }
+    return content;
+}
+
+std::string string_itertest_until(std::string& code, size_t i, char character){
+    std::string content;
+    while(code[i] != character and i < code.length()){
+        content += code[i];
+        i++;
+    }
+    return content;
+}
+
+std::string string_itertest_until_or(std::string& code, size_t i, std::string characters){
+    std::string content;
+    while( i < code.length() and !string_contains(characters, code.substr(i, 1)) ){
+        content += code[i];
+        i++;
+    }
+    return content;
+}
+
+
 //Deletes text until character(s)
 std::string string_delete_until_or(std::string parent_string, std::string characters){
     unsigned int index = 0;
@@ -199,6 +236,13 @@ std::string string_flatten(std::string str){
     return str;
 }
 
+void string_iter_kill_whitespace(std::string code, size_t& i){
+    char character = code[i];
+    while(!(character != ' ' and character != '\t')){
+        character = code[++i];
+    }
+}
+
 //Gets a boomslang resource name
 std::string resource(std::string a){
     return "boomslang_" + string_replace_all(string_replace_all(string_replace_all(a,"^","*"),".",".boomslang_"),"<","<boomslang_");
@@ -253,8 +297,8 @@ bool is_identifier(std::string what){
 }
 
 //Checks the see if the string is an indent character
-bool is_indent(std::string what){
-    if(what.substr(0,1)=="\t" or what.substr(0,4)=="    ")
+bool is_indent(std::string what, size_t i){
+    if(what.substr(i,1)=="\t" or what.substr(i,4)=="    ")
         return true;
     else
         return false;

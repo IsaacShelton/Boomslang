@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <chrono>
 
 #define PLATFORM_AUTO    0
 #define PLATFORM_WINDOWS 1
@@ -46,6 +47,8 @@ struct Configuration {
 
     std::vector<std::string> included;
     std::vector<std::string> linked;
+
+    std::chrono::time_point<std::chrono::steady_clock> start_time;
 };
 
 Configuration configure(int*, char***);

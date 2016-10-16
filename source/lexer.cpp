@@ -29,13 +29,13 @@
 
 #define LEXER_LOG_PREFIX (to_string(tokens.size()) + " ")
 
-void process_indentation(TokenList& tokens, std::string& code, unsigned int& indentation){
+void process_indentation(TokenList& tokens, std::string& code, size_t& i, unsigned int& indentation){
     unsigned int line_indentaion = 0;
 
-    while(is_indent(code)){
+    while( is_indent(code, i) ){
         line_indentaion++;
-        if(code.substr(0,4) == "    ") { code = string_delete_amount(code,4); }
-        else code = string_delete_amount(code,1);
+        if(code.substr(i,4) == "    ") { i += 4; }
+        else i += 1;
     }
 
     while(line_indentaion > indentation){
@@ -53,431 +53,441 @@ TokenList tokenize(std::string code){
 
     TokenList tokens;
     unsigned int indentation = 0;
-    std::string prev;
-    process_indentation(tokens, code, indentation);
+    size_t i = 0;
+    size_t prev_i = -1;
 
+    process_indentation(tokens, code, i, indentation);
     if(code == ""){
         tokens.push_back(TOKEN_TERMINATE);
         lexer_log_tokens(tokens);
         return tokens;
     }
-
     if(code[code.length()-1] != '\n') code += "\n";
 
-    while(code != "" and code != prev){
-        prev = code;
+    // Cached Data
+    char beginning_character;
+    std::string until_space;
+    std::string until_space_newline;
+    std::string until_space_newline_close;
+    std::string until_space_newline_close_next;
+    std::string until_space_open;
+
+    while(i < code.length() and i != prev_i){
+        prev_i = i;
 
         // Remove Newlines and track indentation
-        while(code.substr(0,1) == "\n"){
-            log_lexer(LEXER_LOG_PREFIX + "Found a newline, adding terminate token");
-            code = string_delete_amount(code,1);
+        while(code[i] == '\n'){
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found a newline, adding terminate token");
             tokens.push_back( TOKEN_TERMINATE );
-            process_indentation(tokens, code, indentation);
+            process_indentation(tokens, code, ++i, indentation);
         }
 
-        if(code.substr(0,1) == "\""){ // String Literal
-            log_lexer(LEXER_LOG_PREFIX + "Found string literal, adding string literal token");
-            code = string_delete_amount(code,1);
-            tokens.push_back( TOKEN_STRING_LITERAL(string_get_until(code,"\"")) );
-            code = string_delete_until(code,"\"");
-            code = string_delete_amount(code,1);
-        }
-        else if( (int)code[0] >= 48 and (int)code[0] <= 57 ){    // Numeric Literal
-            std::string number = string_get_until_or(code,",)].\n iuf");
-            code = string_delete_amount(code, number.length());
+        // Cache common tests
+        beginning_character            = code[i];
+        until_space                    = string_itertest_until(code, i, ' ');
+        until_space_newline            = string_itertest_until_or(code, i, " \n");
+        until_space_newline_close      = string_itertest_until_or(code, i, " \n)");
+        until_space_newline_close_next = string_itertest_until_or(code, i, " \n),");
+        until_space_open               = string_itertest_until_or(code, i, " (");
 
-            if(code.substr(0,1) == "."){
-                if( (int)code[1] >= 48 and (int)code[1] <= 57 ){
-                    code = string_delete_amount(code, 1);
-                    number += "." + string_get_until_or(code,",)].\n iuf");
-                    code = string_delete_until_or(code,",)].\n iuf");
+        if(beginning_character == '"'){ // String Literal
+            std::string content;
+
+            i++;
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found string literal, adding string literal token");
+            content = string_iter_until(code, i, '"');
+            tokens.push_back( TOKEN_STRING_LITERAL(content) );
+            i++;
+        }
+        else if( (int) beginning_character >= 48 and (int) beginning_character <= 57 ){    // Numeric Literal
+            std::string number = string_iter_until_or(code, i,",)].\n iuf");
+            char suffix = code[i];
+
+            if(suffix == '.'){
+                if( (int)code[i+1] >= 48 and (int)code[i+1] <= 57 ){
+                    i++;
+                    number += "." + string_iter_until_or(code, i, ",)].\n iuf");
                 }
             }
 
-            if(code.substr(0,1) == "f"){
-                code = string_delete_amount(code, 1);
-                log_lexer(LEXER_LOG_PREFIX + "Found number literal, adding number literal token");
+            if(suffix == 'f'){
+                i++;
+                logging_context.log_lexer(LEXER_LOG_PREFIX + "Found number literal, adding number literal token");
                 tokens.push_back( TOKEN_FLOAT_LITERAL(number) );
             }
-            else if(code.substr(0,1) == "d"){
-                code = string_delete_amount(code, 1);
-                log_lexer(LEXER_LOG_PREFIX + "Found number literal, adding number literal token");
+            else if(suffix == 'd'){
+                i++;
+                logging_context.log_lexer(LEXER_LOG_PREFIX + "Found number literal, adding number literal token");
                 tokens.push_back( TOKEN_NUMBER_LITERAL(number) );
             }
-            else if(code.substr(0,1) == "i"){
-                code = string_delete_amount(code, 1);
-                log_lexer(LEXER_LOG_PREFIX + "Found integer literal, adding integer literal token");
+            else if(suffix == 'i'){
+                i++;
+                logging_context.log_lexer(LEXER_LOG_PREFIX + "Found integer literal, adding integer literal token");
                 tokens.push_back( TOKEN_INTEGER_LITERAL(number) );
             }
-            else if(code.substr(0,1) == "u"){
-                code = string_delete_amount(code, 1);
-                log_lexer(LEXER_LOG_PREFIX + "Found unsigned integer literal, adding unsigned integer literal token");
+            else if(suffix == 'u'){
+                i++;
+                logging_context.log_lexer(LEXER_LOG_PREFIX + "Found unsigned integer literal, adding unsigned integer literal token");
                 tokens.push_back( TOKEN_UNSIGNED_LITERAL(number) );
             }
             else {
-                log_lexer(LEXER_LOG_PREFIX + "Found numeric literal, adding numeric literal token");
+                logging_context.log_lexer(LEXER_LOG_PREFIX + "Found numeric literal, adding numeric literal token");
                 tokens.push_back( TOKEN_NUMERIC_LITERAL(number) );
             }
         }
-        else if( code.substr(0,1) == "."){                      // Member
-            log_lexer(LEXER_LOG_PREFIX + "Found member operator, adding member token");
-            code = string_delete_amount(code,1);
+        else if(beginning_character == '.'){                 // Member
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found member operator, adding member token");
             tokens.push_back( TOKEN_MEMBER );
+            i++;
         }
-        else if( code.substr(0,1) == "("){                      // Open
-            log_lexer(LEXER_LOG_PREFIX + "Found open operator, adding open token");
+        else if(beginning_character == '('){                 // Open
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found open operator, adding open token");
             tokens.push_back( TOKEN_OPEN );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == ")"){                      // Close
-            log_lexer(LEXER_LOG_PREFIX + "Found close operator, adding close token");
+        else if(beginning_character == ')'){                 // Close
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found close operator, adding close token");
             tokens.push_back( TOKEN_CLOSE );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "<"){                      // Less Than
-            log_lexer(LEXER_LOG_PREFIX + "Found less than operator, adding less than token");
+        else if(beginning_character == '<'){                 // Less Than
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found less than operator, adding less than token");
             tokens.push_back( TOKEN_LESSTHAN );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == ">"){                      // Greater Than
-            log_lexer(LEXER_LOG_PREFIX + "Found greater than operator, adding greater than token");
+        else if(beginning_character == '>'){                 // Greater Than
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found greater than operator, adding greater than token");
             tokens.push_back( TOKEN_GREATERTHAN );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "["){                      // Square Open
-            log_lexer(LEXER_LOG_PREFIX + "Found opening square bracket, adding sq open token");
+        else if(beginning_character == '['){                 // Square Open
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found opening square bracket, adding sq open token");
             tokens.push_back( TOKEN_SQOPEN );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "]"){                      // Square Close
-            log_lexer(LEXER_LOG_PREFIX + "Found closing square bracket, adding sq close token");
+        else if(beginning_character == ']'){                 // Square Close
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found closing square bracket, adding sq close token");
             tokens.push_back( TOKEN_SQCLOSE );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "{"){                      // Curly Open
-            log_lexer(LEXER_LOG_PREFIX + "Found opening curly bracket, adding curly open token");
+        else if(beginning_character == '{'){                 // Curly Open
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found opening curly bracket, adding curly open token");
             tokens.push_back( TOKEN_CURLYOPEN );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "}"){                      // Curly Close
-            log_lexer(LEXER_LOG_PREFIX + "Found closing curly bracket, adding curly close token");
+        else if(beginning_character == '}'){                 // Curly Close
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found closing curly bracket, adding curly close token");
             tokens.push_back( TOKEN_CURLYCLOSE );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "="){                      // Assign
-            log_lexer(LEXER_LOG_PREFIX + "Found equal sign, adding assign token");
+        else if(beginning_character == '='){                 // Assign
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found equal sign, adding assign token");
             tokens.push_back( TOKEN_ASSIGN );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "+"){                      // Add
-            log_lexer(LEXER_LOG_PREFIX + "Found addition sign, adding add token");
+        else if(beginning_character == '+'){                 // Add
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found addition sign, adding add token");
             tokens.push_back( TOKEN_ADD );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "-"){                      // Subtract
-            log_lexer(LEXER_LOG_PREFIX + "Found subtraction sign, adding subtract token");
+        else if(beginning_character == '-'){                 // Subtract
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found subtraction sign, adding subtract token");
             tokens.push_back( TOKEN_SUBTRACT );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "*"){                      // Multiply
-            log_lexer(LEXER_LOG_PREFIX + "Found asterisk, adding multiplication token");
+        else if(beginning_character == '*'){                 // Multiply
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found asterisk, adding multiplication token");
             tokens.push_back( TOKEN_MULTIPLY );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "/"){                      // Divide
-            log_lexer(LEXER_LOG_PREFIX + "Found forward slash, adding division token");
+        else if(beginning_character == '/'){                 // Divide
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found forward slash, adding division token");
             tokens.push_back( TOKEN_DIVIDE );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == ","){                      // Next
-            log_lexer(LEXER_LOG_PREFIX + "Found comma, adding next argument token");
+        else if(beginning_character == ','){                 // Next
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found comma, adding next argument token");
             tokens.push_back( TOKEN_NEXT );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "!"){                      // Not
-            log_lexer(LEXER_LOG_PREFIX + "Found exclamation point, adding not token");
+        else if(beginning_character == '!'){                 // Not
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found exclamation point, adding not token");
             tokens.push_back( TOKEN_NOT );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "&"){                      // Address
-            log_lexer(LEXER_LOG_PREFIX + "Found `and` symbol, adding address token");
+        else if(beginning_character == '&'){                 // Address
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `and` symbol, adding address token");
             tokens.push_back( TOKEN_ADDRESS );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "^"){                      // Pointer
-            log_lexer(LEXER_LOG_PREFIX + "Found `exponent` symbol, adding pointer token");
+        else if(beginning_character == '^'){                 // Pointer
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `exponent` symbol, adding pointer token");
             tokens.push_back( TOKEN_POINTER );
-            code = string_delete_amount(code,1);
+            i++;
         }
-        else if( code.substr(0,1) == "@"){                      // Macro
+        else if(beginning_character == '@'){                 // Macro
             std::string macro;
-            log_lexer(LEXER_LOG_PREFIX + "Found `at` symbol, adding macro token");
-            code = string_delete_amount(code,1);
-            macro = string_get_until_or(code, " \n");
-            code = string_delete_amount(code, macro.length());
 
+            i++;
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `at` symbol, adding macro token");
+            macro = string_iter_until_or(code, i, " \n");
             tokens.push_back( TOKEN_MACRO(macro) );
         }
-        else if( code.substr(0,1) == "#"){                      // Line Comment
-            log_lexer(LEXER_LOG_PREFIX + "Found hashtag, ignoring comment");
-            code = string_delete_amount(code,1);
-            code = string_delete_until(code, "\n");
+        else if(beginning_character == '#'){                 // Line Comment
+            i++;
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found hashtag, ignoring comment");
+            while(code[i] != '\n') i++;
         }
-        else if( string_get_until(code," ") == "def"){           // Method Declaration
-            log_lexer(LEXER_LOG_PREFIX + "Found `def` keyword");
+        else if(until_space == "def"){                       // Method Declaration
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `def` keyword");
             tokens.push_back( TOKEN_KEYWORD("def") );
 
-            code = string_delete_amount(code,3);
-            code = string_kill_whitespace(code);
+            i += 3;
+            string_iter_kill_whitespace(code, i);
 
-            std::string keyword = string_get_until(code, " ");
-            while(keyword == "static" or keyword == "public" or keyword == "private"){
-                code = string_delete_amount(code, keyword.length());
-
-                log_lexer(LEXER_LOG_PREFIX + "Found `" + keyword + "` keyword");
-                tokens.push_back( TOKEN_KEYWORD(keyword) );
-
-                code = string_kill_whitespace(code);
-                keyword = string_get_until(code, " ");
+            std::string name = string_iter_until_or(code, i, " (");
+            while(name == "static" or name == "public" or name == "private"){
+                logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `" + name + "` keyword");
+                tokens.push_back( TOKEN_KEYWORD(name) );
+                string_iter_kill_whitespace(code, i);
+                name = string_iter_until_or(code, i, " (");
             }
 
-            tokens.push_back( TOKEN_WORD(string_get_until_or(code," (\n")) );
-            code = string_delete_until_or(code," (\n");
+            tokens.push_back( TOKEN_WORD(name) );
         }
-        else if( string_get_until(code," ") == "import"){        // import
-            log_lexer(LEXER_LOG_PREFIX + "Found `import` keyword");
+        else if(until_space == "import"){                    // import
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `import` keyword");
             tokens.push_back( TOKEN_KEYWORD("import") );
 
-            code = string_delete_amount(code,6);
-            code = string_kill_whitespace(code);
+            i += 7;
+            string_iter_kill_whitespace(code, i);
 
-            if(code.substr(0,1) == "\""){ // String Literal
-                log_lexer(LEXER_LOG_PREFIX + "Found string literal, adding string literal token");
-                code = string_delete_amount(code,1);
-                tokens.push_back( TOKEN_STRING_LITERAL(string_get_until(code,"\"")) );
-                code = string_delete_until(code,"\"");
-                code = string_delete_amount(code,1);
+            if(code[i] == '"'){ // String Literal
+                logging_context.log_lexer(LEXER_LOG_PREFIX + "Found string literal, adding string literal token");
+                i++;
+
+                std::string content = string_iter_until(code, i, '"');
+                tokens.push_back( TOKEN_STRING_LITERAL(content) );
+                i++;
             }
             else { // Word
-                tokens.push_back( TOKEN_WORD(string_get_until_or(code," \n")) );
-                code = string_delete_until_or(code," \n");
-                code = string_kill_whitespace(code);
+                std::string content = string_iter_until_or(code, i, " \n");
+                tokens.push_back( TOKEN_WORD(content) );
+                string_iter_kill_whitespace(code, i);
             }
         }
-        else if( string_get_until(code," ") == "register"){      // register
-            log_lexer(LEXER_LOG_PREFIX + "Found `register` keyword");
+        else if(until_space == "register"){                  // register
+            std::string content;
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `register` keyword");
             tokens.push_back( TOKEN_KEYWORD("register") );
+            i += 9;
 
-            code = string_delete_amount(code,8);
-            code = string_kill_whitespace(code);
+            string_iter_kill_whitespace(code, i);
+            content = string_iter_until(code, i, ' ');
+            tokens.push_back( TOKEN_WORD(content) );
+            string_iter_kill_whitespace(code, i);
 
-            tokens.push_back( TOKEN_WORD(string_get_until(code," ")) );
-            code = string_delete_until(code," ");
-            code = string_kill_whitespace(code);
-
-            tokens.push_back( TOKEN_WORD(string_get_until(code,"\n")) );
-            code = string_delete_until(code,"\n");
-            code = string_kill_whitespace(code);
+            content = string_iter_until(code, i, '\n');
+            tokens.push_back( TOKEN_WORD(content) );
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," \n") == "return"){   // return
-            log_lexer(LEXER_LOG_PREFIX + "Found `return` keyword");
+        else if(until_space_newline == "return"){            // return
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `return` keyword");
             tokens.push_back( TOKEN_KEYWORD("return") );
+            i += 6;
 
-            code = string_delete_amount(code,6);
-            code = string_kill_whitespace(code);
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," (") == "new"){       // new
-            log_lexer(LEXER_LOG_PREFIX + "Found `new` keyword");
+        else if(until_space_open == "new"){                  // new
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `new` keyword");
             tokens.push_back( TOKEN_KEYWORD("new") );
+            i += 3;
 
-            code = string_delete_amount(code,3);
-            code = string_kill_whitespace(code);
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," (") == "create"){    // create
-            log_lexer(LEXER_LOG_PREFIX + "Found `create` keyword");
+        else if(until_space_open == "create"){               // create
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `create` keyword");
             tokens.push_back( TOKEN_KEYWORD("create") );
 
-            code = string_delete_amount(code,6);
-            code = string_kill_whitespace(code);
+            i += 6;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until(code," ") == "delete"){        // delete
-            log_lexer(LEXER_LOG_PREFIX + "Found `delete` keyword");
+        else if(until_space == "delete"){                    // delete
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `delete` keyword");
             tokens.push_back( TOKEN_KEYWORD("delete") );
 
-            code = string_delete_amount(code,6);
-            code = string_kill_whitespace(code);
+            i += 6;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until(code," ") == "var"){           // var
-            log_lexer(LEXER_LOG_PREFIX + "Found `var` keyword");
+        else if(until_space == "var"){                       // var
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `var` keyword");
             tokens.push_back( TOKEN_KEYWORD("var") );
 
-            code = string_delete_amount(code,3);
-            code = string_kill_whitespace(code);
+            i += 3;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," (") == "if"){        // if
-            log_lexer(LEXER_LOG_PREFIX + "Found `if` keyword");
+        else if(until_space_open == "if"){                   // if
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `if` keyword");
             tokens.push_back( TOKEN_KEYWORD("if") );
 
-            code = string_delete_amount(code,2);
-            code = string_kill_whitespace(code);
+            i += 2;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," (") == "unless"){    // unless
-            log_lexer(LEXER_LOG_PREFIX + "Found `unless` keyword");
+        else if(until_space_open == "unless"){               // unless
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `unless` keyword");
             tokens.push_back( TOKEN_KEYWORD("unless") );
 
-            code = string_delete_amount(code,6);
-            code = string_kill_whitespace(code);
+            i += 6;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," \n") == "else"){     // else
-            log_lexer(LEXER_LOG_PREFIX + "Found `else` keyword");
+        else if(until_space_newline == "else"){              // else
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `else` keyword");
             tokens.push_back( TOKEN_KEYWORD("else") );
 
-            code = string_delete_amount(code,4);
-            code = string_kill_whitespace(code);
+            i += 4;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," \n") == "continue"){ // continue
-            log_lexer(LEXER_LOG_PREFIX + "Found `continue` keyword");
+        else if(until_space_newline == "continue"){          // continue
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `continue` keyword");
             tokens.push_back( TOKEN_KEYWORD("continue") );
 
-            code = string_delete_amount(code,8);
-            code = string_kill_whitespace(code);
+            i += 8;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," \n") == "break"){    // break
-            log_lexer(LEXER_LOG_PREFIX + "Found `break` keyword");
+        else if(until_space_newline == "break"){             // break
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `break` keyword");
             tokens.push_back( TOKEN_KEYWORD("break") );
 
-            code = string_delete_amount(code,5);
-            code = string_kill_whitespace(code);
+            i += 5;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," (") == "switch"){    // switch
-            log_lexer(LEXER_LOG_PREFIX + "Found `switch` keyword");
+        else if(until_space_open == "switch"){               // switch
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `switch` keyword");
             tokens.push_back( TOKEN_KEYWORD("switch") );
 
-            code = string_delete_amount(code,6);
-            code = string_kill_whitespace(code);
+            i += 6;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," (") == "while"){     // while
-            log_lexer(LEXER_LOG_PREFIX + "Found `while` keyword");
+        else if(until_space_open == "while"){                // while
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `while` keyword");
             tokens.push_back( TOKEN_KEYWORD("while") );
 
-            code = string_delete_amount(code,5);
-            code = string_kill_whitespace(code);
+            i += 5;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," (") == "until"){     // until
-            log_lexer(LEXER_LOG_PREFIX + "Found `until` keyword");
+        else if(until_space_open == "until"){                // until
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `until` keyword");
             tokens.push_back( TOKEN_KEYWORD("until") );
 
-            code = string_delete_amount(code,5);
-            code = string_kill_whitespace(code);
+            i += 5;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," \n") == "forever"){  // forever
-            log_lexer(LEXER_LOG_PREFIX + "Found `forever` keyword");
+        else if(until_space_newline == "forever"){           // forever
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `forever` keyword");
             tokens.push_back( TOKEN_KEYWORD("forever") );
 
-            code = string_delete_amount(code,7);
-            code = string_kill_whitespace(code);
+            i += 7;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," ") == "for"){        // for
-            log_lexer(LEXER_LOG_PREFIX + "Found `for` keyword");
+        else if(until_space == "for"){                       // for
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `for` keyword");
             tokens.push_back( TOKEN_KEYWORD("for") );
 
-            code = string_delete_amount(code,3);
-            code = string_kill_whitespace(code);
+            i += 3;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until(code," ") == "class"){         // class
-            log_lexer(LEXER_LOG_PREFIX + "Found `class` keyword");
+        else if(until_space == "class"){                     // class
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `class` keyword");
             tokens.push_back( TOKEN_KEYWORD("class") );
 
-            code = string_delete_amount(code,5);
-
-            code = string_kill_whitespace(code);
+            i += 5;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until(code," ") == "native"){        // native
-            log_lexer(LEXER_LOG_PREFIX + "Found `native` keyword");
+        else if(until_space == "native"){                    // native
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `native` keyword");
             tokens.push_back( TOKEN_KEYWORD("native") );
 
-            code = string_delete_amount(code,6);
-            code = string_kill_whitespace(code);
+            i += 6;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until(code," ") == "any^"){          // any^
-            log_lexer(LEXER_LOG_PREFIX + "Found `any^` keyword");
+        else if(until_space == "any^"){                      // any^
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `any^` keyword");
             tokens.push_back( TOKEN_KEYWORD("any^") );
 
-            code = string_delete_amount(code,4);
-            code = string_kill_whitespace(code);
+            i += 4;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," (") == "function^"){ // function^
-            log_lexer(LEXER_LOG_PREFIX + "Found `function^` keyword");
+        else if(until_space_open == "function^"){            // function^
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `function^` keyword");
             tokens.push_back( TOKEN_KEYWORD("function^") );
 
-            code = string_delete_amount(code,9);
-            code = string_kill_whitespace(code);
+            i += 9;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," ,)\n") == "void"){   // void
-            log_lexer(LEXER_LOG_PREFIX + "Found `void` keyword");
+        else if(until_space_newline_close_next == "void"){   // void
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `void` keyword");
             tokens.push_back( TOKEN_KEYWORD("void") );
 
-            code = string_delete_amount(code,4);
-            code = string_kill_whitespace(code);
+            i += 4;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," )\n") == "public"){  // public
-            log_lexer(LEXER_LOG_PREFIX + "Found `public` keyword");
+        else if(until_space_newline_close == "public"){      // public
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `public` keyword");
             tokens.push_back( TOKEN_KEYWORD("public") );
 
-            code = string_delete_amount(code,6);
-            code = string_kill_whitespace(code);
+            i += 6;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," )\n") == "private"){ // private
-            log_lexer(LEXER_LOG_PREFIX + "Found `private` keyword");
+        else if(until_space_newline_close == "private"){     // private
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `private` keyword");
             tokens.push_back( TOKEN_KEYWORD("private") );
 
-            code = string_delete_amount(code,7);
-            code = string_kill_whitespace(code);
+            i += 7;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," )\n") == "static"){ // static
-            log_lexer(LEXER_LOG_PREFIX + "Found `static` keyword");
+        else if(until_space_newline_close == "static"){      // static
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `static` keyword");
             tokens.push_back( TOKEN_KEYWORD("static") );
 
-            code = string_delete_amount(code,6);
-            code = string_kill_whitespace(code);
+            i += 6;
+            string_iter_kill_whitespace(code, i);
         }
-        else if(string_get_until_or(code," ") == "cast"){        // cast
-            log_lexer(LEXER_LOG_PREFIX + "Found `cast` keyword");
+        else if(until_space == "cast"){                      // cast
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `cast` keyword");
             tokens.push_back( TOKEN_KEYWORD("cast") );
 
-            code = string_delete_amount(code,4);
-            code = string_kill_whitespace(code);
+            i += 4;
+            string_iter_kill_whitespace(code, i);
 
-            tokens.push_back( TOKEN_WORD(string_get_until_or(code, " (")) );
-            code = string_delete_until_or(code, " (");
-            code = string_kill_whitespace(code);
+            std::string type = string_iter_until_or(code, i, " (");
+            tokens.push_back( TOKEN_WORD(type) );
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," \n") == "and"){      // and
-            log_lexer(LEXER_LOG_PREFIX + "Found `and` keyword");
+        else if(until_space_newline == "and"){               // and
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `and` keyword");
             tokens.push_back( TOKEN_KEYWORD("and") );
 
-            code = string_delete_amount(code,3);
-            code = string_kill_whitespace(code);
+            i += 3;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( string_get_until_or(code," \n") == "or"){       // or
-            log_lexer(LEXER_LOG_PREFIX + "Found `or` keyword");
+        else if(until_space_newline == "or"){                // or
+            logging_context.log_lexer(LEXER_LOG_PREFIX + "Found `or` keyword");
             tokens.push_back( TOKEN_KEYWORD("or") );
 
-            code = string_delete_amount(code,2);
-            code = string_kill_whitespace(code);
+            i += 2;
+            string_iter_kill_whitespace(code, i);
         }
-        else if( is_identifier(string_get_until_or(code, " ,()[]{}\n.+-*/=&:^<>")) ){
-            std::string word = string_get_until_or(code, " ,()[]{}\n.+-*/=&:^<>");
+        else if(is_identifier(string_itertest_until_or(code, i, " ,()[]{}\n.+-*/=&:^<>"))){
+            std::string word = string_iter_until_or(code, i, " ,()[]{}\n.+-*/=&:^<>");
             tokens.push_back( TOKEN_WORD(word) );
-            code = string_delete_amount(code, word.length());
         }
 
-        code = string_kill_whitespace(code);
+        string_iter_kill_whitespace(code, i);
     }
 
-    if(code == prev){
-        log_lexer("Encountered unrecognized operator '" + code.substr(0,1) + "'");
-        die("Unrecognized operator '" + code.substr(0,1) + "'");
+    if(i == prev_i){
+        logging_context.log_lexer("Encountered unrecognized operator '" + code.substr(i,1) + "'");
+        die("Unrecognized operator '" + code.substr(i,1) + "'");
     }
 
     lexer_log_tokens(tokens);
