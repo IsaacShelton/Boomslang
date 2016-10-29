@@ -1,0 +1,6 @@
+[project]
+name=Platformer
+version=1.0.0
+compiler=BoomslangCompiler.exe
+entry=platformer.boomslang
+flags=-windows -wait

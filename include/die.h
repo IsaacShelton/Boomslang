@@ -26,9 +26,10 @@
 #include <stdlib.h>
 #include "scope.h"
 
-#define die(a) {std::cerr << a << std::endl; exit(1);}
-#define fail(a) {std::cerr << a << std::endl; error_count++; if(error_count > 20){std::cerr<<"...Exiting because there are more than 20 errors..."<<std::endl; exit(1);} }
+void die(std::string);
+void fail(std::string);
 
+extern bool wait_after_death;
 extern unsigned int error_count;
 
 #endif // DIE_H_INCLUDED

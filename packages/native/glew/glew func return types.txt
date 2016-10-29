@@ -1,0 +1,12 @@
+void
+GLint
+GLuint
+GLboolean
+GLenum
+GLuint64
+GLsync
+"void *"
+GLhandleARB (uint)
+GLintptr (any^)
+GLvdpauSurfaceNV (any^)
+"const GLchar*"

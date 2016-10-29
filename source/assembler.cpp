@@ -436,6 +436,10 @@ void assemble(Configuration* config, TokenList& tokens, Environment& environment
     }
 
     logging_context.log_assembler("Build Successful");
+    if(config->wait){
+        std::cout << "Press enter to continue... ";
+        std::cin.get();
+    }
 }
 
 void assemble_expression_keyword(TokenContext context, std::string& expression){

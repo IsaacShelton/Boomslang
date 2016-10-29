@@ -25,7 +25,7 @@
 #include <algorithm>
 
 //Converts string to double
-double to_double(std::string str){
+double to_double(const std::string& str){
     double dec;
     if( ! (std::istringstream(str) >> dec) ) dec = 0;
     return dec;
@@ -39,7 +39,7 @@ std::string to_string(double dec){
 }
 
 //Checks if parent string contains substring
-bool string_contains(std::string parent_string, std::string sub_string){
+bool string_contains(const std::string& parent_string, const std::string& sub_string){
     if (parent_string.find(sub_string)==std::string::npos){
         return false;
     } else {
@@ -48,7 +48,7 @@ bool string_contains(std::string parent_string, std::string sub_string){
 }
 
 //Gets text until character
-std::string string_get_until(std::string parent_string, std::string character){
+std::string string_get_until(const std::string& parent_string, const std::string& character){
     unsigned int index = 0;
 
     while(!( parent_string.substr(index,1)==character or index >= parent_string.length() )){
@@ -63,7 +63,7 @@ std::string string_get_until(std::string parent_string, std::string character){
     }
 }
 
-unsigned int string_count(std::string a, std::string character){
+unsigned int string_count(const std::string& a, const std::string& character){
     unsigned int char_count = 0;
     for(unsigned int i = 0; i < a.length(); i++){
         if(a.substr(i,1)==character) char_count++;
@@ -72,7 +72,7 @@ unsigned int string_count(std::string a, std::string character){
 }
 
 //Deletes text until character
-std::string string_delete_until(std::string parent_string, std::string character){
+std::string string_delete_until(const std::string& parent_string, const std::string& character){
     unsigned int index = 0;
 
     while(!( parent_string.substr(index,1)==character or index >= parent_string.length() )){
@@ -88,7 +88,7 @@ std::string string_delete_until(std::string parent_string, std::string character
 }
 
 //Gets text until character(s)
-std::string string_get_until_or(std::string parent_string, std::string characters){
+std::string string_get_until_or(const std::string& parent_string, const std::string& characters){
     unsigned int index = 0;
 
     while(!( string_contains(characters,parent_string.substr(index,1)) or index >= parent_string.length() )){
@@ -112,7 +112,7 @@ std::string string_iter_until(std::string& code, size_t& i, char character){
     return content;
 }
 
-std::string string_iter_until_or(std::string& code, size_t& i, std::string characters){
+std::string string_iter_until_or(std::string& code, size_t& i, const std::string& characters){
     std::string content;
     while( i < code.length() and !string_contains(characters, code.substr(i, 1)) ){
         content += code[i];
@@ -130,7 +130,7 @@ std::string string_itertest_until(std::string& code, size_t i, char character){
     return content;
 }
 
-std::string string_itertest_until_or(std::string& code, size_t i, std::string characters){
+std::string string_itertest_until_or(std::string& code, size_t i, const std::string& characters){
     std::string content;
     while( i < code.length() and !string_contains(characters, code.substr(i, 1)) ){
         content += code[i];
@@ -141,7 +141,7 @@ std::string string_itertest_until_or(std::string& code, size_t i, std::string ch
 
 
 //Deletes text until character(s)
-std::string string_delete_until_or(std::string parent_string, std::string characters){
+std::string string_delete_until_or(const std::string& parent_string, const std::string& characters){
     unsigned int index = 0;
 
     while(!( string_contains(characters,parent_string.substr(index,1)) or index >= parent_string.length() )){
@@ -156,7 +156,7 @@ std::string string_delete_until_or(std::string parent_string, std::string charac
     }
 }
 
-std::string string_get_until_last(std::string text, std::string character_set){
+std::string string_get_until_last(const std::string& text, const std::string& character_set){
     for(int i = text.length()-1; i >= 0; i--){
         if(text[i] == character_set[0]){
             return text.substr(i + 1, text.length()-i-1);
@@ -166,12 +166,12 @@ std::string string_get_until_last(std::string text, std::string character_set){
 }
 
 //Deletes the amount of characters from the start of the string
-std::string string_delete_amount(std::string str, int num){
+std::string string_delete_amount(const std::string& str, int num){
     return str.substr(num,str.length()-num);
 }
 
 //Replaces first string with new string
-std::string string_replace(std::string str, std::string from, std::string to) {
+std::string string_replace(std::string str, const std::string& from, const std::string& to) {
     size_t start_pos = str.find(from);
     if(start_pos == std::string::npos)
         return "";
@@ -180,7 +180,7 @@ std::string string_replace(std::string str, std::string from, std::string to) {
 }
 
 //Replaces all string(s) with new string
-std::string string_replace_all(std::string str, std::string from, std::string to) {
+std::string string_replace_all(std::string str, const std::string& from, const std::string& to) {
     if(from.empty())
         return "";
     size_t start_pos = 0;
@@ -193,7 +193,7 @@ std::string string_replace_all(std::string str, std::string from, std::string to
 }
 
 //Kills spaces and tabs
-std::string string_kill_whitespace(std::string str){
+std::string string_kill_whitespace(const std::string& str){
     int n = 0;
 
     while(!(str.substr(n,1)!=" " and str.substr(n,1)!="\t")){
@@ -204,7 +204,7 @@ std::string string_kill_whitespace(std::string str){
 }
 
 //Kills spaces, tabs, and newlines
-std::string string_kill_all_whitespace(std::string str){
+std::string string_kill_all_whitespace(const std::string& str){
     int n = 0;
 
     while(!(str.substr(n,1)!=" " and str.substr(n,1)!="\t" and str.substr(n,1)!="\n"  and str.substr(n,1)!="\r")){
@@ -215,7 +215,7 @@ std::string string_kill_all_whitespace(std::string str){
 }
 
 //Kills newlines
-std::string string_kill_newline(std::string str){
+std::string string_kill_newline(const std::string& str){
     int n = 0;
 
     while((str.substr(n,1)=="\n" and str.substr(n,1)!="\r")){
@@ -236,7 +236,7 @@ std::string string_flatten(std::string str){
     return str;
 }
 
-void string_iter_kill_whitespace(std::string code, size_t& i){
+void string_iter_kill_whitespace(const std::string& code, size_t& i){
     char character = code[i];
     while(!(character != ' ' and character != '\t')){
         character = code[++i];
@@ -244,18 +244,18 @@ void string_iter_kill_whitespace(std::string code, size_t& i){
 }
 
 //Gets a boomslang resource name
-std::string resource(std::string a){
+std::string resource(const std::string& a){
     return "boomslang_" + string_replace_all(string_replace_all(string_replace_all(a,"^","*"),".",".boomslang_"),"<","<boomslang_");
 }
 
 //Gets a boomslang resource name of a type
-std::string resource_type(std::string a){
+std::string resource_type(const std::string& a){
     if(a == "any^") return "void*";
     return "boomslang_" + string_replace_all(string_replace_all(string_replace_all(a,"^","*"),".",".boomslang_"),"<","<boomslang_");
 }
 
 //Deletes Backslash if there is one
-std::string delete_slash(std::string a){
+std::string delete_slash(const std::string& a){
     if (a.substr(0,1)=="\\" or a.substr(0,1)=="/"){
         return string_delete_amount(a, 1);
     }
@@ -271,7 +271,7 @@ std::string string_upper(std::string a){
 }
 
 //Checks to see if the string is an identifier
-bool is_identifier(std::string what){
+bool is_identifier(const std::string& what){
     char character;
 
     //Is it blank?
@@ -297,7 +297,7 @@ bool is_identifier(std::string what){
 }
 
 //Checks the see if the string is an indent character
-bool is_indent(std::string what, size_t i){
+bool is_indent(const std::string& what, size_t i){
     if(what.substr(i,1)=="\t" or what.substr(i,4)=="    ")
         return true;
     else
@@ -305,7 +305,7 @@ bool is_indent(std::string what, size_t i){
 }
 
 //Gets the name of the file from path and filename
-std::string filename_name(std::string a){
+std::string filename_name(const std::string& a){
     if (a.find_last_of("\\/") == std::string::npos){
         return a;
     } else {
@@ -314,7 +314,7 @@ std::string filename_name(std::string a){
 }
 
 //Gets the path of the file from path and filename
-std::string filename_path(std::string a){
+std::string filename_path(const std::string& a){
     if (a.find_last_of("\\/") == std::string::npos){
         return "";
     } else {
@@ -323,12 +323,12 @@ std::string filename_path(std::string a){
 }
 
 //Gets the new filename from filename and new extension
-std::string filename_change_ext(std::string filename, std::string ext_without_dot){
+std::string filename_change_ext(const std::string& filename, const std::string& ext_without_dot){
     std::string ext = string_get_until_last(filename,".");
     return filename.substr(0, filename.length()-ext.length()) + ext_without_dot;
 }
 
-std::ifstream::pos_type file_size(std::string size_filename){
+std::ifstream::pos_type file_size(const std::string&size_filename){
     std::ifstream file_stream(size_filename.c_str(), std::ifstream::ate | std::ifstream::binary);
     unsigned int size_of_file = file_stream.tellg();
     file_stream.close();

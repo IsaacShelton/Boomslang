@@ -84,6 +84,22 @@ void load_core(Environment& environment){
     // Base Die Function
     add_function(environment, Method{"die", &environment.global, std::vector<MethodArgument>(), Class("void")});
 
+    // Base System Class
+    type_scope = add_class(environment, Class("System"));
+    add_method(environment, Class("System"), Method{"print", type_scope, { MethodArgument{Class{"String"}, false} }, Class("void"), true});
+    add_method(environment, Class("System"), Method{"println", type_scope, { MethodArgument{Class{"String"}, false} }, Class("void"), true});
+    add_method(environment, Class("System"), Method{"input", type_scope, std::vector<MethodArgument>(), Class("String"), true});
+    add_method(environment, Class("System"), Method{"error", type_scope, { MethodArgument{Class{"String"}, false} }, Class("void"), true});
+    add_method(environment, Class("System"), Method{"errorln", type_scope, { MethodArgument{Class{"String"}, false} }, Class("void"), true});
+
+    add_method(environment, Class("System"), Method{"malloc", type_scope, { MethodArgument{Class{"uint"}, false} }, Class("any^"), true});
+    add_method(environment, Class("System"), Method{"realloc", type_scope, { MethodArgument{Class{"any^"}, false}, MethodArgument{Class{"uint"}, false} }, Class("any^"), true});
+    add_method(environment, Class("System"), Method{"calloc", type_scope, { MethodArgument{Class{"uint"}, false}, MethodArgument{Class{"uint"}, false} }, Class("any^"), true});
+    add_method(environment, Class("System"), Method{"free", type_scope, { MethodArgument{Class{"any^"}, false} }, Class("void"), true});
+    add_method(environment, Class("System"), Method{"abort", type_scope, std::vector<MethodArgument>(), Class("void"), true});
+    add_method(environment, Class("System"), Method{"exit", type_scope, { MethodArgument{Class{"int"}, false} }, Class("void"), true});
+    add_method(environment, Class("System"), Method{"system", type_scope, { MethodArgument{Class{"String"}, false} }, Class("int"), true});
+
     // Base Constants
     environment.global.variables.push_back(Variable{"true", Class{"Boolean"}, true, false});
     environment.global.variables.push_back(Variable{"false", Class{"Boolean"}, true, false});

@@ -1,63 +1,62 @@
 
 class Sprite
-	Image^ image
-	Double x
-	Double y
-	
-	def new()
-	def new(Image^ image, Double x, Double y)
-		self.image = image
-		self.x = x
-		self.y = y
-	
-	def draw()
-		image.draw(x, y)
+    Image^ image
+    Double x
+    Double y
+    
+    def new()
+    def new(Image^ image, Double x, Double y)
+        self.image = image
+        self.x = x
+        self.y = y
+    
+    def draw()
+        image.draw(x, y)
 
 class Player
-	Image^ image
-	Double x
-	Double y
-	Double gravity
-	Double vspeed
-	
-	def new()
-	def new(Image^ image, Double x, Double y)
-		self.image = image
-		self.x = x
-		self.y = y
-	
-	def fall(Double amount)
-		vspeed += gravity * amount
-	
-	def update()
-		y += vspeed
-	
-	def draw()
-		image.draw(x, y)
+    Image^ image
+    Double x
+    Double y
+    Double gravity
+    Double vspeed
+    
+    def new()
+    def new(Image^ image, Double x, Double y)
+        self.image = image
+        self.x = x
+        self.y = y
+    
+    def fall(Double amount)
+        vspeed += gravity * amount
+    
+    def update()
+        y += vspeed
+    
+    def draw()
+        image.draw(x, y)
 
 class Platform
-	Image^ image
-	Double x
-	Double y
-	
-	def new()
-	def new(Image^ image, Double x, Double y)
-		self.image = image
-		self.x = x
-		self.y = y
-	
-	def colliding(Player player)
-		if player.x < x + 256 and player.x + 64 > x and player.y < y + 32 and 64 + player.y > y
-			return true
-		else
-			return false
-	
-	def colliding(Player player, Double yoffset)
-		if player.x < x + 256 and player.x + 64 > x and player.y + yoffset < y + 32 and 64 + player.y + yoffset > y
-			return true
-		else
-			return false
-	
-	def draw()
-		image.draw(x, y)
-
+    Image^ image
+    Double x
+    Double y
+    
+    def new()
+    def new(Image^ image, Double x, Double y)
+        self.image = image
+        self.x = x
+        self.y = y
+    
+    def colliding(Player player)
+        if player.x < x + 256 and player.x + 64 > x and player.y < y + 32 and 64 + player.y > y
+            return true
+        else
+            return false
+    
+    def colliding(Player player, Double yoffset)
+        if player.x < x + 256 and player.x + 64 > x and player.y + yoffset < y + 32 and 64 + player.y + yoffset > y
+            return true
+        else
+            return false
+    
+    def draw()
+        image.draw(x, y)

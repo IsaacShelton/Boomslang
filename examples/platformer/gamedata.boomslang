@@ -1,43 +1,44 @@
 
 class Resources
-	Image playerRight
-	Image playerLeft
-	Image platform
-	
-	def load()
-		playerRight.load("player_right.png")
-		playerLeft.load("player_left.png")
-		platform.load("platform.png")
+    Image playerRight
+    Image playerLeft
+    Image platform
+    
+    def load()
+        final String RESOURCE_LOCATION = "C:/Users/isaac/Google Drive/Boomslang/3.0/BoomslangCompiler/examples/platformer/"
+        playerRight.load(RESOURCE_LOCATION + "player_right.png")
+        playerLeft.load(RESOURCE_LOCATION + "player_left.png")
+        platform.load(RESOURCE_LOCATION + "platform.png")
 
 class GameData
-	Resources resources
-	Player player
-	List<Platform> platforms
-	
-	def load()
-		player.image = &resources.playerRight
-		player.x = 128
-		player.y = 32
-		
-		platforms.append( new Platform(&resources.platform, 64, 96) )
-		platforms.append( new Platform(&resources.platform, 256, 256) )
-		platforms.append( new Platform(&resources.platform, 512, 640) )
-		platforms.append( new Platform(&resources.platform, 640, 128) )
-		platforms.append( new Platform(&resources.platform, 512, 320) )
-		platforms.append( new Platform(&resources.platform, 64, 640) )
-		platforms.append( new Platform(&resources.platform, 1280, 640) )
-		platforms.append( new Platform(&resources.platform, 800, 480) )
+    Resources resources
+    Player player
+    List<Platform> platforms
+    
+    def load()
+        player.image = &resources.playerRight
+        player.x = 128
+        player.y = 32
+        
+        platforms.append( new Platform(&resources.platform, 64, 96) )
+        platforms.append( new Platform(&resources.platform, 256, 256) )
+        platforms.append( new Platform(&resources.platform, 512, 640) )
+        platforms.append( new Platform(&resources.platform, 640, 128) )
+        platforms.append( new Platform(&resources.platform, 512, 320) )
+        platforms.append( new Platform(&resources.platform, 64, 640) )
+        platforms.append( new Platform(&resources.platform, 1280, 640) )
+        platforms.append( new Platform(&resources.platform, 800, 480) )
 
 def playerColliding(GameData^ gamedata)
-	# Checks if colliding with a platform
-	var i = 0i
-	var colliding = false
-	
-	while i < gamedata.platforms.length()
-		if gamedata.platforms.get(i).colliding(gamedata.player)
-			colliding = true
-			break
-		i += 1
-	
-	return colliding
+    # Checks if colliding with a platform
+    var i = 0i
+    var colliding = false
+    
+    while i < gamedata.platforms.length()
+        if gamedata.platforms.get(i).colliding(gamedata.player)
+            colliding = true
+            break
+        i += 1
+    
+    return colliding
 

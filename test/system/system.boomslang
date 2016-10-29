@@ -1,0 +1,6 @@
+
+def main()
+	# Testing some System.* methods
+	System.print("Enter your name: ")
+	String name = System.input()
+	System.println("Hello " + name)

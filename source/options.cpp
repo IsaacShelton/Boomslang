@@ -141,5 +141,8 @@ Configuration configure(int* argc, char*** argv){
         logging_context.log_assembler("-=-=- Assembler Log -=-=-");
     }
 
+    // Tell die() and fail() whether to wait before exiting
+    wait_after_death = config.wait;
+
     return config;
 }

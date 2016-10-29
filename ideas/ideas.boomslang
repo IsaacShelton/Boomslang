@@ -1,0 +1,69 @@
+
+# 1 Spaceship Operator (<=> operator)
+def getDirection(int enemyPosition, int playerPosition)
+	# -1 if enemyPosition is less than playerPosition
+	#  0 if enemyPosition equal to playerPosition
+	#  1 if enemyPosition is greater than playerPosition
+	return enemyPosition <=> playerPosition
+
+# 2 Result Piping (| operator)
+def distance(int x1, y1, x2, y2)
+	# Will pass '(x1 - x2)**2 + (y1 - y2)**2' as first argument of sqrt()
+	return (x1 - x2)**2 + (y1 - y2)**2 | sqrt
+
+# 3 Array and List Literals ({} and [] operators)
+def arrays()
+	Array<Integer> ints = [1i, 2i, 3i, 4i]
+	Array<Double> doubles = [<Double> 10, 3.14, 21, 42, 6.28]
+	Array<String> strings = [] # Valid because type is known
+	
+	List<Integer> intList = {1i, 2i, 3i, 4i}
+	List<Double> doubleList = {<Double> 10, 3.14, 21, 42, 6.28}
+	List<String> stringList = {} # Valid because type is known
+	
+	for i in 1..10
+		# 1..10 is an list from 1 to 10
+
+# 4 Struct Types
+struct InfoPair<String, Integer>
+
+def structs(int id)
+	struct<String, Integer> nameAndId
+	var fileHeader = new struct<uint, int[4], float[16]>(21u, 0i, 0i, 0i, 0i, 1f..16f)
+	
+	InfoPair customer = CustomerDatabase.getCustomer(id)
+
+# 5 With Operator (:: operator)
+def walk(Animal^ animal)
+	# Calls animal.feed(), animal.exersise(), and animal.cleanup()
+	animal :: feed(food), exersise(frisbee, 60u), cleanup()
+	
+	# Could Also Do
+	animal ::
+		feed(food)
+		exersise(frisbee, 60u)
+		cleanup()
+
+# 6 Automatic Polymorphic Procedures
+def sum($Type a, b)
+	return a + b
+
+def usesum()
+	return sum(10i, 21i)
+
+# 7 Polymorphic Classes
+class Vector3
+	$Type x, y, z
+	
+	def toVector2
+		return new Vector2<$Type>(x,y)
+
+# 8 Tuples and Tables
+def tuples()
+	Tuple<uint, String, uint> tuple = [| 42021, "Isaac", 14 |]
+	
+	Table<uint, String, uint> idNameAge = {|
+		42021, "Isaac", 14,
+		20736, "Jeff",  12,
+		19372, "Billy", 16
+	|}

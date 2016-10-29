@@ -1,97 +1,97 @@
 
 def gravity(GlfwWindow^ window, GameData^ gamedata)
-	# Player Gravity
-	int i = 0
-	Boolean colliding = false
-	
-	# Check each platform
-	while i < gamedata.platforms.length()
-		
-		# If we are on the platform
-		if gamedata.platforms.get(i).colliding(gamedata.player, 1)
-			colliding = true
-			
-			# Adjust player y based on colliding platform
-			if gamedata.player.y < gamedata.platforms.get(i).y
-				gamedata.player.y = gamedata.platforms.get(i).y - 64
-			else
-				gamedata.player.vspeed = 0
-				gamedata.player.y -= gamedata.player.vspeed
-			
-			break
-		
-		i += 1
-	
-	# Set gravity and vspeed to zero if on platform
-	if colliding
-		gamedata.player.gravity = 0
-		gamedata.player.vspeed = 0
-	else
-		gamedata.player.gravity = 0.5
-	
-	# Check if can jump
-	if colliding and glfwGetKey(window, GLFW_KEY_SPACE) = GLFW_PRESS
-		gamedata.player.vspeed -= 14
-	
-	# Apply gravity and vspeed
-	gamedata.player.fall(1)
-	gamedata.player.update()
-	
-	# Make sure player isn't inside a platform
-	i = 0
-	while i < gamedata.platforms.length()
-		if gamedata.platforms.get(i).colliding(gamedata.player)
-			
-			if gamedata.player.y < gamedata.platforms.get(i).y
-				gamedata.player.y = gamedata.platforms.get(i).y - 64
-			else
-				gamedata.player.y = gamedata.platforms.get(i).y + 32
-				gamedata.player.vspeed = 0
-			
-			break
-		i += 1
+    # Player Gravity
+    int i = 0
+    Boolean colliding = false
+    
+    # Check each platform
+    while i < gamedata.platforms.length()
+        
+        # If we are on the platform
+        if gamedata.platforms.get(i).colliding(gamedata.player, 1)
+            colliding = true
+            
+            # Adjust player y based on colliding platform
+            if gamedata.player.y < gamedata.platforms.get(i).y
+                gamedata.player.y = gamedata.platforms.get(i).y - 64
+            else
+                gamedata.player.vspeed = 0
+                gamedata.player.y -= gamedata.player.vspeed
+            
+            break
+        
+        i += 1
+    
+    # Set gravity and vspeed to zero if on platform
+    if colliding
+        gamedata.player.gravity = 0
+        gamedata.player.vspeed = 0
+    else
+        gamedata.player.gravity = 0.5
+    
+    # Check if can jump
+    if colliding and glfwGetKey(window, GLFW_KEY_SPACE) = GLFW_PRESS
+        gamedata.player.vspeed -= 14
+    
+    # Apply gravity and vspeed
+    gamedata.player.fall(1)
+    gamedata.player.update()
+    
+    # Make sure player isn't inside a platform
+    i = 0
+    while i < gamedata.platforms.length()
+        if gamedata.platforms.get(i).colliding(gamedata.player)
+            
+            if gamedata.player.y < gamedata.platforms.get(i).y
+                gamedata.player.y = gamedata.platforms.get(i).y - 64
+            else
+                gamedata.player.y = gamedata.platforms.get(i).y + 32
+                gamedata.player.vspeed = 0
+            
+            break
+        i += 1
 
 def render(GlfwWindow^ window, GameData^ gamedata)
-	int i = 0
-	while i < gamedata.platforms.length()
-		# Draw Platforms
-		gamedata.platforms.get(i).draw()
-		i += 1
-	
-	gamedata.player.draw()
+    int i = 0
+    while i < gamedata.platforms.length()
+        # Draw Platforms
+        gamedata.platforms.get(i).draw()
+        i += 1
+    
+    gamedata.player.draw()
 
 def update(GlfwWindow^ window, GameData^ gamedata)
-	final Double movespeed = 6
-	Double width
-	Double height
-	
-	# Get Window Size
-	glfwGetFramebufferSize(window, &width, &height)
-	
-	if glfwGetKey(window, GLFW_KEY_RIGHT) = GLFW_PRESS
-		# Right
-		gamedata.player.x += movespeed
-		gamedata.player.image = &gamedata.resources.playerRight
-		
-		if playerColliding(gamedata)
-			# Revert Changes
-			gamedata.player.x -= movespeed
-	
-	if glfwGetKey(window, GLFW_KEY_LEFT) = GLFW_PRESS
-		# Left
-		gamedata.player.x -= movespeed
-		gamedata.player.image = &gamedata.resources.playerLeft
-		
-		if playerColliding(gamedata)
-			# Revert Changes
-			gamedata.player.x += movespeed
-	
-	gravity(window, gamedata)
-	
-	# Make sure player is in world
-	if gamedata.player.y > height
-		gamedata.player.x = 128
-		gamedata.player.y = 0
-		gamedata.player.vspeed = 0
-		gamedata.player.gravity = 0
-	
+    final Double movespeed = 6
+    Double width
+    Double height
+    
+    # Get Window Size
+    glfwGetFramebufferSize(window, &width, &height)
+    
+    if glfwGetKey(window, GLFW_KEY_RIGHT) = GLFW_PRESS
+        # Right
+        gamedata.player.x += movespeed
+        gamedata.player.image = &gamedata.resources.playerRight
+        
+        if playerColliding(gamedata)
+            # Revert Changes
+            gamedata.player.x -= movespeed
+    
+    if glfwGetKey(window, GLFW_KEY_LEFT) = GLFW_PRESS
+        # Left
+        gamedata.player.x -= movespeed
+        gamedata.player.image = &gamedata.resources.playerLeft
+        
+        if playerColliding(gamedata)
+            # Revert Changes
+            gamedata.player.x += movespeed
+    
+    gravity(window, gamedata)
+    
+    # Make sure player is in world
+    if gamedata.player.y > height
+        gamedata.player.x = 128
+        gamedata.player.y = 0
+        gamedata.player.vspeed = 0
+        gamedata.player.gravity = 0
+    

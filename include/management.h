@@ -24,42 +24,42 @@
 #include <string>
 #include <fstream>
 
-double to_double(std::string);
+double to_double(const std::string&);
 std::string to_string(double);
 
-bool string_contains(std::string, std::string);
-std::string string_get_until(std::string, std::string);
-std::string string_get_until_or(std::string, std::string);
+bool string_contains(const std::string&, const std::string&);
+std::string string_get_until(const std::string&, const std::string&);
+std::string string_get_until_or(const std::string&, const std::string&);
 std::string string_iter_until(std::string&, size_t&, char);
-std::string string_iter_until_or(std::string&, size_t&, std::string);
+std::string string_iter_until_or(std::string&, size_t&, const std::string&);
 std::string string_itertest_until(std::string&, size_t, char);
-std::string string_itertest_until_or(std::string&, size_t, std::string);
-std::string string_delete_until(std::string, std::string);
-std::string string_delete_until_or(std::string, std::string);
-std::string string_delete_amount(std::string, int);
-std::string string_get_until_last(std::string text, std::string character_set);
+std::string string_itertest_until_or(std::string&, size_t, const std::string&);
+std::string string_delete_until(const std::string&, const std::string&);
+std::string string_delete_until_or(const std::string&, const std::string&);
+std::string string_delete_amount(const std::string&, int);
+std::string string_get_until_last(const std::string& text, const std::string& character_set);
 
-unsigned int string_count(std::string, std::string);
-std::string string_replace(std::string, std::string, std::string);
-std::string string_replace_all(std::string, std::string, std::string);
+unsigned int string_count(const std::string&, const std::string&);
+std::string string_replace(std::string, const std::string&, const std::string&);
+std::string string_replace_all(std::string, const std::string&, const std::string&);
 
-std::string string_kill_whitespace(std::string);
-std::string string_kill_all_whitespace(std::string);
-std::string string_kill_newline(std::string);
+std::string string_kill_whitespace(const std::string&);
+std::string string_kill_all_whitespace(const std::string&);
+std::string string_kill_newline(const std::string&);
 std::string string_flatten(std::string);
-void string_iter_kill_whitespace(std::string code, size_t& i);
+void string_iter_kill_whitespace(const std::string& code, size_t& i);
 
-std::string delete_slash(std::string);
+std::string delete_slash(const std::string&);
 std::string string_upper(std::string);
 
-std::string resource(std::string);
-std::string resource_type(std::string);
-bool is_identifier(std::string);
-bool is_indent(std::string, size_t i = 0);
+std::string resource(const std::string&);
+std::string resource_type(const std::string&);
+bool is_identifier(const std::string&);
+bool is_indent(const std::string&, size_t i = 0);
 
-std::string filename_name(std::string);
-std::string filename_path(std::string);
-std::string filename_change_ext(std::string, std::string);
-std::ifstream::pos_type file_size(std::string);
+std::string filename_name(const std::string&);
+std::string filename_path(const std::string&);
+std::string filename_change_ext(const std::string&, const std::string&);
+std::ifstream::pos_type file_size(const std::string&);
 
 #endif // MANAGEMENT_H_INCLUDED

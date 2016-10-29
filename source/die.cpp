@@ -20,4 +20,27 @@
 
 #include "../include/die.h"
 
+bool wait_after_death = false;
 unsigned int error_count = 0;
+
+void die(std::string error) {
+    std::cerr << error << std::endl;
+    if(wait_after_death){
+        std::cout << "Press enter to continue... ";
+        std::cin.get();
+    }
+    exit(1);
+}
+
+void fail(std::string error) {
+    std::cerr << error << std::endl;
+    error_count++;
+    if(error_count > 20){
+        std::cerr << "...Exiting because there are more than 20 errors..." << std::endl;
+        if(wait_after_death){
+            std::cout << "Press enter to continue... ";
+            std::cin.get();
+        }
+        exit(1);
+    }
+}
