@@ -28,6 +28,7 @@
 */
 
 #include "token.h"
+#include "options.h"
 
 bool context_variable_exists(Environment&, Variable);
 bool context_class_exists(TokenContext context, Environment&, Class);
@@ -57,6 +58,7 @@ void context_enforce_string(TokenContext, Environment&, std::string);
 void context_enforce_string_escape(TokenContext, Environment&, std::string&, size_t&);
 void context_enforce_string_escape_expression(TokenContext, Environment&, std::string&, size_t&);
 void context_enforce_type(TokenContext, Environment&, Class&);
+void context_enforce_followup_block(Configuration*, TokenContext, Environment&);
 
 std::string context_assemble_string_expression(TokenContext context, Environment&, std::string&, size_t&);
 void context_assemble_string(TokenContext context, Environment& environment, std::string, std::string&);

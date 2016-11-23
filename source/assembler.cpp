@@ -927,18 +927,30 @@ void assemble_keyword_if(Configuration* config, TokenContext context, bool& term
     assemble_expression(context, expression, environment);
     context.index++;
     output += "if (" + expression + "){\n";
-    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'if' statement");
-    index_increase(context);
 
-    if(tokenid(context) == TOKENINDEX_INDENT){
+    if(tokenid(context) == TOKENINDEX_NEXT){
         context.index++;
-        while(before_indentation != token_indent){
-            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-            context.index++;
+
+        while(context.tokens[context.index-1].id != TOKENINDEX_TERMINATE){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, indentation, environment);
+            index_increase(context);
         }
-        context.index--;
     }
-    else index_decrease(context);
+    else {
+        if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'if' statement");
+        index_increase(context);
+
+        if(tokenid(context) == TOKENINDEX_INDENT){
+            context.index++;
+            while(before_indentation != token_indent){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                context.index++;
+            }
+            context.index--;
+        }
+        else index_decrease(context);
+    }
+
     output += conditional_code + "}\n";
 }
 void assemble_keyword_unless(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
@@ -950,19 +962,30 @@ void assemble_keyword_unless(Configuration* config, TokenContext context, bool& 
     context.index++;
     assemble_expression(context, expression, environment);
     context.index++;
-
     output += "if (! (" + expression + ") ){\n";
-    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'unless' statement");
-    index_increase(context);
-    if(tokenid(context) == TOKENINDEX_INDENT){
+
+    if(tokenid(context) == TOKENINDEX_NEXT){
         context.index++;
-        while(before_indentation != token_indent){
-            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-            context.index++;
+
+        while(context.tokens[context.index-1].id != TOKENINDEX_TERMINATE){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, indentation, environment);
+            index_increase(context);
         }
-        context.index--;
     }
-    else index_decrease(context);
+    else {
+        if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'unless' statement");
+        index_increase(context);
+        if(tokenid(context) == TOKENINDEX_INDENT){
+            context.index++;
+            while(before_indentation != token_indent){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                context.index++;
+            }
+            context.index--;
+        }
+        else index_decrease(context);
+    }
+
     output += conditional_code + "}\n";
 }
 void assemble_keyword_else(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
@@ -977,25 +1000,31 @@ void assemble_keyword_else(Configuration* config, TokenContext context, bool& te
         context.index++;
         assemble_expression(context, expression, environment);
         context.index++;
-
         output += "else if (" + expression + "){\n";
 
-        if(tokenid(context) != TOKENINDEX_TERMINATE){
-            die("Expected terminate after 'else if' statement");
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
+        if(tokenid(context) == TOKENINDEX_NEXT){
             context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                context.index++;
+
+            while(context.tokens[context.index-1].id != TOKENINDEX_TERMINATE){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, indentation, environment);
+                index_increase(context);
             }
-            context.index--;
         }
         else {
-            index_decrease(context);
+            if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'else if' statement");
+            index_increase(context);
+
+            if(tokenid(context) == TOKENINDEX_INDENT){
+                context.index++;
+                while(before_indentation != token_indent){
+                    assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                    context.index++;
+                }
+                context.index--;
+            }
+            else {
+                index_decrease(context);
+            }
         }
 
         output += conditional_code + "}\n";
@@ -1009,25 +1038,34 @@ void assemble_keyword_else(Configuration* config, TokenContext context, bool& te
         context.index++;
         assemble_expression(context, expression, environment);
         context.index++;
-
         output += "else if (! (" + expression + ") ){\n";
 
-        if(tokenid(context) != TOKENINDEX_TERMINATE){
-            die("Expected terminate after 'else unless' statement");
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
+        if(tokenid(context) == TOKENINDEX_NEXT){
             context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                context.index++;
+
+            while(context.tokens[context.index-1].id != TOKENINDEX_TERMINATE){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, indentation, environment);
+                index_increase(context);
             }
-            context.index--;
         }
         else {
-            index_decrease(context);
+            if(tokenid(context) != TOKENINDEX_TERMINATE){
+                die("Expected terminate after 'else unless' statement");
+            }
+
+            index_increase(context);
+
+            if(tokenid(context) == TOKENINDEX_INDENT){
+                context.index++;
+                while(before_indentation != token_indent){
+                    assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                    context.index++;
+                }
+                context.index--;
+            }
+            else {
+                index_decrease(context);
+            }
         }
 
         output += conditional_code + "}\n";
@@ -1039,24 +1077,34 @@ void assemble_keyword_else(Configuration* config, TokenContext context, bool& te
 
         output += "else ";
 
-        if(tokenid(context) != TOKENINDEX_TERMINATE){
-            die("Expected terminate after 'else' statement");
-        }
-
-        index_increase(context);
-
-        if(tokenid(context) == TOKENINDEX_INDENT){
+        if(tokenid(context) == TOKENINDEX_NEXT){
             context.index++;
-            while(before_indentation != token_indent){
-                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-                context.index++;
+            while(context.tokens[context.index-1].id != TOKENINDEX_TERMINATE){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, indentation, environment);
+                index_increase(context);
             }
-            context.index--;
-            output += "{\n" + conditional_code + "}\n";
+            output += "{ " + conditional_code + " }\n";
         }
         else {
-            index_decrease(context);
-            output += "{  }\n";
+            if(tokenid(context) != TOKENINDEX_TERMINATE){
+                die("Expected terminate after 'else' statement");
+            }
+
+            index_increase(context);
+
+            if(tokenid(context) == TOKENINDEX_INDENT){
+                context.index++;
+                while(before_indentation != token_indent){
+                    assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                    context.index++;
+                }
+                context.index--;
+                output += "{\n" + conditional_code + "}\n";
+            }
+            else {
+                index_decrease(context);
+                output += "{  }\n";
+            }
         }
     }
 }
@@ -1069,20 +1117,31 @@ void assemble_keyword_while(Configuration* config, TokenContext context, bool& t
     context.index++;
     assemble_expression(context, expression, environment);
     context.index++;
-
     output += "while (" + expression + "){\n";
-    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'while' statement");
-    index_increase(context);
 
-    if(tokenid(context) == TOKENINDEX_INDENT){
+    if(tokenid(context) == TOKENINDEX_NEXT){
         context.index++;
-        while(before_indentation != token_indent){
-            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-            context.index++;
+
+        while(context.tokens[context.index-1].id != TOKENINDEX_TERMINATE){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, indentation, environment);
+            index_increase(context);
         }
-        context.index--;
     }
-    else index_decrease(context);
+    else {
+        if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'while' statement");
+        index_increase(context);
+
+        if(tokenid(context) == TOKENINDEX_INDENT){
+            context.index++;
+            while(before_indentation != token_indent){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                context.index++;
+            }
+            context.index--;
+        }
+        else index_decrease(context);
+    }
+
     output += conditional_code + "}\n";
 }
 void assemble_keyword_until(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
@@ -1094,20 +1153,30 @@ void assemble_keyword_until(Configuration* config, TokenContext context, bool& t
     context.index++;
     assemble_expression(context, expression, environment);
     context.index++;
-
     output += "while ( !(" + expression + ") ){\n";
-    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'until' statement");
-    index_increase(context);
 
-    if(tokenid(context) == TOKENINDEX_INDENT){
+    if(tokenid(context) == TOKENINDEX_NEXT){
         context.index++;
-        while(before_indentation != token_indent){
-            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-            context.index++;
+
+        while(context.tokens[context.index-1].id != TOKENINDEX_TERMINATE){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, indentation, environment);
+            index_increase(context);
         }
-        context.index--;
     }
-    else index_decrease(context);
+    else {
+        if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'until' statement");
+        index_increase(context);
+
+        if(tokenid(context) == TOKENINDEX_INDENT){
+            context.index++;
+            while(before_indentation != token_indent){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                context.index++;
+            }
+            context.index--;
+        }
+        else index_decrease(context);
+    }
     output += conditional_code + "}\n";
 }
 void assemble_keyword_forever(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
@@ -1118,18 +1187,30 @@ void assemble_keyword_forever(Configuration* config, TokenContext context, bool&
 
     context.index++;
     output += "while(true){\n";
-    if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'forever' statement");
-    index_increase(context);
 
-    if(tokenid(context) == TOKENINDEX_INDENT){
+    if(tokenid(context) == TOKENINDEX_NEXT){
         context.index++;
-        while(before_indentation != token_indent){
-            assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
-            context.index++;
+
+        while(context.tokens[context.index-1].id != TOKENINDEX_TERMINATE){
+            assemble_token(config, context, terminate_needed, conditional_code, write, header, indentation, environment);
+            index_increase(context);
         }
-        context.index--;
     }
-    else index_decrease(context);
+    else {
+        if(tokenid(context) != TOKENINDEX_TERMINATE) die("Expected terminate after 'forever' statement");
+        index_increase(context);
+
+        if(tokenid(context) == TOKENINDEX_INDENT){
+            context.index++;
+            while(before_indentation != token_indent){
+                assemble_token(config, context, terminate_needed, conditional_code, write, header, token_indent, environment);
+                context.index++;
+            }
+            context.index--;
+        }
+        else index_decrease(context);
+    }
+
     output += conditional_code + "}\n";
 }
 void assemble_keyword_for(Configuration* config, TokenContext context, bool& terminate_needed, std::string& output, std::ofstream& write, std::ofstream& header, unsigned int& indentation, Environment& environment){
@@ -1429,4 +1510,3 @@ void assemble_keyword_functionptr(Configuration* config, TokenContext context, b
 
     terminate_needed = true;
 }
-

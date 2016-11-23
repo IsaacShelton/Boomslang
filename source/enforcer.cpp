@@ -403,12 +403,14 @@ void enforce_keyword(Configuration* config, TokenContext context, Environment& e
         Class value_class;
         index_increase(context);
         context_enforce_expression(context, environment, value_class);
+        context_enforce_followup_block(config, context, environment);
         current_line++;
     }
     else if(tokendata(context) == "unless"){
         Class value_class;
         index_increase(context);
         context_enforce_expression(context, environment, value_class);
+        context_enforce_followup_block(config, context, environment);
         current_line++;
     }
     else if(tokendata(context) == "else"){
@@ -419,15 +421,18 @@ void enforce_keyword(Configuration* config, TokenContext context, Environment& e
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
+            context_enforce_followup_block(config, context, environment);
         }
-        if(tokenid(context) == TOKENINDEX_KEYWORD and tokendata(context) == "unless"){ // else unless
+        else if(tokenid(context) == TOKENINDEX_KEYWORD and tokendata(context) == "unless"){ // else unless
             Class value_class;
 
             index_increase(context);
             context_enforce_expression(context, environment, value_class);
+            context_enforce_followup_block(config, context, environment);
         }
         else {
             index_decrease(context);
+            context_enforce_followup_block(config, context, environment);
             token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         }
 
@@ -438,6 +443,7 @@ void enforce_keyword(Configuration* config, TokenContext context, Environment& e
 
         index_increase(context);
         context_enforce_expression(context, environment, value_class);
+        context_enforce_followup_block(config, context, environment);
         current_line++;
     }
     else if(tokendata(context) == "until"){
@@ -445,9 +451,11 @@ void enforce_keyword(Configuration* config, TokenContext context, Environment& e
 
         index_increase(context);
         context_enforce_expression(context, environment, value_class);
+        context_enforce_followup_block(config, context, environment);
         current_line++;
     }
     else if(tokendata(context) == "forever"){
+        context_enforce_followup_block(config, context, environment);
         token_force(context, TOKENINDEX_TERMINATE, ERROR_INDICATOR + "Unexpected statement termination\nExpected newline at end of statement", ERROR_INDICATOR + "Expected newline at end of statement");
         current_line++;
     }

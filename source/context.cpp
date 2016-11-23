@@ -979,6 +979,15 @@ void context_enforce_type(TokenContext context, Environment& e, Class& type){
         }
     }
 }
+void context_enforce_followup_block(Configuration* config, TokenContext context, Environment& e){
+    // Check for and enforce follow up block
+    // Should end off on terminate token
+
+    if(tokenid(context) == TOKENINDEX_NEXT){
+        index_increase(context);
+        enforce_token(config, context, e);
+    }
+}
 
 void context_assemble_string(TokenContext context, Environment& e, std::string str, std::string& output){
     output += "(boomslang_String(\"";
