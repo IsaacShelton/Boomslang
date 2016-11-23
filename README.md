@@ -209,5 +209,21 @@ def main()
     Float y = d # Incompatible Classes 'Float' and 'double'
 ```
 
+### One line conditionals
+```python
+
+def main()
+    Boolean ok = true
+    
+    # Examples of one line conditionals
+    unless ok, die()
+    if !ok, die()
+    while ok, ok = false
+    until ok, ok = true
+    
+    # It also works with 'forever'
+    forever, break
+```
+
 ##Contacting Us
 develop.dockysoft@gmail.com
