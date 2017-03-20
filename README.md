@@ -1,13 +1,13 @@
-#The Boomslang Programming Language
+# The Boomslang Programming Language
 <br>
 
-##What is boomslang?
+## What is boomslang?
 The Boomslang Programming Language is an open-source programming language that compiles into static executables for Windows and soon Linux. See <a href="http://dockysoft.com/boomslang">dockysoft.com/boomslang</a> for documentation and tutorials.
 <br><br><br>
 
-##Boomslang program examples
+## Boomslang program examples
 
-###Hello World
+### Hello World
 ```python
 def main()
     "Hello World".output()
@@ -15,7 +15,7 @@ def main()
 
 NOTE: Ensure to use the -console compiler flag when compiling console programs such as this one.
 
-###Creating a Method
+### Creating a Method
 ```python
 
 def greet(String name)
@@ -25,7 +25,7 @@ def main()
     greet("Isaac")
 ```
 
-###Taking input
+### Taking input
 ```python
 def main()
     String name
@@ -35,7 +35,7 @@ def main()
     ("Welcome " + name).output()
 ```
 
-###Declaring Variables
+### Declaring Variables
 ```python
 def main()
     # All the following are equivalent
@@ -48,7 +48,7 @@ def main()
     var e = 0
 ```
 
-###Declaring Classes
+### Declaring Classes
 ```python
 
 class Dog
@@ -63,7 +63,7 @@ def main()
     ruff.bark()
 ```
 
-###Declaring Constructors for Classes
+### Declaring Constructors for Classes
 ```python
 
 class Dog
@@ -87,7 +87,7 @@ def main()
     ruff.bark()
 ```
 
-###Working with Pointers
+### Working with Pointers
 ```python
 
 def main()
@@ -98,7 +98,7 @@ def main()
     delete message
 ```
 
-###Getting a Value from a pointer
+### Getting a Value from a pointer
 ```python
 
 def main()
@@ -111,7 +111,7 @@ def main()
     delete greeting
 ```
 
-###Using Pointers with Already Existing Values
+### Using Pointers with Already Existing Values
 ```python
 
 def main()
@@ -128,7 +128,7 @@ def main()
     pointer.output()
 ```
 
-###Class Inheritance
+### Class Inheritance
 ```python
 
 class Animal
@@ -144,7 +144,7 @@ class Dog Animal
         self.weight = 150
 ```
 
-###Basic Generic Classes
+### Basic Generic Classes
 ```python
 
 class Box<Type>
@@ -156,7 +156,7 @@ def main()
     mailbox.item.output()
 ```
 
-###Numeric Literal Suffixes
+### Numeric Literal Suffixes
 ```python
 
 def main()
@@ -166,7 +166,7 @@ def main()
     UnsignedInteger wheels = 4u
 ```
 
-###Random Numbers
+### Random Numbers
 ```python
 
 import boomslang/random
@@ -182,7 +182,7 @@ def main()
     amount.output()
 ```
 
-###Primitives
+### Primitives
 ```python
 
 def sum(Integer a, Integer b)
@@ -225,5 +225,5 @@ def main()
     forever, break
 ```
 
-##Contacting Us
+## Contacting Us
 develop.dockysoft@gmail.com
